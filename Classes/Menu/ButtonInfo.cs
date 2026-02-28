@@ -23,8 +23,63 @@
 
 namespace iiMenu.Classes.Menu
 {
+    public enum Category
+    {
+        Main,
+        Settings,
+        MenuSettings,
+        RoomSettings,
+        MovementSettings,
+        ProjectileSettings,
+        Room,
+        Important,
+        Safety,
+        Movement,
+        Advantage,
+        Visual,
+        Fun,
+        RebindSettings,
+        Sound,
+        Projectiles,
+        Master,
+        Overpowered,
+        Soundboard,
+        Favorites,
+        MenuPresets,
+        AdvantageSettings,
+        VisualSettings,
+        Admin,
+        EnabledMods,
+        Internal,
+        SoundLibrary,
+        Experimental,
+        SafetySettings,
+        Temporary,
+        SoundboardSettings,
+        OverpoweredSettings,
+        KeybindSettings,
+        PluginSettings,
+        Friends,
+        FriendSettings,
+        FunSettings,
+        Players,
+        Credits,
+        CustomMaps,
+        ModGivers,
+        ChatMessages,
+        Macros,
+        Detected,
+        DetectedSettings,
+        Achievements,
+        ModList,
+        Patreon,
+        PatreonSettings
+    }
+
     public class ButtonInfo
     {
+        public Category category;
+
         public string buttonText = "-"; // Button code name, displayed in menu if overlapText is null
         public string overlapText;      // Button text displayed on menu, overrides buttonText
 
