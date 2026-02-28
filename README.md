@@ -1,4 +1,5 @@
-Thank you guys for 2 years, it's been a pleasure <3
+So many LTS copies yikes
+Project created by IIDK/CrimsonCauldron continued by me (Toast)
 
 
 <p align="center">
@@ -109,10 +110,7 @@ Let's bring back the collaboration of modding. No paywalls, no secrets, no malwa
   <summary><b>🗣️ Contact Information</b></summary>
 	
 Need help or want to collaborate? Here are some of my sources of contact:
-- Telegram: [@crimsoncauldron](https://t.me/crimsoncauldron)
-- Discord: [@crimsoncauldron](https://discord.gg/iidk)
-- YouTube: [@iiDk_](https://www.youtube.com/@iiDk_)
-- Email: [admin@goldentrophy.software](mailto:admin@goldentrophy.software)
+- Discord: @toasta.xx
 
 </details>
 
