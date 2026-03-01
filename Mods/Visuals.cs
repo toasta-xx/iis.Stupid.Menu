@@ -4261,8 +4261,10 @@ namespace iiMenu.Mods
 
         public static void DisableSkeletonESP()
         {
-            foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.isLocal))
+            if (GorillaParent.instance == null) return;
+            foreach (var vrrig in GorillaParent.instance.vrrigs)
             {
+                if (vrrig == null || vrrig.isLocal || vrrig.skeleton == null || vrrig.skeleton.renderer == null) continue;
                 vrrig.skeleton.renderer.enabled = false;
                 vrrig.skeleton.renderer.material.shader = Shader.Find("GorillaTag/UberShader");
                 if (vrrig.skeleton.renderer.material.name.Contains("gorilla_body"))
