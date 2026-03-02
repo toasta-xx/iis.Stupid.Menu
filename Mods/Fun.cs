@@ -102,30 +102,13 @@ namespace iiMenu.Mods
                 VRRig.LocalRig.head.trackingRotationOffset.x = Mathf.Lerp(VRRig.LocalRig.head.trackingRotationOffset.x, 0f, 0.1f);
         }
 
+        private static readonly string[] HeadNames = { "Upside Down", "Backwards", "Sideways", "Broken Neck", "Head Bang" };
         public static int headModMode;
 
         public static void ChangeHeadModMode(bool positive = true)
         {
-            string[] headNames = {
-                "Upside Down",
-                "Backwards",
-                "Sideways",
-                "Broken Neck",
-                "Head Bang"
-            };
-
-            if (positive)
-                headModMode++;
-            else
-                headModMode--;
-
-            headModMode %= headNames.Length;
-            if (headModMode < 0)
-                headModMode = headNames.Length - 1;
-
-            string label = "Head Mod <color=grey>[</color><color=green>" + headNames[headModMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Head Thing").overlapText = label;
-            Buttons.GetIndex("Change Head Mode").overlapText = "Change Head Mod Mode <color=grey>[</color><color=green>" + headNames[headModMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref headModMode, HeadNames, "Change Head Mode", "Change Head Mod Mode", positive);
+            Buttons.GetIndex("Head Thing").overlapText = ModHelpers.FormatModeLabel("Head Mod", HeadNames[headModMode]);
         }
 
         public static void HeadModMod()
@@ -140,24 +123,13 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] SoundNames = { "Boop", "Gong", "Slap" };
         public static int touchSoundMode;
 
         public static void ChangeTouchSoundMode(bool positive = true)
         {
-            string[] soundNames = { "Boop", "Gong", "Slap" };
-
-            if (positive)
-                touchSoundMode++;
-            else
-                touchSoundMode--;
-
-            touchSoundMode %= soundNames.Length;
-            if (touchSoundMode < 0)
-                touchSoundMode = soundNames.Length - 1;
-
-            string label = "Touch Sound <color=grey>[</color><color=green>" + soundNames[touchSoundMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Touch Sound").overlapText = label;
-            Buttons.GetIndex("Change Touch Sound").overlapText = "Change Touch Sound <color=grey>[</color><color=green>" + soundNames[touchSoundMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref touchSoundMode, SoundNames, "Change Touch Sound", positive);
+            Buttons.GetIndex("Touch Sound").overlapText = ModHelpers.FormatModeLabel("Touch Sound", SoundNames[touchSoundMode]);
         }
 
         public static void TouchSoundMod()
@@ -170,24 +142,13 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] PitchNames = { "Very High", "High", "Low", "Very Low" };
         public static int micPitchMode;
 
         public static void ChangeMicPitchMode(bool positive = true)
         {
-            string[] pitchNames = { "Very High", "High", "Low", "Very Low" };
-
-            if (positive)
-                micPitchMode++;
-            else
-                micPitchMode--;
-
-            micPitchMode %= pitchNames.Length;
-            if (micPitchMode < 0)
-                micPitchMode = pitchNames.Length - 1;
-
-            string label = "Pitch Microphone <color=grey>[</color><color=green>" + pitchNames[micPitchMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Pitch Microphone").overlapText = label;
-            Buttons.GetIndex("Change Mic Pitch").overlapText = "Change Mic Pitch <color=grey>[</color><color=green>" + pitchNames[micPitchMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref micPitchMode, PitchNames, "Change Mic Pitch", positive);
+            Buttons.GetIndex("Pitch Microphone").overlapText = ModHelpers.FormatModeLabel("Pitch Microphone", PitchNames[micPitchMode]);
         }
 
         public static void MicPitchMod()
@@ -201,25 +162,14 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] ScreenEffectNames = { "Black", "White", "Flash", "Strobe", "Rainbow" };
         public static int screenEffectMode;
 
         public static void ChangeScreenEffectMode(bool positive = true)
         {
-            string[] effectNames = { "Black", "White", "Flash", "Strobe", "Rainbow" };
-
-            if (positive)
-                screenEffectMode++;
-            else
-                screenEffectMode--;
-
-            screenEffectMode %= effectNames.Length;
-            if (screenEffectMode < 0)
-                screenEffectMode = effectNames.Length - 1;
-
-            string label = "Screen Gun <color=grey>[</color><color=green>" + effectNames[screenEffectMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Screen Gun").overlapText = label;
-            Buttons.GetIndex("Screen All").overlapText = "Screen All <color=grey>[</color><color=green>" + effectNames[screenEffectMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Change Screen Effect").overlapText = "Change Screen Effect <color=grey>[</color><color=green>" + effectNames[screenEffectMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref screenEffectMode, ScreenEffectNames, "Change Screen Effect", positive);
+            Buttons.GetIndex("Screen Gun").overlapText = ModHelpers.FormatModeLabel("Screen Gun", ScreenEffectNames[screenEffectMode]);
+            Buttons.GetIndex("Screen All").overlapText = ModHelpers.FormatModeLabel("Screen All", ScreenEffectNames[screenEffectMode]);
         }
 
         public static Color GetScreenColor()
@@ -235,34 +185,19 @@ namespace iiMenu.Mods
             }
         }
 
-        public static void ScreenGunMod()
-        {
+        public static void ScreenGunMod() =>
             HoverboardScreenGun(GetScreenColor());
-        }
 
-        public static void ScreenAllMod()
-        {
+        public static void ScreenAllMod() =>
             HoverboardScreenAll(GetScreenColor());
-        }
 
+        private static readonly string[] HoverboardColorNames = { "Rainbow", "Flash", "Strobe" };
         public static int hoverboardColorMode;
 
         public static void ChangeHoverboardColorMode(bool positive = true)
         {
-            string[] colorNames = { "Rainbow", "Flash", "Strobe" };
-
-            if (positive)
-                hoverboardColorMode++;
-            else
-                hoverboardColorMode--;
-
-            hoverboardColorMode %= colorNames.Length;
-            if (hoverboardColorMode < 0)
-                hoverboardColorMode = colorNames.Length - 1;
-
-            string label = "Color Hoverboard <color=grey>[</color><color=green>" + colorNames[hoverboardColorMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Color Hoverboard").overlapText = label;
-            Buttons.GetIndex("Change Hoverboard Color").overlapText = "Change Hoverboard Color <color=grey>[</color><color=green>" + colorNames[hoverboardColorMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref hoverboardColorMode, HoverboardColorNames, "Change Hoverboard Color", positive);
+            Buttons.GetIndex("Color Hoverboard").overlapText = ModHelpers.FormatModeLabel("Color Hoverboard", HoverboardColorNames[hoverboardColorMode]);
         }
 
         public static void HoverboardColorMod()
@@ -275,24 +210,13 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] HeldProjColorNames = { "Rainbow", "Flash", "Strobe", "Custom" };
         public static int heldProjColorMode;
 
         public static void ChangeHeldProjColorMode(bool positive = true)
         {
-            string[] colorNames = { "Rainbow", "Flash", "Strobe", "Custom" };
-
-            if (positive)
-                heldProjColorMode++;
-            else
-                heldProjColorMode--;
-
-            heldProjColorMode %= colorNames.Length;
-            if (heldProjColorMode < 0)
-                heldProjColorMode = colorNames.Length - 1;
-
-            string label = "Color Held Projectiles <color=grey>[</color><color=green>" + colorNames[heldProjColorMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Color Held Projectiles").overlapText = label;
-            Buttons.GetIndex("Change Held Projectile Color").overlapText = "Change Held Projectile Color <color=grey>[</color><color=green>" + colorNames[heldProjColorMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref heldProjColorMode, HeldProjColorNames, "Change Held Projectile Color", positive);
+            Buttons.GetIndex("Color Held Projectiles").overlapText = ModHelpers.FormatModeLabel("Color Held Projectiles", HeldProjColorNames[heldProjColorMode]);
         }
 
         public static void HeldProjColorMod()
@@ -306,50 +230,28 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] DoorNames = { "Basement", "Elevator" };
         public static int doorMode;
 
         public static void ChangeDoorMode(bool positive = true)
         {
-            string[] doorNames = { "Basement", "Elevator" };
-
-            if (positive)
-                doorMode++;
-            else
-                doorMode--;
-
-            doorMode %= doorNames.Length;
-            if (doorMode < 0)
-                doorMode = doorNames.Length - 1;
-
-            Buttons.GetIndex("Change Door").overlapText = "Change Door <color=grey>[</color><color=green>" + doorNames[doorMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Open Door").overlapText = "Open Door <color=grey>[</color><color=green>" + doorNames[doorMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Close Door").overlapText = "Close Door <color=grey>[</color><color=green>" + doorNames[doorMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Spam Open Door").overlapText = "Spam Open Door <color=grey>[</color><color=green>" + doorNames[doorMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Spam Close Door").overlapText = "Spam Close Door <color=grey>[</color><color=green>" + doorNames[doorMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Door Spam").overlapText = "Door Spam <color=grey>[</color><color=green>" + doorNames[doorMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref doorMode, DoorNames, "Change Door", positive);
+            Buttons.GetIndex("Open Door").overlapText = ModHelpers.FormatModeLabel("Open Door", DoorNames[doorMode]);
+            Buttons.GetIndex("Close Door").overlapText = ModHelpers.FormatModeLabel("Close Door", DoorNames[doorMode]);
+            Buttons.GetIndex("Spam Open Door").overlapText = ModHelpers.FormatModeLabel("Spam Open Door", DoorNames[doorMode]);
+            Buttons.GetIndex("Spam Close Door").overlapText = ModHelpers.FormatModeLabel("Spam Close Door", DoorNames[doorMode]);
+            Buttons.GetIndex("Door Spam").overlapText = ModHelpers.FormatModeLabel("Door Spam", DoorNames[doorMode]);
         }
 
         public static void OpenDoorMod() { if (doorMode == 0) SetBasementDoorState(true); else SetElevatorDoorState(true); }
         public static void CloseDoorMod() { if (doorMode == 0) SetBasementDoorState(false); else SetElevatorDoorState(false); }
         public static void DoorSpamMod() { if (doorMode == 0) BasementDoorSpam(); else ElevatorDoorSpam(); }
 
+        private static readonly string[] CreatureNames = { "Bug", "Bat", "Firefly" };
         public static int creatureMode;
 
-        public static void ChangeCreatureMode(bool positive = true)
-        {
-            string[] creatureNames = { "Bug", "Bat", "Firefly" };
-
-            if (positive)
-                creatureMode++;
-            else
-                creatureMode--;
-
-            creatureMode %= creatureNames.Length;
-            if (creatureMode < 0)
-                creatureMode = creatureNames.Length - 1;
-
-            Buttons.GetIndex("Change Creature").overlapText = "Change Creature <color=grey>[</color><color=green>" + creatureNames[creatureMode] + "</color><color=grey>]</color>";
-        }
+        public static void ChangeCreatureMode(bool positive = true) =>
+            ModHelpers.CycleMode(ref creatureMode, CreatureNames, "Change Creature", positive);
 
         public static string GetCreatureName()
         {
@@ -362,112 +264,55 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] GliderSpeedNames = { "Fast", "Slow" };
         public static int gliderSpeedMode;
 
         public static void ChangeGliderSpeedMode(bool positive = true)
         {
-            string[] speedNames = { "Fast", "Slow" };
-
-            if (positive)
-                gliderSpeedMode++;
-            else
-                gliderSpeedMode--;
-
-            gliderSpeedMode %= speedNames.Length;
-            if (gliderSpeedMode < 0)
-                gliderSpeedMode = speedNames.Length - 1;
-
-            string label = "Glider Speed <color=grey>[</color><color=green>" + speedNames[gliderSpeedMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Glider Speed").overlapText = label;
-            Buttons.GetIndex("Change Glider Speed").overlapText = "Change Glider Speed <color=grey>[</color><color=green>" + speedNames[gliderSpeedMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref gliderSpeedMode, GliderSpeedNames, "Change Glider Speed", positive);
+            Buttons.GetIndex("Glider Speed").overlapText = ModHelpers.FormatModeLabel("Glider Speed", GliderSpeedNames[gliderSpeedMode]);
         }
 
         public static void GliderSpeedMod() { if (gliderSpeedMode == 0) ModifyGliderSpeed(0.5f, 0.5f); else ModifyGliderSpeed(0.05f, 0.05f); }
 
+        private static readonly string[] ThrowSpeedNames = { "Fast", "Slow" };
         public static int throwSpeedMode;
 
         public static void ChangeThrowSpeedMode(bool positive = true)
         {
-            string[] speedNames = { "Fast", "Slow" };
-
-            if (positive)
-                throwSpeedMode++;
-            else
-                throwSpeedMode--;
-
-            throwSpeedMode %= speedNames.Length;
-            if (throwSpeedMode < 0)
-                throwSpeedMode = speedNames.Length - 1;
-
-            string label = "Throw Speed <color=grey>[</color><color=green>" + speedNames[throwSpeedMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Throw Speed").overlapText = label;
-            Buttons.GetIndex("Change Throw Speed").overlapText = "Change Throw Speed <color=grey>[</color><color=green>" + speedNames[throwSpeedMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref throwSpeedMode, ThrowSpeedNames, "Change Throw Speed", positive);
+            Buttons.GetIndex("Throw Speed").overlapText = ModHelpers.FormatModeLabel("Throw Speed", ThrowSpeedNames[throwSpeedMode]);
         }
 
         public static void ThrowSpeedMod() { VelocityPatches.enabled = true; VelocityPatches.multipleFactor = throwSpeedMode == 0 ? 10f : 0.1f; }
 
+        private static readonly string[] SnowballSpeedNames = { "Fast", "Slow" };
         public static int snowballSpeedMode;
 
         public static void ChangeSnowballSpeedMode(bool positive = true)
         {
-            string[] speedNames = { "Fast", "Slow" };
-
-            if (positive)
-                snowballSpeedMode++;
-            else
-                snowballSpeedMode--;
-
-            snowballSpeedMode %= speedNames.Length;
-            if (snowballSpeedMode < 0)
-                snowballSpeedMode = speedNames.Length - 1;
-
-            string label = "Snowball Speed <color=grey>[</color><color=green>" + speedNames[snowballSpeedMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Snowball Speed").overlapText = label;
-            Buttons.GetIndex("Change Snowball Speed").overlapText = "Change Snowball Speed <color=grey>[</color><color=green>" + speedNames[snowballSpeedMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref snowballSpeedMode, SnowballSpeedNames, "Change Snowball Speed", positive);
+            Buttons.GetIndex("Snowball Speed").overlapText = ModHelpers.FormatModeLabel("Snowball Speed", SnowballSpeedNames[snowballSpeedMode]);
         }
 
         public static void SnowballSpeedMod() { if (snowballSpeedMode == 0) FastSnowballs(); else SlowSnowballs(); }
 
+        private static readonly string[] HoverboardSpeedNames = { "Fast", "Slow" };
         public static int hoverboardSpeedMode;
 
         public static void ChangeHoverboardSpeedMode(bool positive = true)
         {
-            string[] speedNames = { "Fast", "Slow" };
-
-            if (positive)
-                hoverboardSpeedMode++;
-            else
-                hoverboardSpeedMode--;
-
-            hoverboardSpeedMode %= speedNames.Length;
-            if (hoverboardSpeedMode < 0)
-                hoverboardSpeedMode = speedNames.Length - 1;
-
-            string label = "Hoverboard Speed <color=grey>[</color><color=green>" + speedNames[hoverboardSpeedMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Hoverboard Speed").overlapText = label;
-            Buttons.GetIndex("Change Hoverboard Speed").overlapText = "Change Hoverboard Speed <color=grey>[</color><color=green>" + speedNames[hoverboardSpeedMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref hoverboardSpeedMode, HoverboardSpeedNames, "Change Hoverboard Speed", positive);
+            Buttons.GetIndex("Hoverboard Speed").overlapText = ModHelpers.FormatModeLabel("Hoverboard Speed", HoverboardSpeedNames[hoverboardSpeedMode]);
         }
 
         public static void HoverboardSpeedMod() { if (hoverboardSpeedMode == 0) FastHoverboard(); else SlowHoverboard(); }
 
+        private static readonly string[] CosmeticNames = { "Whoopee Cushion", "Smoke Bomb", "Firecracker" };
         public static int throwableCosmeticMode;
 
-        public static void ChangeThrowableCosmeticMode(bool positive = true)
-        {
-            string[] cosmeticNames = { "Whoopee Cushion", "Smoke Bomb", "Firecracker" };
-            int[] cosmeticIDs = { 626, 600, 587 };
-
-            if (positive)
-                throwableCosmeticMode++;
-            else
-                throwableCosmeticMode--;
-
-            throwableCosmeticMode %= cosmeticNames.Length;
-            if (throwableCosmeticMode < 0)
-                throwableCosmeticMode = cosmeticNames.Length - 1;
-
-            Buttons.GetIndex("Change Throwable Cosmetic").overlapText = "Change Throwable Cosmetic <color=grey>[</color><color=green>" + cosmeticNames[throwableCosmeticMode] + "</color><color=grey>]</color>";
-        }
+        public static void ChangeThrowableCosmeticMode(bool positive = true) =>
+            ModHelpers.CycleMode(ref throwableCosmeticMode, CosmeticNames, "Change Throwable Cosmetic", positive);
 
         public static int GetThrowableCosmeticID()
         {
@@ -475,23 +320,11 @@ namespace iiMenu.Mods
             return cosmeticIDs[throwableCosmeticMode];
         }
 
+        private static readonly string[] StiltNames = { "Normal", "Turkey", "Motorized" };
         public static int stiltMode;
 
-        public static void ChangeStiltMode(bool positive = true)
-        {
-            string[] stiltNames = { "Normal", "Turkey", "Motorized" };
-
-            if (positive)
-                stiltMode++;
-            else
-                stiltMode--;
-
-            stiltMode %= stiltNames.Length;
-            if (stiltMode < 0)
-                stiltMode = stiltNames.Length - 1;
-
-            Buttons.GetIndex("Change Stilt Type").overlapText = "Change Stilt Type <color=grey>[</color><color=green>" + stiltNames[stiltMode] + "</color><color=grey>]</color>";
-        }
+        public static void ChangeStiltMode(bool positive = true) =>
+            ModHelpers.CycleMode(ref stiltMode, StiltNames, "Change Stilt Type", positive);
 
         public static string GetStiltName()
         {
@@ -504,46 +337,22 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] TentacleNames = { "Strider", "Crawler" };
         public static int tentacleMode;
 
-        public static void ChangeTentacleMode(bool positive = true)
-        {
-            string[] tentacleNames = { "Strider", "Crawler" };
-
-            if (positive)
-                tentacleMode++;
-            else
-                tentacleMode--;
-
-            tentacleMode %= tentacleNames.Length;
-            if (tentacleMode < 0)
-                tentacleMode = tentacleNames.Length - 1;
-
-            Buttons.GetIndex("Change Tentacle Type").overlapText = "Change Tentacle Type <color=grey>[</color><color=green>" + tentacleNames[tentacleMode] + "</color><color=grey>]</color>";
-        }
+        public static void ChangeTentacleMode(bool positive = true) =>
+            ModHelpers.CycleMode(ref tentacleMode, TentacleNames, "Change Tentacle Type", positive);
 
         public static string GetTentacleName()
         {
             return tentacleMode == 0 ? "TentacleArmGadget_Strider" : "TentacleArmGadget_Crawler";
         }
 
+        private static readonly string[] CritterObjectNames = { "Sticky Goo", "Food", "Noise Maker", "Stun Bomb", "Sticky Trap" };
         public static int critterObjectMode;
 
-        public static void ChangeCritterObjectMode(bool positive = true)
-        {
-            string[] objectNames = { "Sticky Goo", "Food", "Noise Maker", "Stun Bomb", "Sticky Trap" };
-
-            if (positive)
-                critterObjectMode++;
-            else
-                critterObjectMode--;
-
-            critterObjectMode %= objectNames.Length;
-            if (critterObjectMode < 0)
-                critterObjectMode = objectNames.Length - 1;
-
-            Buttons.GetIndex("Change Critter Object").overlapText = "Change Critter Object <color=grey>[</color><color=green>" + objectNames[critterObjectMode] + "</color><color=grey>]</color>";
-        }
+        public static void ChangeCritterObjectMode(bool positive = true) =>
+            ModHelpers.CycleMode(ref critterObjectMode, CritterObjectNames, "Change Critter Object", positive);
 
         public static CrittersActor.CrittersActorType GetCritterObjectType()
         {
@@ -558,23 +367,11 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] CritterEffectNames = { "Shockwave", "Sticky", "Eating", "Noise", "Random" };
         public static int critterEffectMode;
 
-        public static void ChangeCritterEffectMode(bool positive = true)
-        {
-            string[] effectNames = { "Shockwave", "Sticky", "Eating", "Noise", "Random" };
-
-            if (positive)
-                critterEffectMode++;
-            else
-                critterEffectMode--;
-
-            critterEffectMode %= effectNames.Length;
-            if (critterEffectMode < 0)
-                critterEffectMode = effectNames.Length - 1;
-
-            Buttons.GetIndex("Change Critter Effect").overlapText = "Change Critter Effect <color=grey>[</color><color=green>" + effectNames[critterEffectMode] + "</color><color=grey>]</color>";
-        }
+        public static void ChangeCritterEffectMode(bool positive = true) =>
+            ModHelpers.CycleMode(ref critterEffectMode, CritterEffectNames, "Change Critter Effect", positive);
 
         public static CrittersManager.CritterEvent GetCritterEffectType()
         {
@@ -589,24 +386,13 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] HandTapNames = { "Loud", "Silent" };
         public static int handTapMode;
 
         public static void ChangeHandTapMode(bool positive = true)
         {
-            string[] tapNames = { "Loud", "Silent" };
-
-            if (positive)
-                handTapMode++;
-            else
-                handTapMode--;
-
-            handTapMode %= tapNames.Length;
-            if (handTapMode < 0)
-                handTapMode = tapNames.Length - 1;
-
-            string label = "Hand Tap Volume <color=grey>[</color><color=green>" + tapNames[handTapMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Hand Tap Volume").overlapText = label;
-            Buttons.GetIndex("Change Hand Tap Volume").overlapText = "Change Hand Tap Volume <color=grey>[</color><color=green>" + tapNames[handTapMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref handTapMode, HandTapNames, "Change Hand Tap Volume", positive);
+            Buttons.GetIndex("Hand Tap Volume").overlapText = ModHelpers.FormatModeLabel("Hand Tap Volume", HandTapNames[handTapMode]);
         }
 
         public static void HandTapVolumeMod()
@@ -614,24 +400,13 @@ namespace iiMenu.Mods
             if (handTapMode == 0) LoudHandTaps(); else SilentHandTaps();
         }
 
+        private static readonly string[] SnowballBodyNames = { "Buttocks", "Breasts" };
         public static int snowballBodyMode;
 
         public static void ChangeSnowballBodyMode(bool positive = true)
         {
-            string[] bodyNames = { "Buttocks", "Breasts" };
-
-            if (positive)
-                snowballBodyMode++;
-            else
-                snowballBodyMode--;
-
-            snowballBodyMode %= bodyNames.Length;
-            if (snowballBodyMode < 0)
-                snowballBodyMode = bodyNames.Length - 1;
-
-            string label = "Snowball Body <color=grey>[</color><color=green>" + bodyNames[snowballBodyMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Snowball Body").overlapText = label;
-            Buttons.GetIndex("Change Snowball Body").overlapText = "Change Snowball Body <color=grey>[</color><color=green>" + bodyNames[snowballBodyMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref snowballBodyMode, SnowballBodyNames, "Change Snowball Body", positive);
+            Buttons.GetIndex("Snowball Body").overlapText = ModHelpers.FormatModeLabel("Snowball Body", SnowballBodyNames[snowballBodyMode]);
         }
 
         public static void SnowballBodyMod()
@@ -639,24 +414,14 @@ namespace iiMenu.Mods
             if (snowballBodyMode == 0) SnowballButtocks(); else SnowballBreasts();
         }
 
+        private static readonly float[] HeadSpinSpeedAmounts = { 2f, 7.5f, 8f, 9f, 200f };
+        private static readonly string[] HeadSpinSpeedNames = { "Very Slow", "Slow", "Normal", "Fast", "Very Fast" };
         public static int headSpinIndex;
+
         public static void ChangeHeadSpinSpeed(bool positive = true)
         {
-            float[] speedAmounts = { 2f, 7.5f, 8f, 9f, 200f };
-            string[] speedNames = { "Very Slow", "Slow", "Normal", "Fast", "Very Fast" };
-
-            if (positive)
-                headSpinIndex++;
-            else
-                headSpinIndex--;
-
-            headSpinIndex %= speedAmounts.Length;
-            if (headSpinIndex < 0)
-                headSpinIndex = speedAmounts.Length - 1;
-
-            headSpinSpeed = speedAmounts[headSpinIndex];
-
-            Buttons.GetIndex("Change Head Spin Speed").overlapText = "Change Head Spin Speed <color=grey>[</color><color=green>" + speedNames[headSpinIndex] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref headSpinIndex, HeadSpinSpeedNames, "Change Head Spin Speed", positive);
+            headSpinSpeed = HeadSpinSpeedAmounts[headSpinIndex];
         }
 
         private static float headSpinSpeed = 10f;
@@ -1323,19 +1088,13 @@ namespace iiMenu.Mods
         }
 
         public static int targetFOV = 90;
+
         public static void ChangeTargetFOV(bool positive = true)
         {
-            if (positive)
-                targetFOV += 5;
-            else
-                targetFOV -= 5;
-
-            if (targetFOV > 180)
-                targetFOV = 0;
-            if (targetFOV < 0)
-                targetFOV = 180;
-
-            Buttons.GetIndex("Change Target FOV").overlapText = "Change Target FOV <color=grey>[</color><color=green>" + targetFOV + "</color><color=grey>]</color>";
+            if (positive) targetFOV += 5; else targetFOV -= 5;
+            if (targetFOV > 180) targetFOV = 0;
+            if (targetFOV < 0) targetFOV = 180;
+            Buttons.GetIndex("Change Target FOV").overlapText = ModHelpers.FormatModeLabel("Change Target FOV", targetFOV);
         }
 
         public static void CameraFOV()
@@ -2003,19 +1762,8 @@ namespace iiMenu.Mods
             Object.Destroy(virtualStumpAd.gameObject);
         }
 
-        public static void ChangeCustomQuestScore(bool positive = true)
-        {
-            if (positive)
-                targetQuestScore++;
-            else
-                targetQuestScore--;
-
-            targetQuestScore %= 100000;
-            if (targetQuestScore < 0)
-                targetQuestScore = 99999;
-
-            Buttons.GetIndex("Change Custom Quest Score").overlapText = "Change Custom Quest Score <color=grey>[</color><color=green>" + targetQuestScore + "</color><color=grey>]</color>";
-        }
+        public static void ChangeCustomQuestScore(bool positive = true) =>
+            ModHelpers.CycleInt(ref targetQuestScore, 0, 99999, "Change Custom Quest Score", positive);
 
         public static void FakeFPS()
         {
@@ -3009,7 +2757,7 @@ namespace iiMenu.Mods
                     {
                         gbgd = Time.time + 0.1f;
                         pieceIdSet = gunTarget.pieceType;
-                        NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully selected piece " + gunTarget.displayName + ".");
+                        NotificationManager.SendNotification($"<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully selected piece {gunTarget.displayName}.");
                     }
                 }
             }
@@ -3031,7 +2779,7 @@ namespace iiMenu.Mods
                         GUIUtility.systemCopyBuffer = @$"{gunTarget.displayName}
 Piece Type: {gunTarget.pieceType}
 Piece Name: {gunTarget.name}";
-                        NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully copied piece data of " + gunTarget.displayName + ".");
+                        NotificationManager.SendNotification($"<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully copied piece data of {gunTarget.displayName}.");
                     }
                 }
             }
@@ -3040,7 +2788,7 @@ Piece Name: {gunTarget.name}";
         public static void SelectBlock(int type, string name)
         {
             pieceIdSet = type;
-            NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully selected piece " + name.Replace("(Clone)", "") + ".");
+            NotificationManager.SendNotification($"<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully selected piece {name.Replace("(Clone)", "")}.");
         }
 
         private static Dictionary<int, string> blocks;
@@ -5385,20 +5133,12 @@ Piece Name: {gunTarget.name}";
 
         public static int blockDebounceIndex = 2;
         public static float blockDebounce = 0.1f;
+
         public static void ChangeBlockDelay(bool positive = true)
         {
-            if (positive)
-                blockDebounceIndex++;
-            else
-                blockDebounceIndex--;
-
-            if (blockDebounceIndex > 20)
-                blockDebounceIndex = 1;
-            if (blockDebounceIndex < 1)
-                blockDebounceIndex = 20;
-
+            ModHelpers.CycleInt(ref blockDebounceIndex, 1, 20, "Change Block Delay", positive);
             blockDebounce = blockDebounceIndex / 20f;
-            Buttons.GetIndex("Change Block Delay").overlapText = "Change Block Delay <color=grey>[</color><color=green>" + blockDebounce + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Block Delay").overlapText = ModHelpers.FormatModeLabel("Change Block Delay", blockDebounce);
         }
 
         public static void RequestCreatePiece(int pieceType, Vector3 position, Quaternion rotation, int materialType, object target = null, bool overrideFreeze = false, bool forceGravity = false, Vector3? velocity = null, Vector3? angVelocity = null)
@@ -6540,18 +6280,9 @@ Piece Name: {gunTarget.name}";
 
         public static void ChangeCycleDelay(bool positive = true)
         {
-            if (positive)
-                cycleSpeedIndex++;
-            else
-                cycleSpeedIndex--;
-
-            if (cycleSpeedIndex > 4)
-                cycleSpeedIndex = 1;
-            if (cycleSpeedIndex < 1)
-                cycleSpeedIndex = 4;
-
+            ModHelpers.CycleInt(ref cycleSpeedIndex, 1, 4, "Change Cycle Delay", positive);
             nameCycleDebounce = cycleSpeedIndex / 2f;
-            Buttons.GetIndex("Change Cycle Delay").overlapText = "Change Name Cycle Delay <color=grey>[</color><color=green>" + nameCycleDebounce + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Cycle Delay").overlapText = ModHelpers.FormatModeLabel("Change Name Cycle Delay", nameCycleDebounce);
         }
 
         public static void GoldenNameTag(bool isGolden)
@@ -7053,7 +6784,7 @@ Piece Name: {gunTarget.name}";
                 CatalogVersion = CosmeticsController.instance.catalog
             }, delegate
             {
-                NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Item \"" + ToTitleCase(hat.overrideDisplayName) + "\" has been purchased.", 5000);
+                NotificationManager.SendNotification($"<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Item \"{ToTitleCase(hat.overrideDisplayName)}\" has been purchased.", 5000);
                 CosmeticsController.instance.ProcessExternalUnlock(hat.itemName, false, false);
                 CosmeticsController.instance.currencyBalance -= hat.cost;
                 CosmeticsOwned += hat.itemName;
@@ -7069,7 +6800,7 @@ Piece Name: {gunTarget.name}";
             foreach (CosmeticsController.CosmeticItem hat in CosmeticsController.instance.allCosmetics)
             {
                 if (hat.canTryOn)
-                    cosmeticbuttons.Add(new ButtonInfo { buttonText = ToTitleCase(hat.overrideDisplayName), method = () => AddCosmeticToCart(hat.itemName), isTogglable = false, toolTip = "Adds the " + hat.overrideDisplayName.ToLower() + "to your cart." });
+                    cosmeticbuttons.Add(new ButtonInfo { buttonText = ToTitleCase(hat.overrideDisplayName), method = () => AddCosmeticToCart(hat.itemName), isTogglable = false, toolTip = $"Adds the {hat.overrideDisplayName.ToLower()} to your cart." });
             }
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = cosmeticbuttons.ToArray();
 
@@ -7273,7 +7004,7 @@ Piece Name: {gunTarget.name}";
                     if (gunTarget && !gunTarget.IsLocal())
                     {
                         idgundelay = Time.time + 0.5f;
-                        SpeakText("Name: " + GetPlayerFromVRRig(gunTarget).NickName + ". I D: " + string.Join(" ", GetPlayerFromVRRig(gunTarget).UserId));
+                        SpeakText($"Name: {GetPlayerFromVRRig(gunTarget).NickName}. I D: {string.Join(" ", GetPlayerFromVRRig(gunTarget).UserId)}");
                     }
                 }
             }
@@ -7285,7 +7016,7 @@ Piece Name: {gunTarget.name}";
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
                 if (!vrrig.isLocal)
-                    ids += "Name: " + GetPlayerFromVRRig(vrrig).NickName + ". I D: " + string.Join(" ", GetPlayerFromVRRig(vrrig).UserId) + ". ";
+                    ids += $"Name: {GetPlayerFromVRRig(vrrig).NickName}. I D: {string.Join(" ", GetPlayerFromVRRig(vrrig).UserId)}. ";
             }
             SpeakText(ids);
         }
@@ -7310,7 +7041,7 @@ Piece Name: {gunTarget.name}";
 
                 string ids = "";
                 foreach (VRRig vrrig in nearbyPlayers)
-                        ids += "Name: " + GetPlayerFromVRRig(vrrig).NickName + ". I D: " + string.Join(" ", GetPlayerFromVRRig(vrrig).UserId) + ". ";
+                        ids += $"Name: {GetPlayerFromVRRig(vrrig).NickName}. I D: {string.Join(" ", GetPlayerFromVRRig(vrrig).UserId)}. ";
                 SpeakText(ids);
             }
         }
@@ -7339,13 +7070,13 @@ Piece Name: {gunTarget.name}";
 
                 string ids = "";
                 foreach (VRRig vrrig in touchedPlayers)
-                    ids += "Name: " + GetPlayerFromVRRig(vrrig).NickName + ". I D: " + string.Join(" ", GetPlayerFromVRRig(vrrig).UserId) + ". ";
+                    ids += $"Name: {GetPlayerFromVRRig(vrrig).NickName}. I D: {string.Join(" ", GetPlayerFromVRRig(vrrig).UserId)}. ";
                 SpeakText(ids);
             }
         }
 
         public static void NarrateSelfID() =>
-            SpeakText("Name: " + PhotonNetwork.LocalPlayer.NickName + ". I D: " + string.Join(" ", PhotonNetwork.LocalPlayer.UserId));
+            SpeakText($"Name: {PhotonNetwork.LocalPlayer.NickName}. I D: {string.Join(" ", PhotonNetwork.LocalPlayer.UserId)}");
 
         public static void NarrateFakeDoxxGun()
         {
@@ -7360,7 +7091,7 @@ Piece Name: {gunTarget.name}";
                     if (gunTarget && !gunTarget.IsLocal())
                     {
                         idgundelay = Time.time + 0.5f;
-                        SpeakText("Name: " + GetPlayerFromVRRig(gunTarget).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}"));
+                        SpeakText($"Name: {GetPlayerFromVRRig(gunTarget).NickName}. I P  ADD DRESS: {string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}")}");
                     }
                 }
             }
@@ -7372,7 +7103,7 @@ Piece Name: {gunTarget.name}";
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
                 if (!vrrig.isLocal)
-                    ids += "Name: " + GetPlayerFromVRRig(vrrig).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}") + ". ";
+                    ids += $"Name: {GetPlayerFromVRRig(vrrig).NickName}. I P  ADD DRESS: {string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}")}. ";
             }
             SpeakText(ids);
         }
@@ -7396,7 +7127,7 @@ Piece Name: {gunTarget.name}";
 
                 string ids = "";
                 foreach (VRRig vrrig in nearbyPlayers)
-                        ids += "Name: " + GetPlayerFromVRRig(vrrig).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}") + ". ";
+                        ids += $"Name: {GetPlayerFromVRRig(vrrig).NickName}. I P  ADD DRESS: {string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}")}. ";
                 SpeakText(ids);
             }
         }
@@ -7425,13 +7156,13 @@ Piece Name: {gunTarget.name}";
 
                 string ids = "";
                 foreach (VRRig vrrig in touchedPlayers)
-                    ids += "Name: " + GetPlayerFromVRRig(vrrig).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}") + ". ";
+                    ids += $"Name: {GetPlayerFromVRRig(vrrig).NickName}. I P  ADD DRESS: {string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}")}. ";
                 SpeakText(ids);
             }
         }
 
         public static void NarrateFakeDoxxSelf() =>
-            SpeakText("Name: " + PhotonNetwork.LocalPlayer.NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}"));
+            SpeakText($"Name: {PhotonNetwork.LocalPlayer.NickName}. I P  ADD DRESS: {string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}")}");
 
         private static float creationDateDelay;
         public static void CopyCreationDateSelf()
@@ -7615,7 +7346,7 @@ Piece Name: {gunTarget.name}";
             }
             text += "\n====================================\n";
             text += "Text file generated with ii's Stupid Menu";
-            string fileName = $"{PluginInfo.BaseDirectory}/PlayerInfo/" + PhotonNetwork.CurrentRoom.Name + ".txt";
+            string fileName = $"{PluginInfo.BaseDirectory}/PlayerInfo/{PhotonNetwork.CurrentRoom.Name}.txt";
 
             File.WriteAllText(fileName, text);
 
