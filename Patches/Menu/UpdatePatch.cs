@@ -33,7 +33,11 @@ namespace iiMenu.Patches.Menu
         private static int GetPing(VRRig rig)
         {
             int ping = rig.GetPing();
-            return ping <= 150 ? 5 : ping <= 300 ? 4 : ping <= 450 ? 3 : ping <= 600 ? 2 : 1;
+            if (ping <= 150) return 5;
+            if (ping <= 300) return 4;
+            if (ping <= 450) return 3;
+            if (ping <= 600) return 2;
+            return 1;
         }
 
         public static void Postfix(GorillaPlayerScoreboardLine __instance)

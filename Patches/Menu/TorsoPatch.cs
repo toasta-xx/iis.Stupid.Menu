@@ -40,22 +40,14 @@ namespace iiMenu.Patches.Menu
             {
                 if (enabled)
                 {
-                    Quaternion rotation = Quaternion.identity;
-                    switch (mode)
+                    Quaternion rotation = mode switch
                     {
-                        case 0:
-                            rotation = Quaternion.Euler(0f, Time.time * 180f % 360, 0f);
-                            break;
-                        case 1:
-                            rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-                            break;
-                        case 2:
-                            rotation = Quaternion.Euler(0f, GorillaTagger.Instance.headCollider.transform.rotation.eulerAngles.y + 180f, 0f);
-                            break;
-                        case 3:
-                            rotation = Quaternion.Euler(0f, Rig.recBodyRotary.transform.rotation.eulerAngles.y, 0f);
-                            break;
-                    }
+                        0 => Quaternion.Euler(0f, Time.time * 180f % 360, 0f),
+                        1 => Quaternion.Euler(0f, Random.Range(0f, 360f), 0f),
+                        2 => Quaternion.Euler(0f, GorillaTagger.Instance.headCollider.transform.rotation.eulerAngles.y + 180f, 0f),
+                        3 => Quaternion.Euler(0f, Rig.recBodyRotary.transform.rotation.eulerAngles.y, 0f),
+                        _ => Quaternion.identity,
+                    };
 
                     __instance.transform.rotation = rotation;
                     __instance.head.MapMine(__instance.scaleFactor, __instance.playerOffsetTransform);
