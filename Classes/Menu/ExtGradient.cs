@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ii's Stupid Menu  Classes/Menu/ExtGradient.cs
  * A mod menu for Gorilla Tag with over 1000+ mods
  *
