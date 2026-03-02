@@ -25,6 +25,7 @@ using GorillaNetworking;
 using GorillaTag.Rendering;
 using HarmonyLib;
 using iiMenu.Managers;
+using iiMenu.Utilities;
 using iiMenu.Menu;
 using iiMenu.Mods;
 using Photon.Pun;
@@ -206,13 +207,13 @@ namespace iiMenu.Classes.Menu
         {
             if (!PhotonNetwork.InRoom)
             {
-                Log("Attempt to retrieve asset while not in room");
+                Log(NotInRoomMessage);
                 yield break;
             }
 
             if (GameObject.Find(linkObjectName) == null)
             {
-                float timeoutTime = Time.time + 10f;
+                float timeoutTime = Time.time + AssetRetrievalTimeout;
                 while (Time.time < timeoutTime && GameObject.Find(linkObjectName) == null)
                     yield return null;
             }
@@ -226,7 +227,7 @@ namespace iiMenu.Classes.Menu
 
             if (!PhotonNetwork.InRoom)
             {
-                Log("Attempt to retrieve asset while not in room");
+                Log(NotInRoomMessage);
                 yield break;
             }
 
@@ -261,54 +262,65 @@ namespace iiMenu.Classes.Menu
             return string.IsNullOrWhiteSpace(justName) ? null : Path.GetInvalidFileNameChars().Aggregate(justName, (current, c) => current.Replace(c.ToString(), ""));
         }
 
+        private static IEnumerator DownloadAndCache(string url, string fileName, Action<byte[]> onComplete)
+        {
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+
+            Log($"Downloading {fileName}");
+            using HttpClient client = new HttpClient();
+            Task<byte[]> downloadTask = client.GetByteArrayAsync(url);
+
+            while (!downloadTask.IsCompleted)
+                yield return null;
+
+            if (downloadTask.Exception != null)
+            {
+                Log($"Failed to download: {downloadTask.Exception}");
+                yield break;
+            }
+
+            byte[] downloadedData = downloadTask.Result;
+            Task writeTask = File.WriteAllBytesAsync(fileName, downloadedData);
+
+            while (!writeTask.IsCompleted)
+                yield return null;
+
+            if (writeTask.Exception != null)
+            {
+                Log($"Failed to save: {writeTask.Exception}");
+                yield break;
+            }
+
+            Task<byte[]> readTask = File.ReadAllBytesAsync(fileName);
+            while (!readTask.IsCompleted)
+                yield return null;
+
+            if (readTask.Exception != null)
+            {
+                Log($"Failed to read file: {readTask.Exception}");
+                yield break;
+            }
+
+            onComplete?.Invoke(readTask.Result);
+        }
+
         private static readonly Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         public static IEnumerator GetTextureResource(string url, Action<Texture2D> onComplete = null)
         {
             if (!textures.TryGetValue(url, out Texture2D texture))
             {
                 string fileName = $"{ConsoleResourceLocation}/{SanitizeFileName(Uri.UnescapeDataString(url.Split("/")[^1]))}";
+                bool done = false;
 
-                if (File.Exists(fileName))
-                    File.Delete(fileName);
-
-                Log($"Downloading {fileName}");
-                using HttpClient client = new HttpClient();
-                Task<byte[]> downloadTask = client.GetByteArrayAsync(url);
-
-                while (!downloadTask.IsCompleted)
-                    yield return null;
-
-                if (downloadTask.Exception != null)
+                yield return DownloadAndCache(url, fileName, bytes =>
                 {
-                    Log("Failed to download texture: " + downloadTask.Exception);
-                    yield break;
-                }
+                    texture = new Texture2D(2, 2);
+                    texture.LoadImage(bytes);
+                    done = true;
+                });
 
-                byte[] downloadedData = downloadTask.Result;
-                Task writeTask = File.WriteAllBytesAsync(fileName, downloadedData);
-
-                while (!writeTask.IsCompleted)
-                    yield return null;
-
-                if (writeTask.Exception != null)
-                {
-                    Log("Failed to save texture: " + writeTask.Exception);
-                    yield break;
-                }
-
-                Task<byte[]> readTask = File.ReadAllBytesAsync(fileName);
-                while (!readTask.IsCompleted)
-                    yield return null;
-
-                if (readTask.Exception != null)
-                {
-                    Log("Failed to read texture file: " + readTask.Exception);
-                    yield break;
-                }
-
-                byte[] bytes = readTask.Result;
-                texture = new Texture2D(2, 2);
-                texture.LoadImage(bytes);
+                if (!done) yield break;
             }
 
             textures[url] = texture;
@@ -321,54 +333,29 @@ namespace iiMenu.Classes.Menu
             if (!audios.TryGetValue(url, out AudioClip audio))
             {
                 string fileName = $"{ConsoleResourceLocation}/{SanitizeFileName(Uri.UnescapeDataString(url.Split("/")[^1]))}";
+                bool downloaded = false;
 
+                yield return DownloadAndCache(url, fileName, _ => { downloaded = true; });
+
+                if (!downloaded) yield break;
+
+                string filePath = Assembly.GetExecutingAssembly().Location.Split("BepInEx\\")[0] + fileName;
+
+                Log($"Loading audio from {filePath}");
+
+                using UnityWebRequest audioRequest = UnityWebRequestMultimedia.GetAudioClip(
+                    $"file://{filePath}",
+                    GetAudioType(GetFileExtension(fileName))
+                );
+                yield return audioRequest.SendWebRequest();
+
+                if (audioRequest.result != UnityWebRequest.Result.Success)
                 {
-                    if (File.Exists(fileName))
-                        File.Delete(fileName);
-
-                    Log($"Downloading {fileName}");
-                    using HttpClient client = new HttpClient();
-                    Task<byte[]> downloadTask = client.GetByteArrayAsync(url);
-
-                    while (!downloadTask.IsCompleted)
-                        yield return null;
-
-                    if (downloadTask.Exception != null)
-                    {
-                        Log("Failed to download texture: " + downloadTask.Exception);
-                        yield break;
-                    }
-
-                    byte[] downloadedData = downloadTask.Result;
-                    Task writeTask = File.WriteAllBytesAsync(fileName, downloadedData);
-
-                    while (!writeTask.IsCompleted)
-                        yield return null;
-
-                    if (writeTask.Exception != null)
-                    {
-                        Log("Failed to save texture: " + writeTask.Exception);
-                        yield break;
-                    }
-
-                    string filePath = Assembly.GetExecutingAssembly().Location.Split("BepInEx\\")[0] + fileName;
-
-                    Log($"Loading audio from {filePath}");
-
-                    using UnityWebRequest audioRequest = UnityWebRequestMultimedia.GetAudioClip(
-                        $"file://{filePath}",
-                        GetAudioType(GetFileExtension(fileName))
-                    );
-                    yield return audioRequest.SendWebRequest();
-
-                    if (audioRequest.result != UnityWebRequest.Result.Success)
-                    {
-                        Log("Failed to load audio: " + audioRequest.error);
-                        yield break;
-                    }
-
-                    audio = DownloadHandlerAudioClip.GetContent(audioRequest);
+                    Log($"Failed to load audio: {audioRequest.error}");
+                    yield break;
                 }
+
+                audio = DownloadHandlerAudioClip.GetContent(audioRequest);
             }
 
             audios[url] = audio;
@@ -392,109 +379,26 @@ namespace iiMenu.Classes.Menu
 
         public static IEnumerator DownloadAdminTextures()
         {
+            yield return DownloadAndCache(ConsoleSuperAdminIcon, $"{ConsoleResourceLocation}/cone.png", bytes =>
             {
-                string fileName = $"{ConsoleResourceLocation}/cone.png";
-
-                if (File.Exists(fileName))
-                    File.Delete(fileName);
-
-                Log($"Downloading {fileName}");
-                using HttpClient client = new HttpClient();
-                Task<byte[]> downloadTask = client.GetByteArrayAsync(ConsoleSuperAdminIcon);
-
-                while (!downloadTask.IsCompleted)
-                    yield return null;
-
-                if (downloadTask.Exception != null)
-                {
-                    Log("Failed to download texture: " + downloadTask.Exception);
-                    yield break;
-                }
-
-                byte[] downloadedData = downloadTask.Result;
-                Task writeTask = File.WriteAllBytesAsync(fileName, downloadedData);
-
-                while (!writeTask.IsCompleted)
-                    yield return null;
-
-                if (writeTask.Exception != null)
-                {
-                    Log("Failed to save texture: " + writeTask.Exception);
-                    yield break;
-                }
-
-                Task<byte[]> readTask = File.ReadAllBytesAsync(fileName);
-                while (!readTask.IsCompleted)
-                    yield return null;
-
-                if (readTask.Exception != null)
-                {
-                    Log("Failed to read texture file: " + readTask.Exception);
-                    yield break;
-                }
-
-                byte[] bytes = readTask.Result;
                 Texture2D texture = new Texture2D(2, 2);
                 texture.LoadImage(bytes);
-
                 adminConeTexture = texture;
-            }
+            });
 
+            yield return DownloadAndCache(ConsoleAdminIcon, $"{ConsoleResourceLocation}/crown.png", bytes =>
             {
-                string fileName = $"{ConsoleResourceLocation}/crown.png";
-
-                if (File.Exists(fileName))
-                    File.Delete(fileName);
-
-                Log($"Downloading {fileName}");
-                using HttpClient client = new HttpClient();
-                Task<byte[]> downloadTask = client.GetByteArrayAsync(ConsoleAdminIcon);
-
-                while (!downloadTask.IsCompleted)
-                    yield return null;
-
-                if (downloadTask.Exception != null)
-                {
-                    Log("Failed to download texture: " + downloadTask.Exception);
-                    yield break;
-                }
-
-                byte[] downloadedData = downloadTask.Result;
-                Task writeTask = File.WriteAllBytesAsync(fileName, downloadedData);
-
-                while (!writeTask.IsCompleted)
-                    yield return null;
-
-                if (writeTask.Exception != null)
-                {
-                    Log("Failed to save texture: " + writeTask.Exception);
-                    yield break;
-                }
-
-                Task<byte[]> readTask = File.ReadAllBytesAsync(fileName);
-                while (!readTask.IsCompleted)
-                    yield return null;
-
-                if (readTask.Exception != null)
-                {
-                    Log("Failed to read texture file: " + readTask.Exception);
-                    yield break;
-                }
-
-                byte[] bytes = readTask.Result;
                 Texture2D texture = new Texture2D(2, 2);
                 texture.LoadImage(bytes);
-
                 adminCrownTexture = texture;
-            }
+            });
         }
 
         public static string GetFileExtension(string fileName) =>
             fileName.ToLower().Split(".")[fileName.Split(".").Length - 1];
 
-        public static AudioType GetAudioType(string extension)
-        {
-            return extension.ToLower() switch
+        public static AudioType GetAudioType(string extension) =>
+            extension.ToLower() switch
             {
                 "mp3" => AudioType.MPEG,
                 "wav" => AudioType.WAV,
@@ -502,7 +406,6 @@ namespace iiMenu.Classes.Menu
                 "aiff" => AudioType.AIFF,
                 _ => AudioType.WAV,
             };
-        }
 
         public static IEnumerator PreloadAssets()
         {
@@ -524,6 +427,10 @@ namespace iiMenu.Classes.Menu
         public const string SafeLuaURL = "https://raw.githubusercontent.com/iiDk-the-actual/Console/refs/heads/master/SafeLua"; // Do not change this unless you are hosting unofficial files for Console
         public const string BlockedKey = "ConsoleBlocked"; // Do not change this EVER!!!
 
+        private const string GuiTextShaderName = "GUI/Text Shader";
+        private const string NotInRoomMessage = "Attempt to retrieve asset while not in room";
+        private const float AssetRetrievalTimeout = 10f;
+
         public static bool adminIsScaling;
         public static float adminScale = 1f;
         public static VRRig adminRigTarget;
@@ -540,17 +447,17 @@ namespace iiMenu.Classes.Menu
         private static readonly Dictionary<VRRig, List<int>> indicatorDistanceList = new Dictionary<VRRig, List<int>>();
         public static float GetIndicatorDistance(VRRig rig)
         {
-            if (indicatorDistanceList.ContainsKey(rig))
+            if (indicatorDistanceList.TryGetValue(rig, out var frames))
             {
-                if (indicatorDistanceList[rig][0] == Time.frameCount)
+                if (frames[0] == Time.frameCount)
                 {
-                    indicatorDistanceList[rig].Add(Time.frameCount);
-                    return (0.3f + indicatorDistanceList[rig].Count * 0.5f);
+                    frames.Add(Time.frameCount);
+                    return 0.3f + frames.Count * 0.5f;
                 }
 
-                indicatorDistanceList[rig].Clear();
-                indicatorDistanceList[rig].Add(Time.frameCount);
-                return (0.3f + indicatorDistanceList[rig].Count * 0.5f);
+                frames.Clear();
+                frames.Add(Time.frameCount);
+                return 0.3f + frames.Count * 0.5f;
             }
 
             indicatorDistanceList.Add(rig, new List<int> { Time.frameCount });
@@ -587,7 +494,6 @@ namespace iiMenu.Classes.Menu
                         ServerData.Administrators.TryGetValue(PhotonNetwork.LocalPlayer.UserId, out string localAdminName) &&
                         ServerData.SuperAdministrators.Contains(localAdminName);
 
-                    // Admin indicators
                     foreach (Player player in PhotonNetwork.PlayerListOthers)
                     {
                         if (!ServerData.Administrators.TryGetValue(player.UserId, out string adminName) ||
@@ -601,34 +507,12 @@ namespace iiMenu.Classes.Menu
 
                             if (adminCrownMaterial == null)
                             {
-                                adminCrownMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"))
-                                {
-                                    mainTexture = adminCrownTexture
-                                };
-
-                                adminCrownMaterial.SetFloat("_Surface", 1);
-                                adminCrownMaterial.SetFloat("_Blend", 0);
-                                adminCrownMaterial.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
-                                adminCrownMaterial.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
-                                adminCrownMaterial.SetFloat("_ZWrite", 0);
-                                adminCrownMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                                adminCrownMaterial.renderQueue = (int)RenderQueue.Transparent;
+                                adminCrownMaterial = MaterialUtilities.CreateTransparentUnlitMaterial(adminCrownTexture);
                             }
 
                             if (adminConeMaterial == null)
                             {
-                                adminConeMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"))
-                                {
-                                    mainTexture = adminConeTexture
-                                };
-
-                                adminConeMaterial.SetFloat("_Surface", 1);
-                                adminConeMaterial.SetFloat("_Blend", 0);
-                                adminConeMaterial.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
-                                adminConeMaterial.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
-                                adminConeMaterial.SetFloat("_ZWrite", 0);
-                                adminConeMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                                adminConeMaterial.renderQueue = (int)RenderQueue.Transparent;
+                                adminConeMaterial = MaterialUtilities.CreateTransparentUnlitMaterial(adminConeTexture);
                             }
 
                             adminConeObject.GetComponent<Renderer>().material = ServerData.SuperAdministrators.Contains(adminName) ? adminConeMaterial : adminCrownMaterial;
@@ -647,7 +531,6 @@ namespace iiMenu.Classes.Menu
                         adminConeObject.transform.rotation = Quaternion.Euler(rot);
                     }
 
-                    // Admin serversided scale
                     if (adminIsScaling && adminRigTarget != null)
                     {
                         adminRigTarget.NativeScale = adminScale;
@@ -685,76 +568,26 @@ namespace iiMenu.Classes.Menu
             { "spectral", new Color32(164, 94, 229, 255) }
         };
 
+        private static readonly Dictionary<string, (string MapTrigger, string NetworkTrigger)> mapTriggers =
+            new Dictionary<string, (string MapTrigger, string NetworkTrigger)>()
+            {
+            ["Forest"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/TreeRoomSpawnForestZone", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Forest, Tree Exit"),
+            ["City"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/ForestToCity", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - City Front"),
+            ["Canyons"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/ForestCanyonTransition", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Canyon"),
+            ["Clouds"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToSkyJungle", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Clouds From Computer"),
+            ["Caves"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/ForestToCave", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Cave"),
+            ["Beach"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/BeachToForest", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Beach for Computer"),
+            ["Mountains"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToMountain", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Mountain"),
+            ["Basement"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToBasement", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Basement For Computer"),
+            ["Metropolis"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/MetropolisOnly", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Metropolis from Computer"),
+            ["Arcade"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToArcade", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - City frm Arcade"),
+            ["Critters"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityCrittersTransition", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - City from Critters"),
+            ["Rotating"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToRotating", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Rotating Map"),
+            ["Bayou"] = ("Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/BayouOnly", "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - BayouComputer2"),
+        };
+
         public static void TeleportToMap(string mapName)
         {
-            string MapTrigger = "";
-            string NetworkTrigger = "";
-
-            if (mapName == "Forest")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/TreeRoomSpawnForestZone";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Forest, Tree Exit";
-            }
-            if (mapName == "City")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/ForestToCity";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - City Front";
-            }
-            if (mapName == "Canyons")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/ForestCanyonTransition";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Canyon";
-            }
-            if (mapName == "Clouds")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToSkyJungle";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Clouds From Computer";
-            }
-            if (mapName == "Caves")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/ForestToCave";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Cave";
-            }
-            if (mapName == "Beach")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/BeachToForest";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Beach for Computer";
-            }
-            if (mapName == "Mountains")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToMountain";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Mountain";
-            }
-            if (mapName == "Basement")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToBasement";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Basement For Computer";
-            }
-            if (mapName == "Metropolis")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/MetropolisOnly";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Metropolis from Computer";
-            }
-            if (mapName == "Arcade")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToArcade";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - City frm Arcade";
-            }
-            if (mapName == "Critters")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityCrittersTransition";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - City from Critters";
-            }
-            if (mapName == "Rotating")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/CityToRotating";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Rotating Map";
-            }
-            if (mapName == "Bayou")
-            {
-                MapTrigger = "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/BayouOnly";
-                NetworkTrigger = "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - BayouComputer2";
-            }
             if (mapName == "Virtual Stump")
             {
                 VirtualStumpTeleporter vstumpt = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/VirtualStump_HeadsetTeleporter/TeleporterTrigger").GetComponent<VirtualStumpTeleporter>();
@@ -764,9 +597,12 @@ namespace iiMenu.Classes.Menu
                 return;
             }
 
-            GameObject.Find(MapTrigger).GetComponent<GorillaSetZoneTrigger>().OnBoxTriggered();
-            GameObject.Find(NetworkTrigger).SetActive(false);
-            TeleportPlayer(GameObject.Find(MapTrigger).transform.position);
+            if (!mapTriggers.TryGetValue(mapName, out var triggers))
+                return;
+
+            GameObject.Find(triggers.MapTrigger).GetComponent<GorillaSetZoneTrigger>().OnBoxTriggered();
+            GameObject.Find(triggers.NetworkTrigger).SetActive(false);
+            TeleportPlayer(GameObject.Find(triggers.MapTrigger).transform.position);
         }
 
         public static readonly int TransparentFX = LayerMask.NameToLayer("TransparentFX");
@@ -816,7 +652,7 @@ namespace iiMenu.Classes.Menu
                 liner.SetPosition(i, victim);
                 victim += new Vector3(Random.Range(-5f, 5f), 5f, Random.Range(-5f, 5f));
             }
-            liner.material.shader = Shader.Find("GUI/Text Shader");
+            liner.material.shader = Shader.Find(GuiTextShaderName);
             Destroy(line, 2f);
 
             GameObject line2 = new GameObject("LightningInner");
@@ -825,7 +661,7 @@ namespace iiMenu.Classes.Menu
             for (int i = 0; i < 5; i++)
                 liner2.SetPosition(i, liner.GetPosition(i));
 
-            liner2.material.shader = Shader.Find("GUI/Text Shader");
+            liner2.material.shader = Shader.Find(GuiTextShaderName);
             liner2.material.renderQueue = liner.material.renderQueue + 1;
             Destroy(line2, 2f);
         }
@@ -853,7 +689,7 @@ namespace iiMenu.Classes.Menu
                 catch { }
                 liner.SetPosition(0, startPos + dir * 0.1f);
                 liner.SetPosition(1, endPos);
-                liner.material.shader = Shader.Find("GUI/Text Shader");
+                liner.material.shader = Shader.Find(GuiTextShaderName);
                 Destroy(line, Time.deltaTime);
 
                 GameObject line2 = new GameObject("LaserInner");
@@ -861,7 +697,7 @@ namespace iiMenu.Classes.Menu
                 liner2.startColor = Color.white; liner2.endColor = Color.white; liner2.startWidth = 0.1f; liner2.endWidth = 0.1f; liner2.positionCount = 2; liner2.useWorldSpace = true;
                 liner2.SetPosition(0, startPos + dir * 0.1f);
                 liner2.SetPosition(1, endPos);
-                liner2.material.shader = Shader.Find("GUI/Text Shader");
+                liner2.material.shader = Shader.Find(GuiTextShaderName);
                 liner2.material.renderQueue = liner.material.renderQueue + 1;
                 Destroy(line2, Time.deltaTime);
 
@@ -969,7 +805,7 @@ namespace iiMenu.Classes.Menu
             yield return request.SendWebRequest();
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Log("Failed to load custom script: " + request.error);
+                Log($"Failed to load custom script: {request.error}");
                 yield break;
             }
             string response = request.downloadHandler.text;
@@ -981,7 +817,7 @@ namespace iiMenu.Classes.Menu
         {
             if (isBlocked <= DateTime.UtcNow.Ticks / TimeSpan.TicksPerSecond || !PhotonNetwork.InRoom) return;
             NetworkSystem.Instance.ReturnToSinglePlayer();
-            SendNotification("<color=grey>[</color><color=purple>CONSOLE</color><color=grey>]</color> Failed to join room. You can join rooms in " + (isBlocked - DateTime.UtcNow.Ticks / TimeSpan.TicksPerSecond) + "s.", 10000);
+            SendNotification($"<color=grey>[</color><color=purple>CONSOLE</color><color=grey>]</color> Failed to join room. You can join rooms in {isBlocked - DateTime.UtcNow.Ticks / TimeSpan.TicksPerSecond}s.", 10000);
         }
 
         private static readonly Dictionary<VRRig, float> confirmUsingDelay = new Dictionary<VRRig, float>();
@@ -1181,7 +1017,7 @@ namespace iiMenu.Classes.Menu
 
                         break;
                     case "notify":
-                        SendNotification("<color=grey>[</color><color=red>ANNOUNCE</color><color=grey>]</color> " + (string)args[1], 5000);
+                        SendNotification($"<color=grey>[</color><color=red>ANNOUNCE</color><color=grey>]</color> {(string)args[1]}", 5000);
                         break;
                     case "lr":
                         // 1, 2, 3, 4 : r, g, b, a
@@ -1194,7 +1030,7 @@ namespace iiMenu.Classes.Menu
                         liner.startColor = thecolor; liner.endColor = thecolor; liner.startWidth = (float)args[5]; liner.endWidth = (float)args[5]; liner.positionCount = 2; liner.useWorldSpace = true;
                         liner.SetPosition(0, (Vector3)args[6]);
                         liner.SetPosition(1, (Vector3)args[7]);
-                        liner.material.shader = Shader.Find("GUI/Text Shader");
+                        liner.material.shader = Shader.Find(GuiTextShaderName);
                         Destroy(lines, (float)args[8]);
                         break;
                     case "platf":
@@ -1259,8 +1095,8 @@ namespace iiMenu.Classes.Menu
 
                         if (RightTransform != null)
                         {
-                            VRRig.LocalRig.rightHand.rigTarget.transform.position = (Vector3)LeftTransform[0];
-                            VRRig.LocalRig.rightHand.rigTarget.transform.rotation = (Quaternion)LeftTransform[1];
+                            VRRig.LocalRig.rightHand.rigTarget.transform.position = (Vector3)RightTransform[0];
+                            VRRig.LocalRig.rightHand.rigTarget.transform.rotation = (Quaternion)RightTransform[1];
                         }
 
                         break;
@@ -1832,10 +1668,13 @@ namespace iiMenu.Classes.Menu
 
         public static async Task<GameObject> LoadAsset(string assetBundle, string assetName)
         {
-            if (!assetBundlePool.ContainsKey(assetBundle))
+            if (!assetBundlePool.TryGetValue(assetBundle, out var bundle))
+            {
                 await LoadAssetBundle(assetBundle);
+                bundle = assetBundlePool[assetBundle];
+            }
 
-            AssetBundleRequest assetLoadRequest = assetBundlePool[assetBundle].LoadAssetAsync<GameObject>(assetName);
+            AssetBundleRequest assetLoadRequest = bundle.LoadAssetAsync<GameObject>(assetName);
             while (!assetLoadRequest.isDone)
                 await Task.Yield();
 
@@ -1868,13 +1707,13 @@ namespace iiMenu.Classes.Menu
         {
             if (!PhotonNetwork.InRoom)
             {
-                Log("Attempt to retrieve asset while not in room");
+                Log(NotInRoomMessage);
                 yield break;
             }
 
             if (!consoleAssets.ContainsKey(id))
             {
-                float timeoutTime = Time.time + 10f;
+                float timeoutTime = Time.time + AssetRetrievalTimeout;
                 while (Time.time < timeoutTime && !consoleAssets.ContainsKey(id))
                     yield return null;
             }
@@ -1887,13 +1726,13 @@ namespace iiMenu.Classes.Menu
 
             if (!PhotonNetwork.InRoom)
             {
-                Log("Attempt to retrieve asset while not in room");
+                Log(NotInRoomMessage);
                 yield break;
             }
 
             if (isAudio && asset.pauseAudioUpdates)
             {
-                float timeoutTime = Time.time + 10f;
+                float timeoutTime = Time.time + AssetRetrievalTimeout;
                 while (Time.time < timeoutTime && asset.pauseAudioUpdates)
                     yield return null;
             }
@@ -1976,11 +1815,8 @@ namespace iiMenu.Classes.Menu
             PhotonNetwork.SendAllOutgoingCommands();
         }
 
-        public static void SyncConsoleUsers(NetPlayer player)
-        {
-            Player playerRef = player.GetPlayerRef();
-            userDictionary.Remove(playerRef);
-        }
+        public static void SyncConsoleUsers(NetPlayer player) =>
+            userDictionary.Remove(player.GetPlayerRef());
 
         public static int GetFreeAssetID()
         {
