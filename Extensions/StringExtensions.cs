@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ii's Stupid Menu  Extensions/StringExtensions.cs
  * A mod menu for Gorilla Tag with over 1000+ mods
  *
@@ -26,9 +26,6 @@ namespace iiMenu.Extensions
 {
     public static class StringExtensions
     {
-        public static string ClearTags(this string input) =>
-            NoRichtextTags(input);
-
         public static string ToTitleCase(this string input) =>
             Menu.Main.ToTitleCase(input);
 
