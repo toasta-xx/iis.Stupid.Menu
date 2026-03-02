@@ -186,18 +186,7 @@ namespace iiMenu.Managers
                             if (starTexture == null)
                                 starTexture = LoadTextureFromResource($"{PluginInfo.ClientResourcePath}.star.png");
 
-                            starMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"))
-                            {
-                                mainTexture = starTexture
-                            };
-
-                            starMaterial.SetFloat("_Surface", 1);
-                            starMaterial.SetFloat("_Blend", 0);
-                            starMaterial.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
-                            starMaterial.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
-                            starMaterial.SetFloat("_ZWrite", 0);
-                            starMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                            starMaterial.renderQueue = (int)RenderQueue.Transparent;
+                            starMaterial = MaterialUtilities.CreateTransparentUnlitMaterial(starTexture);
                         }
 
                         playerStar.GetComponent<Renderer>().material = starMaterial;
@@ -337,7 +326,7 @@ namespace iiMenu.Managers
         public static void CheckPlayerFriends(NetPlayer Player)
         {
             if (IsPlayerFriend(Player))
-                NotificationManager.SendNotification("<color=grey>[</color><color=green>FRIENDS</color><color=grey>]</color> Your friend " + Player.NickName + " is in your current room.", 5000);
+                NotificationManager.SendNotification($"<color=grey>[</color><color=green>FRIENDS</color><color=grey>]</color> Your friend {Player.NickName} is in your current room.", 5000);
         }
 
         public static NetPlayer[] GetAllFriendsInRoom()
@@ -623,26 +612,17 @@ namespace iiMenu.Managers
             catch { }
         }
 
-        public static void ExecuteCommand(string command, RaiseEventOptions options, params object[] parameters)
-        {
-            if (!NetworkSystem.Instance.InRoom)
-                return;
-
-            PhotonNetwork.RaiseEvent(FriendByte,
-                new object[] { command }
-                    .Concat(parameters)
-                    .ToArray(),
-            options, SendOptions.SendReliable);
-        }
+        public static void ExecuteCommand(string command, RaiseEventOptions options, params object[] parameters) =>
+            NetworkHelpers.RaiseCommand(FriendByte, command, options, parameters);
 
         public static void ExecuteCommand(string command, int[] targets, params object[] parameters) =>
-            ExecuteCommand(command, new RaiseEventOptions { TargetActors = targets }, parameters);
+            NetworkHelpers.RaiseCommand(FriendByte, command, targets, parameters);
 
         public static void ExecuteCommand(string command, int target, params object[] parameters) =>
-            ExecuteCommand(command, new RaiseEventOptions { TargetActors = new[] { target } }, parameters);
+            NetworkHelpers.RaiseCommand(FriendByte, command, target, parameters);
 
         public static void ExecuteCommand(string command, ReceiverGroup target, params object[] parameters) =>
-            ExecuteCommand(command, new RaiseEventOptions { Receivers = target }, parameters);
+            NetworkHelpers.RaiseCommand(FriendByte, command, target, parameters);
 
         public static IEnumerator FadePing(GameObject line)
         {
@@ -801,7 +781,7 @@ namespace iiMenu.Managers
 
             if (sendingMacro == null)
             {
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Macro \"" + name + "\" does not exist.", 5000);
+                NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Macro \"{name}\" does not exist.", 5000);
                 return;
             }
                 
@@ -1054,7 +1034,11 @@ namespace iiMenu.Managers
             Buttons.CurrentCategoryName = "Temporary Category";
         }
 
-        public static void IncomingFriendRequests()
+        private static void ShowFriendRequestPage(
+            Dictionary<string, FriendData.PendingFriend> friends,
+            string buttonPrefix,
+            string tooltipVerb,
+            Func<string, Action> actionFactory)
         {
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo {
@@ -1065,52 +1049,28 @@ namespace iiMenu.Managers
                 }
             };
 
-            FriendData.PendingFriend[] organizedFriends = instance.Friends.incoming.Values
-               .OrderBy(friend => friend.currentName)
-               .ToArray();
+            FriendData.PendingFriend[] organizedFriends = friends.Values
+                .OrderBy(friend => friend.currentName)
+                .ToArray();
 
             buttons.AddRange(organizedFriends.Select((friend, i) => new ButtonInfo
             {
-                buttonText = $"PendingFriend{i}",
+                buttonText = $"{buttonPrefix}{i}",
                 overlapText = friend.currentName,
-                method = () => InspectPendingFriend(instance.Friends.incoming.FirstOrDefault(x => x.Value == friend).Key),
+                method = actionFactory(friends.FirstOrDefault(x => x.Value == friend).Key),
                 isTogglable = false,
-                toolTip = $"Inspect {friend.currentName}'s friend request."
+                toolTip = $"{tooltipVerb} {friend.currentName}'s friend request."
             }));
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
-
             Buttons.CurrentCategoryName = "Temporary Category";
         }
 
-        public static void OutgoingFriendRequests()
-        {
-            List<ButtonInfo> buttons = new List<ButtonInfo> {
-                new ButtonInfo {
-                    buttonText = "Return to Add Friends",
-                    method = AddFriendsUI,
-                    isTogglable = false,
-                    toolTip = "Returns you back to the add friends page."
-                }
-            };
+        public static void IncomingFriendRequests() =>
+            ShowFriendRequestPage(instance.Friends.incoming, "PendingFriend", "Inspect", key => () => InspectPendingFriend(key));
 
-            FriendData.PendingFriend[] organizedFriends = instance.Friends.outgoing.Values
-               .OrderBy(friend => friend.currentName)
-               .ToArray();
-
-            buttons.AddRange(organizedFriends.Select((friend, i) => new ButtonInfo
-            {
-                buttonText = $"CancelFriend{i}",
-                overlapText = friend.currentName,
-                method = () => CancelFriendRequest(instance.Friends.outgoing.FirstOrDefault(x => x.Value == friend).Key),
-                isTogglable = false,
-                toolTip = $"Cancels {friend.currentName}'s friend request."
-            }));
-
-            Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
-
-            Buttons.CurrentCategoryName = "Temporary Category";
-        }
+        public static void OutgoingFriendRequests() =>
+            ShowFriendRequestPage(instance.Friends.outgoing, "CancelFriend", "Cancels", key => () => CancelFriendRequest(key));
 
         public static void InspectFriend(string friendTarget)
         {
@@ -1412,7 +1372,7 @@ namespace iiMenu.Managers
                 }
                 catch (Exception ex)
                 {
-                    LogManager.LogError("WebSocket error: " + ex.Message);
+                    LogManager.LogError($"WebSocket error: {ex.Message}");
                     connected = false;
                 }
             }
@@ -1524,8 +1484,8 @@ namespace iiMenu.Managers
                             Play2DAudio(LoadSoundFromURL($"{PluginInfo.ServerResourcePath}/Audio/Friends/alert.ogg", "Audio/Friends/alert.ogg"), buttonClickVolume / 10f);
 
                         Movement.Macro macro = Movement.Macro.LoadJSON((string)obj["data"]);
-                        NotificationManager.SendNotification($"<color=grey>[</color><color=green>FRIENDS</color><color=grey>]</color> {friendName} has shared their macro " + macro.name + " with you.", 5000);
-                        Prompt($"{friendName} has shared their macro " + macro.name + " with you, would you like to use it?", () => { Movement.macros[Movement.FormatMacroName(macro.name)] = macro; });
+                        NotificationManager.SendNotification($"<color=grey>[</color><color=green>FRIENDS</color><color=grey>]</color> {friendName} has shared their macro {macro.name} with you.", 5000);
+                        Prompt($"{friendName} has shared their macro {macro.name} with you, would you like to use it?", () => { Movement.macros[Movement.FormatMacroName(macro.name)] = macro; });
                         break;
                     }
                     case "notification":
