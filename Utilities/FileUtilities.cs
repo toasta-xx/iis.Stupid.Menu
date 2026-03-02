@@ -39,19 +39,8 @@ namespace iiMenu.Utilities
 
         public static string RemoveFileExtension(string file)
         {
-            int index = 0;
-            string output = "";
             string[] split = file.Split(".");
-            foreach (string data in split)
-            {
-                index++;
-                if (index == split.Length) continue;
-                if (index > 1)
-                    output += ".";
-
-                output += data;
-            }
-            return output;
+            return split.Length <= 1 ? file : string.Join(".", split[..^1]);
         }
 
         public static AudioType GetAudioType(string extension)
@@ -72,7 +61,7 @@ namespace iiMenu.Utilities
             while (transform.parent != null)
             {
                 transform = transform.parent;
-                path = path == "" ? transform.name : transform.name + "/" + path;
+                path = path == "" ? transform.name : $"{transform.name}/{path}";
             }
             return path;
         }
