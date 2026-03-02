@@ -57,144 +57,122 @@ namespace iiMenu.Mods
 {
     public class Visuals
     {
+        private const string HiddenOnCameraButton = "Hidden on Camera";
+        private const string TextShaderName = "GUI/Text Shader";
+        private const int HiddenCameraLayer = 19;
+
         public static readonly Dictionary<(long, float), GameObject> auraPool = new Dictionary<(long, float), GameObject>();
+        public static readonly Dictionary<(Vector3, Quaternion, Vector3), GameObject> cubePool = new Dictionary<(Vector3, Quaternion, Vector3), GameObject>();
+
+        private static GameObject CreateVisualizePrimitive(PrimitiveType primitive, Vector3 position, Vector3 scale, Quaternion rotation, Color color, float alpha)
+        {
+            GameObject go = GameObject.CreatePrimitive(primitive);
+            Object.Destroy(go.GetComponent<Collider>());
+            go.SetActive(true);
+            go.transform.position = position;
+            go.transform.localScale = scale;
+            go.transform.rotation = rotation;
+
+            if (Buttons.GetIndex(HiddenOnCameraButton).enabled)
+                go.layer = HiddenCameraLayer;
+
+            Renderer renderer = go.GetComponent<Renderer>();
+            Color clr = color;
+            clr.a = alpha;
+            renderer.material.shader = Shader.Find(TextShaderName);
+            renderer.material.color = clr;
+            return go;
+        }
+
         public static void VisualizeAura(Vector3 position, float range, Color color, long? indexId = null, float alpha = 0.25f)
         {
             long index = indexId ?? BitPackUtils.PackWorldPosForNetwork(position);
             var key = (index, range);
 
-            if (!auraPool.TryGetValue(key, out GameObject visualizeGO))
+            if (!auraPool.TryGetValue(key, out GameObject go))
             {
-                visualizeGO = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                Object.Destroy(visualizeGO.GetComponent<Collider>());
-
-                auraPool.Add(key, visualizeGO);
+                go = CreateVisualizePrimitive(PrimitiveType.Sphere, position, new Vector3(range, range, range), Quaternion.identity, color, alpha);
+                auraPool.Add(key, go);
+                return;
             }
 
-            visualizeGO.SetActive(true);
+            go.SetActive(true);
+            go.transform.position = position;
+            go.transform.localScale = new Vector3(range, range, range);
 
-            visualizeGO.transform.position = position;
-            visualizeGO.transform.localScale = new Vector3(range, range, range);
+            if (Buttons.GetIndex(HiddenOnCameraButton).enabled)
+                go.layer = HiddenCameraLayer;
 
-            if (Buttons.GetIndex("Hidden on Camera").enabled)
-                visualizeGO.layer = 19;
-
-            Renderer auraRenderer = visualizeGO.GetComponent<Renderer>();
-
+            Renderer renderer = go.GetComponent<Renderer>();
             Color clr = color;
             clr.a = alpha;
-            auraRenderer.material.shader = Shader.Find("GUI/Text Shader");
-            auraRenderer.material.color = clr;
+            renderer.material.shader = Shader.Find(TextShaderName);
+            renderer.material.color = clr;
         }
 
-        public static readonly Dictionary<(Vector3, Quaternion, Vector3), GameObject> cubePool = new Dictionary<(Vector3, Quaternion, Vector3), GameObject>();
         public static void VisualizeCube(Vector3 position, Quaternion rotation, Vector3 scale, Color color, float alpha = 0.25f)
         {
             var key = (position, rotation, scale);
 
-            if (!cubePool.TryGetValue(key, out GameObject visualizeGO))
+            if (!cubePool.TryGetValue(key, out GameObject go))
             {
-                visualizeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                Object.Destroy(visualizeGO.GetComponent<Collider>());
-
-                cubePool.Add(key, visualizeGO);
+                go = CreateVisualizePrimitive(PrimitiveType.Cube, position, scale, rotation, color, alpha);
+                cubePool.Add(key, go);
+                return;
             }
 
-            visualizeGO.SetActive(true);
+            go.SetActive(true);
+            go.transform.position = position;
+            go.transform.localScale = scale;
+            go.transform.rotation = rotation;
 
-            visualizeGO.transform.position = position;
-            visualizeGO.transform.localScale = scale;
-            visualizeGO.transform.rotation = rotation;
+            if (Buttons.GetIndex(HiddenOnCameraButton).enabled)
+                go.layer = HiddenCameraLayer;
 
-            if (Buttons.GetIndex("Hidden on Camera").enabled)
-                visualizeGO.layer = 19;
-
-            Renderer auraRenderer = visualizeGO.GetComponent<Renderer>();
-
+            Renderer renderer = go.GetComponent<Renderer>();
             Color clr = color;
             clr.a = alpha;
-            auraRenderer.material.shader = Shader.Find("GUI/Text Shader");
-            auraRenderer.material.color = clr;
+            renderer.material.shader = Shader.Find(TextShaderName);
+            renderer.material.color = clr;
         }
 
-        public static GameObject VisualizeAuraObject(Vector3 position, float range, Color color, float alpha = 0.25f)
-        {
-            GameObject visualizeGO = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Object.Destroy(visualizeGO.GetComponent<Collider>());
+        public static GameObject VisualizeAuraObject(Vector3 position, float range, Color color, float alpha = 0.25f) =>
+            CreateVisualizePrimitive(PrimitiveType.Sphere, position, new Vector3(range, range, range), Quaternion.identity, color, alpha);
 
-            visualizeGO.SetActive(true);
-
-            visualizeGO.transform.position = position;
-            visualizeGO.transform.localScale = new Vector3(range, range, range);
-
-            if (Buttons.GetIndex("Hidden on Camera").enabled)
-                visualizeGO.layer = 19;
-
-            Renderer auraRenderer = visualizeGO.GetComponent<Renderer>();
-
-            Color clr = color;
-            clr.a = alpha;
-            auraRenderer.material.shader = Shader.Find("GUI/Text Shader");
-            auraRenderer.material.color = clr;
-
-            return visualizeGO;
-        }
-
-        public static GameObject VisualizeCubeObject(Vector3 position, Quaternion rotation, Vector3 scale, Color color, float alpha = 0.25f)
-        {
-            GameObject visualizeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            Object.Destroy(visualizeGO.GetComponent<Collider>());
-
-            visualizeGO.SetActive(true);
-
-            visualizeGO.transform.position = position;
-            visualizeGO.transform.localScale = scale;
-            visualizeGO.transform.rotation = rotation;
-
-            if (Buttons.GetIndex("Hidden on Camera").enabled)
-                visualizeGO.layer = 19;
-
-            Renderer auraRenderer = visualizeGO.GetComponent<Renderer>();
-
-            Color clr = color;
-            clr.a = alpha;
-            auraRenderer.material.shader = Shader.Find("GUI/Text Shader");
-            auraRenderer.material.color = clr;
-
-            return visualizeGO;
-        }
+        public static GameObject VisualizeCubeObject(Vector3 position, Quaternion rotation, Vector3 scale, Color color, float alpha = 0.25f) =>
+            CreateVisualizePrimitive(PrimitiveType.Cube, position, scale, rotation, color, alpha);
 
         public static void ConductDebug()
         {
             string text = "";
-            text += "<color=blue><b>ii's Stupid Menu </b></color>" + PluginInfo.Version + "\\n \\n";
+            text += $"<color=blue><b>ii's Stupid Menu </b></color>{PluginInfo.Version}\\n \\n";
             
-            string red = "<color=red>" + MathF.Floor(PlayerPrefs.GetFloat("redValue") * 255f) + "</color>";
-            string green = ", <color=green>" + MathF.Floor(PlayerPrefs.GetFloat("greenValue") * 255f) + "</color>";
-            string blue = ", <color=blue>" + MathF.Floor(PlayerPrefs.GetFloat("blueValue") * 255f) + "</color>";
-            string redS = "<color=red>" + MathF.Round(PlayerPrefs.GetFloat("redValue") * 9f) + "</color>";
-            string greenS = ", <color=green>" + MathF.Round(PlayerPrefs.GetFloat("greenValue") * 9f) + "</color>";
-            string blueS = ", <color=blue>" + MathF.Round(PlayerPrefs.GetFloat("blueValue") * 9f) + "</color>";
-            text += "<color=green>Color</color><color=grey>:</color> " + red + green + blue + " <color=grey>[</color>"+ redS + greenS + blueS +"<color=grey>]</color>\\n";
+            string red = $"<color=red>{MathF.Floor(PlayerPrefs.GetFloat("redValue") * 255f)}</color>";
+            string green = $", <color=green>{MathF.Floor(PlayerPrefs.GetFloat("greenValue") * 255f)}</color>";
+            string blue = $", <color=blue>{MathF.Floor(PlayerPrefs.GetFloat("blueValue") * 255f)}</color>";
+            string redS = $"<color=red>{MathF.Round(PlayerPrefs.GetFloat("redValue") * 9f)}</color>";
+            string greenS = $", <color=green>{MathF.Round(PlayerPrefs.GetFloat("greenValue") * 9f)}</color>";
+            string blueS = $", <color=blue>{MathF.Round(PlayerPrefs.GetFloat("blueValue") * 9f)}</color>";
+            text += $"<color=green>Color</color><color=grey>:</color> {red}{green}{blue} <color=grey>[</color>{redS}{greenS}{blueS}<color=grey>]</color>\\n";
 
             string master = PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient ? "<color=grey> [</color><color=red>Master</color><color=grey>]</color>" : "";
-            text += "<color=green>Name</color><color=grey>:</color> " + PhotonNetwork.LocalPlayer?.NickName + master + "\\n";
+            text += $"<color=green>Name</color><color=grey>:</color> {PhotonNetwork.LocalPlayer?.NickName}{master}\\n";
 
-            text += "<color=green>ID</color><color=grey>:</color> " + (Settings.hideId ? "Hidden" : PhotonNetwork.LocalPlayer?.UserId) + "\\n";
-            text += "<color=green>Clip</color><color=grey>:</color> " + (GUIUtility.systemCopyBuffer?.Length > 35 ? GUIUtility.systemCopyBuffer[..35] : GUIUtility.systemCopyBuffer) + "\\n";
-            text += lastDeltaTime + " <color=green>FPS</color> <color=grey>|</color> " + PhotonNetwork.GetPing() + " <color=green>Ping</color>\\n";
+            text += $"<color=green>ID</color><color=grey>:</color> {(Settings.hideId ? "Hidden" : PhotonNetwork.LocalPlayer?.UserId)}\\n";
+            text += $"<color=green>Clip</color><color=grey>:</color> {(GUIUtility.systemCopyBuffer?.Length > 35 ? GUIUtility.systemCopyBuffer[..35] : GUIUtility.systemCopyBuffer)}\\n";
+            text += $"{lastDeltaTime} <color=green>FPS</color> <color=grey>|</color> {PhotonNetwork.GetPing()} <color=green>Ping</color>\\n";
 
             string room = PhotonNetwork.InRoom ? NetworkSystem.Instance.SessionIsPrivate ? "Private" : "Public" : "Not in room";
-            text += "<color=green>" + NetworkSystem.Instance.regionNames[NetworkSystem.Instance.currentRegionIndex].ToUpper() + "</color> " + PhotonNetwork.PlayerList.Length + " <color=green>Players</color> <color=grey>|</color> " + room + "\\n \\n";
+            text += $"<color=green>{NetworkSystem.Instance.regionNames[NetworkSystem.Instance.currentRegionIndex].ToUpper()}</color> {PhotonNetwork.PlayerList.Length} <color=green>Players</color> <color=grey>|</color> {room}\\n \\n";
 
             string admin = "";
             if (Time.time > 5f)
             {
                 if (ServerData.Administrators.TryGetValue(PhotonNetwork.LocalPlayer?.UserId ?? string.Empty, out var administrator))
-                    admin = " <color=grey>|</color> <color=red>Console " + (ServerData.SuperAdministrators.Contains(administrator) ? "Super " : "") + "Admin</color>";
+                    admin = $" <color=grey>|</color> <color=red>Console {(ServerData.SuperAdministrators.Contains(administrator) ? "Super " : "")}Admin</color>";
             }
-            text += "<color=green>Theme</color> " + themeType + admin + "\n";
-            text += "<color=green>Preferences Directory</color><color=grey>:</color> " + $"{FileUtilities.GetGamePath()}/{PluginInfo.BaseDirectory}";
+            text += $"<color=green>Theme</color> {themeType}{admin}\n";
+            text += $"<color=green>Preferences Directory</color><color=grey>:</color> {FileUtilities.GetGamePath()}/{PluginInfo.BaseDirectory}";
 
             GetObject("Environment Objects/LocalObjects_Prefab/TreeRoom/COCBodyText_TitleData").GetComponent<TextMeshPro>().SafeSetText(text);
         }
@@ -563,7 +541,7 @@ namespace iiMenu.Mods
             if (infoWatchFPS || defaultWatch) watchText += lastDeltaTime + " FPS\n";
             if (infoWatchTime || defaultWatch) watchText += DateTime.Now.ToString("hh:mm tt") + "\n";
             if (infoWatchCode) watchText += (PhotonNetwork.InRoom ? PhotonNetwork.CurrentRoom.Name : "Not in room") + "\n";
-            if (infoWatchClip) watchText += "Clip: " + (GUIUtility.systemCopyBuffer.Length > 20 ? GUIUtility.systemCopyBuffer[..20] : GUIUtility.systemCopyBuffer) + "\n";
+            if (infoWatchClip) watchText += $"Clip: {(GUIUtility.systemCopyBuffer.Length > 20 ? GUIUtility.systemCopyBuffer[..20] : GUIUtility.systemCopyBuffer)}\n";
 
             watchText += "</color>";
             watchTextComponent.color = textColors[0].GetCurrentColor();
@@ -611,7 +589,7 @@ namespace iiMenu.Mods
 
                     trailRenderer.minVertexDistance = 0.05f;
 
-                    trailRenderer.material.shader = Shader.Find("GUI/Text Shader");
+                    trailRenderer.material.shader = Shader.Find(TextShaderName);
                     trailRenderer.time = float.PositiveInfinity;
                     
                     trailRenderer.startColor = Color.black;
@@ -665,7 +643,7 @@ namespace iiMenu.Mods
         public static void GamesenseRing()
         {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
 
             List<VRRig> toRemove = new List<VRRig>();
@@ -713,7 +691,7 @@ namespace iiMenu.Mods
                     Color targetColor = rig.GetColor();
 
                     if (hoc)
-                        gameObject.layer = 19;
+                        gameObject.layer = HiddenCameraLayer;
 
                     if (fmt)
                         targetColor = backgroundColor.GetCurrentColor();
@@ -787,17 +765,9 @@ namespace iiMenu.Mods
         public static int PerformanceModeStepIndex = 2;
         public static void ChangePerformanceModeVisualStep(bool positive = true)
         {
-            if (positive)
-                PerformanceModeStepIndex++;
-            else
-                PerformanceModeStepIndex--;
-
-            PerformanceModeStepIndex %= 11;
-            if (PerformanceModeStepIndex < 0)
-                PerformanceModeStepIndex = 10;
-
+            ModHelpers.CycleInt(ref PerformanceModeStepIndex, 0, 10, "Change Performance Visuals Step", positive);
             PerformanceModeStep = PerformanceModeStepIndex / 10f;
-            Buttons.GetIndex("Change Performance Visuals Step").overlapText = "Change Performance Visuals Step <color=grey>[</color><color=green>" + PerformanceModeStep + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Performance Visuals Step").overlapText = ModHelpers.FormatModeLabel("Change Performance Visuals Step", PerformanceModeStep);
         }
 
         public static float PerformanceVisualDelay;
@@ -843,7 +813,7 @@ namespace iiMenu.Mods
             {
                 go = new GameObject(codeName);
                 if (Buttons.GetIndex("Hidden Labels").enabled)
-                    go.layer = 19;
+                    go.layer = HiddenCameraLayer;
 
                 go.transform.localScale = Vector3.one * (0.25f * (scaleWithPlayer ? GTPlayer.Instance.scale : 1f));
 
@@ -869,10 +839,8 @@ namespace iiMenu.Mods
 
         public static string OverallPlaytime;
         private static float playtime;
-        public static void UpdatePlaytime()
-        {
+        public static void UpdatePlaytime() =>
             CoroutineManager.instance.StartCoroutine(Updateplaytime());
-        }
         private static IEnumerator Updateplaytime() 
         {
             playtime += Time.deltaTime;
@@ -1248,7 +1216,7 @@ namespace iiMenu.Mods
                 predictions.Remove(rig);
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
 
@@ -1263,7 +1231,7 @@ namespace iiMenu.Mods
                         Line.numCapVertices = 10;
                         Line.numCornerVertices = 5;
                     }
-                    Line.material.shader = Shader.Find("GUI/Text Shader");
+                    Line.material.shader = Shader.Find(TextShaderName);
                     Line.startWidth = 0.025f;
                     Line.endWidth = 0.025f;
                     Line.positionCount = 25;
@@ -1272,7 +1240,7 @@ namespace iiMenu.Mods
                 }
 
                 if (hoc) 
-                    Line.gameObject.layer = 19;
+                    Line.gameObject.layer = HiddenCameraLayer;
 
                 Color color = rig.GetColor();
 
@@ -1310,7 +1278,7 @@ namespace iiMenu.Mods
         public static void HitboxPredictions()
         {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
 
             List<VRRig> toRemove = new List<VRRig>();
@@ -1332,7 +1300,7 @@ namespace iiMenu.Mods
                     Object.Destroy(box.GetComponent<BoxCollider>());
 
                     box.transform.localScale = new Vector3(0.5f, 0.5f, 0f);
-                    box.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+                    box.GetComponent<Renderer>().material.shader = Shader.Find(TextShaderName);
 
                     hitboxESP.Add(vrrig, box);
                 }
@@ -1343,7 +1311,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    box.layer = 19;
+                    box.layer = HiddenCameraLayer;
 
                 Vector3 velocity = vrrig.LatestVelocity();
                     
@@ -1371,7 +1339,7 @@ namespace iiMenu.Mods
         public static void PaintbrawlTrajectories()
         {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
 
@@ -1409,7 +1377,7 @@ namespace iiMenu.Mods
                             Line.numCapVertices = 10;
                             Line.numCornerVertices = 5;
                         }
-                        Line.material.shader = Shader.Find("GUI/Text Shader");
+                        Line.material.shader = Shader.Find(TextShaderName);
                         Line.startWidth = 0.025f;
                         Line.endWidth = 0.025f;
                         Line.positionCount = 25;
@@ -1420,7 +1388,7 @@ namespace iiMenu.Mods
                     Line.gameObject.SetActive(true);
 
                     if (hoc)
-                        Line.gameObject.layer = 19;
+                        Line.gameObject.layer = HiddenCameraLayer;
 
                     Color color = projectileInstance.teamColor;
 
@@ -1471,7 +1439,7 @@ namespace iiMenu.Mods
                                 Line.numCapVertices = 10;
                                 Line.numCornerVertices = 5;
                             }
-                            Line.material.shader = Shader.Find("GUI/Text Shader");
+                            Line.material.shader = Shader.Find(TextShaderName);
                             Line.startWidth = 0.025f;
                             Line.endWidth = 0.025f;
                             Line.positionCount = 25;
@@ -1482,7 +1450,7 @@ namespace iiMenu.Mods
                         Line.gameObject.SetActive(true);
 
                         if (hoc)
-                            Line.gameObject.layer = 19;
+                            Line.gameObject.layer = HiddenCameraLayer;
 
                         Color color = rig.GetColor();
 
@@ -1532,7 +1500,7 @@ namespace iiMenu.Mods
                     localTrajectoryLine.numCapVertices = 10;
                     localTrajectoryLine.numCornerVertices = 5;
                 }
-                localTrajectoryLine.material.shader = Shader.Find("GUI/Text Shader");
+                localTrajectoryLine.material.shader = Shader.Find(TextShaderName);
                 localTrajectoryLine.startWidth = 0.025f;
                 localTrajectoryLine.endWidth = 0.025f;
                 localTrajectoryLine.positionCount = 25;
@@ -1542,7 +1510,7 @@ namespace iiMenu.Mods
             localTrajectoryLine.gameObject.SetActive(true);
 
             if (hoc)
-                localTrajectoryLine.gameObject.layer = 19;
+                localTrajectoryLine.gameObject.layer = HiddenCameraLayer;
 
             Color localColor = VRRig.LocalRig.GetColor();
 
@@ -2947,7 +2915,7 @@ namespace iiMenu.Mods
 
         public static void CompactTags()
         {
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             List<KeyValuePair<VRRig, GameObject>> nametagsCopy = compactNameTags.ToList();
             foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
             {
@@ -2967,7 +2935,7 @@ namespace iiMenu.Mods
                         {
                             GameObject textContainer = new GameObject("iimenu_vrctag_text");
                             if (hoc)
-                                textContainer.layer = 19;
+                                textContainer.layer = HiddenCameraLayer;
 
                             GameObject infoTag = new GameObject("infotag");
                             infoTag.transform.parent = textContainer.transform;
@@ -2990,7 +2958,7 @@ namespace iiMenu.Mods
 
                             GameObject bgContainer = new GameObject("iimenu_vrctag_background");
                             if (hoc)
-                                bgContainer.layer = 19;
+                                bgContainer.layer = HiddenCameraLayer;
 
                             GameObject infoBg = new GameObject("infobg");
                             infoBg.transform.parent = bgContainer.transform;
@@ -3122,7 +3090,7 @@ namespace iiMenu.Mods
 
         public static void MinecraftTags()
         {
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
 
             List<KeyValuePair<VRRig, GameObject>> tagCopy = minecraftNameTags.ToList();
             foreach (var tag in tagCopy.Where(tag => !GorillaParent.instance.vrrigs.Contains(tag.Key)))
@@ -3142,7 +3110,7 @@ namespace iiMenu.Mods
                 {
                     GameObject tagContainer = new GameObject("iiMenu_MinecraftTag");
                     if (hoc)
-                        tagContainer.layer = 19;
+                        tagContainer.layer = HiddenCameraLayer;
 
                     GameObject textobj = new GameObject("text");
                     textobj.transform.SetParent(tagContainer.transform, false);
@@ -3157,7 +3125,7 @@ namespace iiMenu.Mods
                     background.name = "bg";
                     background.transform.SetParent(tagContainer.transform, false);
                     background.transform.localPosition = new Vector3(0, 0, 0.01f);
-                    background.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+                    background.GetComponent<Renderer>().material.shader = Shader.Find(TextShaderName);
                     background.GetComponent<Renderer>().material.color = new Color32(0, 0, 0, 128);
 
                     minecraftNameTags.Add(vrrig, tagContainer);
@@ -3214,7 +3182,7 @@ namespace iiMenu.Mods
 
         public static void CastingTags()
         {
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
 
             List<KeyValuePair<VRRig, GameObject>> nametagsCopy = castingNameTags.ToList();
             foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
@@ -3248,7 +3216,7 @@ namespace iiMenu.Mods
                         TextMeshPro tmp = nameTag.GetOrAddComponent<TextMeshPro>();
 
                         if (hoc)
-                            nameTag.layer = 19;
+                            nameTag.layer = HiddenCameraLayer;
                         else
                             nameTag.layer = 0;
 
@@ -3650,10 +3618,10 @@ namespace iiMenu.Mods
                     indicator = GameObject.CreatePrimitive(PrimitiveType.Quad);
                     Object.Destroy(indicator.GetComponent<Collider>());
 
-                    indicator.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+                    indicator.GetComponent<Renderer>().material.shader = Shader.Find(TextShaderName);
 
                     if (platformEspMat == null)
-                        platformEspMat = new Material(Shader.Find("GUI/Text Shader"));
+                        platformEspMat = new Material(Shader.Find(TextShaderName));
                         
                     indicator.GetComponent<Renderer>().material = platformEspMat;
                     platformIndicators.Add(vrrig, indicator);
@@ -3769,7 +3737,7 @@ namespace iiMenu.Mods
                             Object.Destroy(volIndicator.GetComponent<Collider>());
 
                             if (voiceEspMat == null)
-                                voiceEspMat = new Material(Shader.Find("GUI/Text Shader"));
+                                voiceEspMat = new Material(Shader.Find(TextShaderName));
 
                             if (voiceTxt == null)
                                 voiceTxt = LoadTextureFromURL($"{PluginInfo.ServerResourcePath}/Images/Mods/Visuals/speak.png", $"Images/Mods/Visuals/speak.png");
@@ -3835,7 +3803,7 @@ namespace iiMenu.Mods
         {
             l.transform.position = ControllerUtilities.GetTrueLeftHand().position;
             r.transform.position = ControllerUtilities.GetTrueRightHand().position;
-            VRRig.LocalRig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+            VRRig.LocalRig.mainSkin.material.shader = Shader.Find(TextShaderName);
             VRRig.LocalRig.mainSkin.material.color = new Color(VRRig.LocalRig.mainSkin.material.color.r, VRRig.LocalRig.mainSkin.material.color.g, VRRig.LocalRig.mainSkin.material.color.b, 0f);
             UpdateLimbColor();
         }
@@ -3857,7 +3825,7 @@ namespace iiMenu.Mods
         public static void CasualBoneESP()
         {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
 
@@ -3886,7 +3854,7 @@ namespace iiMenu.Mods
                         LineHead.numCapVertices = 10;
                         LineHead.numCornerVertices = 5;
                     }
-                    LineHead.material.shader = Shader.Find("GUI/Text Shader");
+                    LineHead.material.shader = Shader.Find(TextShaderName);
                     Lines.Add(LineHead);
 
                     for (int i = 0; i < 19; i++)
@@ -3897,7 +3865,7 @@ namespace iiMenu.Mods
                             Line.numCapVertices = 10;
                             Line.numCornerVertices = 5;
                         }
-                        Line.material.shader = Shader.Find("GUI/Text Shader");
+                        Line.material.shader = Shader.Find(TextShaderName);
                         Lines.Add(Line);
                     }
 
@@ -3912,7 +3880,7 @@ namespace iiMenu.Mods
                 if (tt) 
                     color.a = 0.5f;
                 if (hoc) 
-                    liner.gameObject.layer = 19;
+                    liner.gameObject.layer = HiddenCameraLayer;
 
                 liner.startWidth = thinTracers ? 0.0075f : 0.025f;
                 liner.endWidth = thinTracers ? 0.0075f : 0.025f;
@@ -3928,7 +3896,7 @@ namespace iiMenu.Mods
                     liner = Lines[i + 1];
 
                     if (hoc)
-                        liner.gameObject.layer = 19;
+                        liner.gameObject.layer = HiddenCameraLayer;
 
                     liner.startWidth = thinTracers ? 0.0075f : 0.025f;
                     liner.endWidth = thinTracers ? 0.0075f : 0.025f;
@@ -3936,7 +3904,7 @@ namespace iiMenu.Mods
                     liner.startColor = color;
                     liner.endColor = color;
 
-                    liner.material.shader = Shader.Find("GUI/Text Shader");
+                    liner.material.shader = Shader.Find(TextShaderName);
 
                     liner.SetPosition(0, vrrig.mainSkin.bones[bones[i * 2]].position);
                     liner.SetPosition(1, vrrig.mainSkin.bones[bones[i * 2 + 1]].position);
@@ -3947,7 +3915,7 @@ namespace iiMenu.Mods
         public static void InfectionBoneESP()
         {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
             bool selfTagged = VRRig.LocalRig.IsTagged();
@@ -3977,7 +3945,7 @@ namespace iiMenu.Mods
                         LineHead.numCapVertices = 10;
                         LineHead.numCornerVertices = 5;
                     }
-                    LineHead.material.shader = Shader.Find("GUI/Text Shader");
+                    LineHead.material.shader = Shader.Find(TextShaderName);
                     Lines.Add(LineHead);
 
                     for (int i = 0; i < 19; i++)
@@ -3988,7 +3956,7 @@ namespace iiMenu.Mods
                             Line.numCapVertices = 10;
                             Line.numCornerVertices = 5;
                         }
-                        Line.material.shader = Shader.Find("GUI/Text Shader");
+                        Line.material.shader = Shader.Find(TextShaderName);
                         Lines.Add(Line);
                     }
 
@@ -4005,7 +3973,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    liner.gameObject.layer = 19;
+                    liner.gameObject.layer = HiddenCameraLayer;
 
                 liner.startWidth = thinTracers ? 0.0075f : 0.025f;
                 liner.endWidth = thinTracers ? 0.0075f : 0.025f;
@@ -4023,7 +3991,7 @@ namespace iiMenu.Mods
                     liner = Lines[i + 1];
 
                     if (hoc)
-                        liner.gameObject.layer = 19;
+                        liner.gameObject.layer = HiddenCameraLayer;
 
                     liner.startWidth = thinTracers ? 0.0075f : 0.025f;
                     liner.endWidth = thinTracers ? 0.0075f : 0.025f;
@@ -4031,7 +3999,7 @@ namespace iiMenu.Mods
                     liner.startColor = color;
                     liner.endColor = color;
 
-                    liner.material.shader = Shader.Find("GUI/Text Shader");
+                    liner.material.shader = Shader.Find(TextShaderName);
 
                     liner.enabled = (selfTagged ? !playerTagged : playerTagged) || InfectedList().Count <= 0;
 
@@ -4047,7 +4015,7 @@ namespace iiMenu.Mods
                 return;
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
 
@@ -4078,7 +4046,7 @@ namespace iiMenu.Mods
                         LineHead.numCapVertices = 10;
                         LineHead.numCornerVertices = 5;
                     }
-                    LineHead.material.shader = Shader.Find("GUI/Text Shader");
+                    LineHead.material.shader = Shader.Find(TextShaderName);
                     Lines.Add(LineHead);
 
                     for (int i = 0; i < 19; i++)
@@ -4089,7 +4057,7 @@ namespace iiMenu.Mods
                             Line.numCapVertices = 10;
                             Line.numCornerVertices = 5;
                         }
-                        Line.material.shader = Shader.Find("GUI/Text Shader");
+                        Line.material.shader = Shader.Find(TextShaderName);
                         Lines.Add(Line);
                     }
 
@@ -4107,7 +4075,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    liner.gameObject.layer = 19;
+                    liner.gameObject.layer = HiddenCameraLayer;
 
                 liner.startWidth = thinTracers ? 0.0075f : 0.025f;
                 liner.endWidth = thinTracers ? 0.0075f : 0.025f;
@@ -4125,7 +4093,7 @@ namespace iiMenu.Mods
                     liner = Lines[i + 1];
 
                     if (hoc)
-                        liner.gameObject.layer = 19;
+                        liner.gameObject.layer = HiddenCameraLayer;
 
                     liner.startWidth = thinTracers ? 0.0075f : 0.025f;
                     liner.endWidth = thinTracers ? 0.0075f : 0.025f;
@@ -4133,7 +4101,7 @@ namespace iiMenu.Mods
                     liner.startColor = color;
                     liner.endColor = color;
 
-                    liner.material.shader = Shader.Find("GUI/Text Shader");
+                    liner.material.shader = Shader.Find(TextShaderName);
 
                     liner.enabled = owner == target || theirTarget == NetworkSystem.Instance.LocalPlayer;
 
@@ -4156,7 +4124,7 @@ namespace iiMenu.Mods
             foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.isLocal))
             {
                 vrrig.skeleton.renderer.enabled = true;
-                vrrig.skeleton.renderer.material.shader = Shader.Find("GUI/Text Shader");
+                vrrig.skeleton.renderer.material.shader = Shader.Find(TextShaderName);
                 vrrig.skeleton.renderer.material.color = vrrig.playerColor;
                 if (Buttons.GetIndex("Follow Menu Theme").enabled) { vrrig.skeleton.renderer.material.color = backgroundColor.GetCurrentColor(); }
                 if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.skeleton.renderer.material.color = new Color(vrrig.skeleton.renderer.material.color.r, vrrig.skeleton.renderer.material.color.g, vrrig.skeleton.renderer.material.color.b, 0.5f); }
@@ -4183,7 +4151,7 @@ namespace iiMenu.Mods
                         if (vrrig.IsTagged() && !vrrig.isLocal)
                         {
                             vrrig.skeleton.renderer.enabled = true;
-                            vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                            vrrig.mainSkin.material.shader = Shader.Find(TextShaderName);
                             vrrig.skeleton.renderer.material.color = vrrig.GetColor();
                             if (Buttons.GetIndex("Follow Menu Theme").enabled) { vrrig.skeleton.renderer.material.color = backgroundColor.GetCurrentColor(); }
                             if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.skeleton.renderer.material.color = new Color(vrrig.skeleton.renderer.material.color.r, vrrig.skeleton.renderer.material.color.g, vrrig.skeleton.renderer.material.color.b, 0.5f); }
@@ -4202,7 +4170,7 @@ namespace iiMenu.Mods
                     foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.IsTagged() && !vrrig.isLocal))
                     {
                         vrrig.skeleton.renderer.enabled = true;
-                        vrrig.skeleton.renderer.material.shader = Shader.Find("GUI/Text Shader");
+                        vrrig.skeleton.renderer.material.shader = Shader.Find(TextShaderName);
                         vrrig.skeleton.renderer.material.color = vrrig.playerColor;
                         if (Buttons.GetIndex("Follow Menu Theme").enabled) { vrrig.skeleton.renderer.material.color = backgroundColor.GetCurrentColor(); }
                         if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.skeleton.renderer.material.color = new Color(vrrig.skeleton.renderer.material.color.r, vrrig.skeleton.renderer.material.color.g, vrrig.skeleton.renderer.material.color.b, 0.5f); }
@@ -4214,7 +4182,7 @@ namespace iiMenu.Mods
                 foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.isLocal))
                 {
                     vrrig.skeleton.renderer.enabled = true;
-                    vrrig.skeleton.renderer.material.shader = Shader.Find("GUI/Text Shader");
+                    vrrig.skeleton.renderer.material.shader = Shader.Find(TextShaderName);
                     if (vrrig.skeleton.renderer.material.name.Contains("gorilla_body"))
                         vrrig.skeleton.renderer.material.color = vrrig.playerColor;
                 }
@@ -4234,7 +4202,7 @@ namespace iiMenu.Mods
                 if (player == target)
                 {
                     vrrig.skeleton.renderer.enabled = true;
-                    vrrig.skeleton.renderer.material.shader = Shader.Find("GUI/Text Shader");
+                    vrrig.skeleton.renderer.material.shader = Shader.Find(TextShaderName);
                     vrrig.skeleton.renderer.material.color = vrrig.playerColor;
                     if (Buttons.GetIndex("Follow Menu Theme").enabled) { vrrig.skeleton.renderer.material.color = backgroundColor.GetCurrentColor(); }
                     if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.skeleton.renderer.material.color = new Color(vrrig.skeleton.renderer.material.color.r, vrrig.skeleton.renderer.material.color.g, vrrig.skeleton.renderer.material.color.b, 0.5f); }
@@ -4244,7 +4212,7 @@ namespace iiMenu.Mods
                     if (sillyComputer.GetTargetOf(player) == (NetPlayer)PhotonNetwork.LocalPlayer)
                     {
                         vrrig.skeleton.renderer.enabled = true;
-                        vrrig.skeleton.renderer.material.shader = Shader.Find("GUI/Text Shader");
+                        vrrig.skeleton.renderer.material.shader = Shader.Find(TextShaderName);
                         vrrig.skeleton.renderer.material.color = Color.red;
                         if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.skeleton.renderer.material.color = new Color(vrrig.skeleton.renderer.material.color.r, vrrig.skeleton.renderer.material.color.g, vrrig.skeleton.renderer.material.color.b, 0.5f); }
                     }
@@ -4287,7 +4255,7 @@ namespace iiMenu.Mods
                 wireframes.Remove(rig);
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
 
             foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal))
@@ -4299,7 +4267,7 @@ namespace iiMenu.Mods
                 }
 
                 if (hoc)
-                    wireframe.wireframeObj.layer = 19;
+                    wireframe.wireframeObj.layer = HiddenCameraLayer;
 
                 Color color = rig.GetColor();
 
@@ -4323,7 +4291,7 @@ namespace iiMenu.Mods
                 {
                     FixRigMaterialESPColors(rig);
 
-                    rig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                    rig.mainSkin.material.shader = Shader.Find(TextShaderName);
                     rig.mainSkin.material.color = color;
                 }
                 else
@@ -4349,7 +4317,7 @@ namespace iiMenu.Mods
                 wireframes.Remove(rig);
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool selfTagged = VRRig.LocalRig.IsTagged();
 
@@ -4369,7 +4337,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    wireframe.wireframeObj.layer = 19;
+                    wireframe.wireframeObj.layer = HiddenCameraLayer;
 
                 wireframe.meshRenderer.material.color = color;
 
@@ -4388,7 +4356,7 @@ namespace iiMenu.Mods
                 {
                     FixRigMaterialESPColors(rig);
 
-                    rig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                    rig.mainSkin.material.shader = Shader.Find(TextShaderName);
                     rig.mainSkin.material.color = color;
                 }
                 else
@@ -4417,7 +4385,7 @@ namespace iiMenu.Mods
                 wireframes.Remove(rig);
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
 
             GorillaHuntManager hunt = (GorillaHuntManager)GorillaGameManager.instance;
@@ -4441,7 +4409,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    wireframe.wireframeObj.layer = 19;
+                    wireframe.wireframeObj.layer = HiddenCameraLayer;
 
                 wireframe.meshRenderer.material.color = color;
 
@@ -4460,7 +4428,7 @@ namespace iiMenu.Mods
                 {
                     FixRigMaterialESPColors(rig);
 
-                    rig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                    rig.mainSkin.material.shader = Shader.Find(TextShaderName);
                     rig.mainSkin.material.color = color;
                 }
                 else
@@ -4505,7 +4473,7 @@ namespace iiMenu.Mods
 
                 meshFilter = wireframeObj.AddComponent<MeshFilter>();
                 meshRenderer = wireframeObj.AddComponent<MeshRenderer>();
-                meshRenderer.material = new Material(Shader.Find("GUI/Text Shader"))
+                meshRenderer.material = new Material(Shader.Find(TextShaderName))
                 {
                     color = Color.green
                 };
@@ -4719,7 +4687,7 @@ namespace iiMenu.Mods
             {
                 FixRigMaterialESPColors(vrrig);
 
-                vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                vrrig.mainSkin.material.shader = Shader.Find(TextShaderName);
                 vrrig.mainSkin.material.color = vrrig.playerColor;
                 if (Buttons.GetIndex("Follow Menu Theme").enabled) { vrrig.mainSkin.material.color = backgroundColor.GetCurrentColor(); }
                 if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.mainSkin.material.color = new Color(vrrig.mainSkin.material.color.r, vrrig.mainSkin.material.color.g, vrrig.mainSkin.material.color.b, 0.5f); }
@@ -4747,7 +4715,7 @@ namespace iiMenu.Mods
                         {
                             FixRigMaterialESPColors(vrrig);
 
-                            vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                            vrrig.mainSkin.material.shader = Shader.Find(TextShaderName);
                             vrrig.mainSkin.material.color = vrrig.GetColor();
                             if (Buttons.GetIndex("Follow Menu Theme").enabled) { vrrig.mainSkin.material.color = backgroundColor.GetCurrentColor(); }
                             if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.mainSkin.material.color = new Color(vrrig.mainSkin.material.color.r, vrrig.mainSkin.material.color.g, vrrig.mainSkin.material.color.b, 0.5f); }
@@ -4766,7 +4734,7 @@ namespace iiMenu.Mods
                     {
                         FixRigMaterialESPColors(vrrig);
 
-                        vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                        vrrig.mainSkin.material.shader = Shader.Find(TextShaderName);
                         vrrig.mainSkin.material.color = vrrig.playerColor;
                         if (Buttons.GetIndex("Follow Menu Theme").enabled) { vrrig.mainSkin.material.color = backgroundColor.GetCurrentColor(); }
                         if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.mainSkin.material.color = new Color(vrrig.mainSkin.material.color.r, vrrig.mainSkin.material.color.g, vrrig.mainSkin.material.color.b, 0.5f); }
@@ -4779,7 +4747,7 @@ namespace iiMenu.Mods
                 {
                     FixRigMaterialESPColors(vrrig);
 
-                    vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                    vrrig.mainSkin.material.shader = Shader.Find(TextShaderName);
                     if (vrrig.mainSkin.material.name.Contains("gorilla_body"))
                         vrrig.mainSkin.material.color = vrrig.playerColor;
                 }
@@ -4800,7 +4768,7 @@ namespace iiMenu.Mods
                 {
                     FixRigMaterialESPColors(vrrig);
 
-                    vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                    vrrig.mainSkin.material.shader = Shader.Find(TextShaderName);
                     vrrig.mainSkin.material.color = vrrig.playerColor;
                     if (Buttons.GetIndex("Follow Menu Theme").enabled) { vrrig.mainSkin.material.color = backgroundColor.GetCurrentColor(); }
                     if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.mainSkin.material.color = new Color(vrrig.mainSkin.material.color.r, vrrig.mainSkin.material.color.g, vrrig.mainSkin.material.color.b, 0.5f); }
@@ -4809,7 +4777,7 @@ namespace iiMenu.Mods
                 {
                     if (sillyComputer.GetTargetOf(player) == (NetPlayer)PhotonNetwork.LocalPlayer)
                     {
-                        vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                        vrrig.mainSkin.material.shader = Shader.Find(TextShaderName);
                         vrrig.mainSkin.material.color = Color.red;
                         if (Buttons.GetIndex("Transparent Theme").enabled) { vrrig.mainSkin.material.color = new Color(vrrig.mainSkin.material.color.r, vrrig.mainSkin.material.color.g, vrrig.mainSkin.material.color.b, 0.5f); }
                     }
@@ -4838,7 +4806,7 @@ namespace iiMenu.Mods
         public static void CasualBoxESP()
         {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
 
             List<VRRig> toRemove = new List<VRRig>();
@@ -4860,7 +4828,7 @@ namespace iiMenu.Mods
                     Object.Destroy(box.GetComponent<BoxCollider>());
 
                     box.transform.localScale = new Vector3(0.5f, 0.5f, 0f);
-                    box.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+                    box.GetComponent<Renderer>().material.shader = Shader.Find(TextShaderName);
 
                     boxESP.Add(vrrig, box);
                 }
@@ -4871,7 +4839,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    box.layer = 19;
+                    box.layer = HiddenCameraLayer;
 
                 box.GetComponent<Renderer>().material.color = color;
 
@@ -4883,7 +4851,7 @@ namespace iiMenu.Mods
         public static void InfectionBoxESP()
         {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool selfTagged = VRRig.LocalRig.IsTagged();
 
@@ -4906,7 +4874,7 @@ namespace iiMenu.Mods
                     Object.Destroy(box.GetComponent<BoxCollider>());
 
                     box.transform.localScale = new Vector3(0.5f, 0.5f, 0f);
-                    box.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+                    box.GetComponent<Renderer>().material.shader = Shader.Find(TextShaderName);
 
                     boxESP.Add(vrrig, box);
                 }
@@ -4917,7 +4885,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    box.layer = 19;
+                    box.layer = HiddenCameraLayer;
 
                 box.GetComponent<Renderer>().material.color = color;
 
@@ -4935,7 +4903,7 @@ namespace iiMenu.Mods
                 return;
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
 
             List<VRRig> toRemove = new List<VRRig>();
@@ -4959,7 +4927,7 @@ namespace iiMenu.Mods
                     Object.Destroy(box.GetComponent<BoxCollider>());
 
                     box.transform.localScale = new Vector3(0.5f, 0.5f, 0f);
-                    box.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+                    box.GetComponent<Renderer>().material.shader = Shader.Find(TextShaderName);
 
                     boxESP.Add(vrrig, box);
                 }
@@ -4973,7 +4941,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    box.layer = 19;
+                    box.layer = HiddenCameraLayer;
 
                 box.GetComponent<Renderer>().material.color = color;
 
@@ -4996,7 +4964,7 @@ namespace iiMenu.Mods
         public static void CasualHollowBoxESP()
         {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
 
@@ -5022,7 +4990,7 @@ namespace iiMenu.Mods
                     box.transform.LookAt(GorillaTagger.Instance.headCollider.transform.position);
                     Renderer boxRenderer = box.GetComponent<Renderer>();
                     boxRenderer.enabled = false;
-                    boxRenderer.material.shader = Shader.Find("GUI/Text Shader");
+                    boxRenderer.material.shader = Shader.Find(TextShaderName);
 
                     GameObject outl = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     outl.transform.SetParent(box.transform);
@@ -5065,7 +5033,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    box.layer = 19;
+                    box.layer = HiddenCameraLayer;
 
                 box.GetComponent<Renderer>().material.color = color;
 
@@ -5077,7 +5045,7 @@ namespace iiMenu.Mods
         public static void HollowInfectionBoxESP()
         {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
             bool selfTagged = VRRig.LocalRig.IsTagged();
@@ -5104,7 +5072,7 @@ namespace iiMenu.Mods
                     box.transform.LookAt(GorillaTagger.Instance.headCollider.transform.position);
                     Renderer boxRenderer = box.GetComponent<Renderer>();
                     boxRenderer.enabled = false;
-                    boxRenderer.material.shader = Shader.Find("GUI/Text Shader");
+                    boxRenderer.material.shader = Shader.Find(TextShaderName);
 
                     GameObject outl = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     outl.transform.SetParent(box.transform);
@@ -5147,7 +5115,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    box.layer = 19;
+                    box.layer = HiddenCameraLayer;
 
                 box.GetComponent<Renderer>().material.color = color;
 
@@ -5165,7 +5133,7 @@ namespace iiMenu.Mods
                 return;
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
 
@@ -5193,7 +5161,7 @@ namespace iiMenu.Mods
                     box.transform.LookAt(GorillaTagger.Instance.headCollider.transform.position);
                     Renderer boxRenderer = box.GetComponent<Renderer>();
                     boxRenderer.enabled = false;
-                    boxRenderer.material.shader = Shader.Find("GUI/Text Shader");
+                    boxRenderer.material.shader = Shader.Find(TextShaderName);
 
                     GameObject outl = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     outl.transform.SetParent(box.transform);
@@ -5239,7 +5207,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    box.layer = 19;
+                    box.layer = HiddenCameraLayer;
 
                 box.GetComponent<Renderer>().material.color = color;
                 box.SetActive(owner == target || theirTarget == NetworkSystem.Instance.LocalPlayer);
@@ -5272,7 +5240,7 @@ namespace iiMenu.Mods
                 breadcrumbs.Remove(rig);
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
             bool shortBreadcrumbs = Buttons.GetIndex("Short Breadcrumbs").enabled;
@@ -5291,7 +5259,7 @@ namespace iiMenu.Mods
                         trail.numCornerVertices = 5;
                     }
 
-                    trail.material.shader = Shader.Find("GUI/Text Shader");
+                    trail.material.shader = Shader.Find(TextShaderName);
                     trail.time = shortBreadcrumbs ? 1f : 10f;
 
                     breadcrumbs.Add(rig, trail);
@@ -5301,7 +5269,7 @@ namespace iiMenu.Mods
                 trail.endWidth = thinTracers ? 0.0075f : 0.025f;
 
                 if (hoc)
-                    trail.gameObject.layer = 19;
+                    trail.gameObject.layer = HiddenCameraLayer;
 
                 Color color = rig.GetColor();
 
@@ -5329,7 +5297,7 @@ namespace iiMenu.Mods
                 breadcrumbs.Remove(rig);
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
             bool shortBreadcrumbs = Buttons.GetIndex("Short Breadcrumbs").enabled;
@@ -5349,7 +5317,7 @@ namespace iiMenu.Mods
                         trail.numCornerVertices = 5;
                     }
 
-                    trail.material.shader = Shader.Find("GUI/Text Shader");
+                    trail.material.shader = Shader.Find(TextShaderName);
                     trail.time = shortBreadcrumbs ? 1f : 10f;
 
                     breadcrumbs.Add(rig, trail);
@@ -5366,7 +5334,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    trail.gameObject.layer = 19;
+                    trail.gameObject.layer = HiddenCameraLayer;
 
                 trail.startColor = color;
                 trail.endColor = color;
@@ -5392,7 +5360,7 @@ namespace iiMenu.Mods
                 breadcrumbs.Remove(rig);
 
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
-            bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
             bool shortBreadcrumbs = Buttons.GetIndex("Short Breadcrumbs").enabled;
@@ -5414,7 +5382,7 @@ namespace iiMenu.Mods
                         trail.numCornerVertices = 5;
                     }
 
-                    trail.material.shader = Shader.Find("GUI/Text Shader");
+                    trail.material.shader = Shader.Find(TextShaderName);
                     trail.time = shortBreadcrumbs ? 1f : 10f;
 
                     breadcrumbs.Add(rig, trail);
@@ -5433,7 +5401,7 @@ namespace iiMenu.Mods
                 if (tt)
                     color.a = 0.5f;
                 if (hoc)
-                    trail.gameObject.layer = 19;
+                    trail.gameObject.layer = HiddenCameraLayer;
 
                 trail.startColor = color;
                 trail.endColor = color;
@@ -5533,39 +5501,21 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] EspNames = {
+            "Tracers", "Box", "Hollow Box", "Breadcrumbs", "Bone",
+            "Skeleton", "Wireframe", "Chams", "Beacons", "Distance"
+        };
+
         public static int espMode;
 
         public static void ChangeESPType(bool positive = true)
         {
-            string[] espNames = {
-                "Tracers",
-                "Box",
-                "Hollow Box",
-                "Breadcrumbs",
-                "Bone",
-                "Skeleton",
-                "Wireframe",
-                "Chams",
-                "Beacons",
-                "Distance"
-            };
-
             ButtonInfo espButton = Buttons.GetIndex("ESP");
             if (espButton != null && espButton.enabled)
                 DisableESPMod();
 
-            if (positive)
-                espMode++;
-            else
-                espMode--;
-
-            espMode %= espNames.Length;
-            if (espMode < 0)
-                espMode = espNames.Length - 1;
-
-            string label = "ESP <color=grey>[</color><color=green>" + espNames[espMode] + "</color><color=grey>]</color>";
-            espButton.overlapText = label;
-            Buttons.GetIndex("Change ESP Type").overlapText = "Change ESP Type <color=grey>[</color><color=green>" + espNames[espMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref espMode, EspNames, "Change ESP Type", positive);
+            espButton.overlapText = ModHelpers.FormatModeLabel("ESP", EspNames[espMode]);
         }
 
         public static void ESPMod()
@@ -5598,29 +5548,14 @@ namespace iiMenu.Mods
             DisableChams();
         }
 
+        private static readonly string[] TimeNames = { "Morning", "Day", "Evening", "Night" };
+
         public static int timeOfDayMode;
 
         public static void ChangeTimeOfDay(bool positive = true)
         {
-            string[] timeNames = {
-                "Morning",
-                "Day",
-                "Evening",
-                "Night"
-            };
-
-            if (positive)
-                timeOfDayMode++;
-            else
-                timeOfDayMode--;
-
-            timeOfDayMode %= timeNames.Length;
-            if (timeOfDayMode < 0)
-                timeOfDayMode = timeNames.Length - 1;
-
-            string label = "Time of Day <color=grey>[</color><color=green>" + timeNames[timeOfDayMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Time of Day").overlapText = label;
-            Buttons.GetIndex("Change Time of Day").overlapText = "Change Time of Day <color=grey>[</color><color=green>" + timeNames[timeOfDayMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref timeOfDayMode, TimeNames, "Change Time of Day", positive);
+            Buttons.GetIndex("Time of Day").overlapText = ModHelpers.FormatModeLabel("Time of Day", TimeNames[timeOfDayMode]);
         }
 
         public static void TimeOfDayMod()
@@ -5634,28 +5569,18 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] VoiceIndicatorNames = { "Indicators", "ESP" };
+
         public static int voiceIndicatorMode;
 
         public static void ChangeVoiceIndicatorMode(bool positive = true)
         {
-            string[] modeNames = { "Indicators", "ESP" };
-
-            if (positive)
-                voiceIndicatorMode++;
-            else
-                voiceIndicatorMode--;
-
-            voiceIndicatorMode %= modeNames.Length;
-            if (voiceIndicatorMode < 0)
-                voiceIndicatorMode = modeNames.Length - 1;
-
             ButtonInfo viButton = Buttons.GetIndex("Voice Indicators");
             if (viButton != null && viButton.enabled)
                 DisableVoiceIndicators();
 
-            string label = "Voice Indicators <color=grey>[</color><color=green>" + modeNames[voiceIndicatorMode] + "</color><color=grey>]</color>";
-            viButton.overlapText = label;
-            Buttons.GetIndex("Change Voice Indicator Mode").overlapText = "Change Voice Indicator Mode <color=grey>[</color><color=green>" + modeNames[voiceIndicatorMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref voiceIndicatorMode, VoiceIndicatorNames, "Change Voice Indicator Mode", positive);
+            viButton.overlapText = ModHelpers.FormatModeLabel("Voice Indicators", VoiceIndicatorNames[voiceIndicatorMode]);
         }
 
         public static void VoiceIndicatorMod()
@@ -5663,28 +5588,18 @@ namespace iiMenu.Mods
             if (voiceIndicatorMode == 0) VoiceIndicators(); else VoiceESP();
         }
 
+        private static readonly string[] PlatformIndicatorNames = { "Indicators", "ESP" };
+
         public static int platformIndicatorMode;
 
         public static void ChangePlatformIndicatorMode(bool positive = true)
         {
-            string[] modeNames = { "Indicators", "ESP" };
-
-            if (positive)
-                platformIndicatorMode++;
-            else
-                platformIndicatorMode--;
-
-            platformIndicatorMode %= modeNames.Length;
-            if (platformIndicatorMode < 0)
-                platformIndicatorMode = modeNames.Length - 1;
-
             ButtonInfo piButton = Buttons.GetIndex("Platform Indicators");
             if (piButton != null && piButton.enabled)
                 DisablePlatformIndicators();
 
-            string label = "Platform Indicators <color=grey>[</color><color=green>" + modeNames[platformIndicatorMode] + "</color><color=grey>]</color>";
-            piButton.overlapText = label;
-            Buttons.GetIndex("Change Platform Indicator Mode").overlapText = "Change Platform Indicator Mode <color=grey>[</color><color=green>" + modeNames[platformIndicatorMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref platformIndicatorMode, PlatformIndicatorNames, "Change Platform Indicator Mode", positive);
+            piButton.overlapText = ModHelpers.FormatModeLabel("Platform Indicators", PlatformIndicatorNames[platformIndicatorMode]);
         }
 
         public static void PlatformIndicatorMod()
@@ -5692,7 +5607,6 @@ namespace iiMenu.Mods
             if (platformIndicatorMode == 0) PlatformIndicators(); else PlatformESP();
         }
 
-        // Tracers
         public static void CasualTracers()
         {
             if (DoPerformanceCheck())
@@ -5894,7 +5808,7 @@ namespace iiMenu.Mods
 
             bool followMenuTheme = Buttons.GetIndex("Follow Menu Theme").enabled;
             bool transparentTheme = Buttons.GetIndex("Transparent Theme").enabled;
-            _ = Buttons.GetIndex("Hidden on Camera").enabled;
+            _ = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
 
             Color menuColor = backgroundColor.GetCurrentColor();
@@ -5934,7 +5848,7 @@ namespace iiMenu.Mods
 
             bool followMenuTheme = Buttons.GetIndex("Follow Menu Theme").enabled;
             bool transparentTheme = Buttons.GetIndex("Transparent Theme").enabled;
-            _ = Buttons.GetIndex("Hidden on Camera").enabled;
+            _ = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool thinTracers = Buttons.GetIndex("Thin Tracers").enabled;
 
             bool LocalTagged = VRRig.LocalRig.IsTagged();
@@ -6062,13 +5976,13 @@ namespace iiMenu.Mods
 
             bool followMenuTheme = Buttons.GetIndex("Follow Menu Theme").enabled;
             bool transparentTheme = Buttons.GetIndex("Transparent Theme").enabled;
-            bool hiddenOnCamera = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hiddenOnCamera = Buttons.GetIndex(HiddenOnCameraButton).enabled;
 
             Color menuColor = backgroundColor.GetCurrentColor();
 
             foreach (VRRig playerRig in GorillaParent.instance.vrrigs)
             {
-                if (playerRig.isLocal) // Skip local player
+                if (playerRig.isLocal)
                     continue;
 
                 Color tagColor = followMenuTheme ? textColors[0].GetCurrentColor() : Color.white;
@@ -6111,7 +6025,7 @@ namespace iiMenu.Mods
 
             bool followMenuTheme = Buttons.GetIndex("Follow Menu Theme").enabled;
             bool transparentTheme = Buttons.GetIndex("Transparent Theme").enabled;
-            bool hiddenOnCamera = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hiddenOnCamera = Buttons.GetIndex(HiddenOnCameraButton).enabled;
 
             bool LocalTagged = VRRig.LocalRig.IsTagged();
             bool NoInfected = InfectedList().Count == 0;
@@ -6191,7 +6105,7 @@ namespace iiMenu.Mods
             // Cache these here so your not finding the values from Buttons.GetIndex every call (Buttons.GetIndex is fucking slow)
             bool followMenuTheme = Buttons.GetIndex("Follow Menu Theme").enabled;
             bool transparentTheme = Buttons.GetIndex("Transparent Theme").enabled;
-            bool hiddenOnCamera = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hiddenOnCamera = Buttons.GetIndex(HiddenOnCameraButton).enabled;
 
             Color menuColor = backgroundColor.GetCurrentColor();
 
@@ -6315,7 +6229,7 @@ namespace iiMenu.Mods
                 backgroundObject.transform.parent = MeshHolder.transform;
                 backgroundObject.transform.localPosition = Vector3.zero;
                 backgroundObject.transform.localScale = new Vector3(MeshRender.bounds.size.x + 0.2f, 0.2f, 0.01f);
-                backgroundRender.material.shader = Shader.Find("GUI/Text Shader");
+                backgroundRender.material.shader = Shader.Find(TextShaderName);
                 backgroundRender.material.color = Color.white;
                 MeshRender.material.renderQueue = backgroundRender.material.renderQueue + 2;
 
@@ -6333,7 +6247,7 @@ namespace iiMenu.Mods
             return finalTextMeshPro;
         }
 
-        public static void ClearNameTagPool(bool destroy = false) // Set destroy when you disable a feature that needs a lot of nameTags
+        public static void ClearNameTagPool(bool destroy = false) //Set destroy when you disable a feature that needs a lot of nameTags
         {
             if (DoPerformanceCheck())
                 return;
@@ -6361,7 +6275,7 @@ namespace iiMenu.Mods
 
         public static LineRenderer GetLineRender()
         {
-            bool hideOnCamera = Buttons.GetIndex("Hidden on Camera").enabled;
+            bool hideOnCamera = Buttons.GetIndex(HiddenOnCameraButton).enabled;
 
             if (lineRenderHolder == null)
                 lineRenderHolder = new GameObject("LineRender_Holder");
@@ -6384,7 +6298,7 @@ namespace iiMenu.Mods
                     newLine.numCapVertices = 10;
                     newLine.numCornerVertices = 5;
                 }
-                newLine.material.shader = Shader.Find("GUI/Text Shader");
+                newLine.material.shader = Shader.Find(TextShaderName);
                 newLine.startWidth = 0.025f;
                 newLine.endWidth = 0.025f;
                 newLine.positionCount = 2;
@@ -6424,7 +6338,7 @@ namespace iiMenu.Mods
 
             Color userColor = Color.red;
 
-            NotificationManager.SendNotification("<color=grey>[</color><color=purple>ADMIN</color><color=grey>]</color> " + sender.NickName + " is using " + menuName + " version " + version + ".", 3000);
+            NotificationManager.SendNotification($"<color=grey>[</color><color=purple>ADMIN</color><color=grey>]</color> {sender.NickName} is using {menuName} version {version}.", 3000);
             VRRig.LocalRig.PlayHandTapLocal(29, false, 99999f);
             VRRig.LocalRig.PlayHandTapLocal(29, true, 99999f);
             GameObject line = new GameObject("Line");
@@ -6433,7 +6347,7 @@ namespace iiMenu.Mods
 
             liner.SetPosition(0, vrrig.transform.position + new Vector3(0f, 9999f, 0f));
             liner.SetPosition(1, vrrig.transform.position - new Vector3(0f, 9999f, 0f));
-            liner.material.shader = Shader.Find("GUI/Text Shader");
+            liner.material.shader = Shader.Find(TextShaderName);
             Object.Destroy(line, 3f);
         }
     }
