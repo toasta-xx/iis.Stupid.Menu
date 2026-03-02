@@ -58,56 +58,18 @@ namespace iiMenu.Mods
 {
     public static class Movement
     {
+        private const int MaxMultiplier = 1280;
+        private const float FarAwayPosition = 99999f;
+
+        private static readonly string[] PlatformNames = { "Normal", "Invisible", "Rainbow", "Random Color", "Noclip", "Glass", "Projectile" };
         public static int platformMode;
-        public static void ChangePlatformType(bool positive = true)
-        {
-            string[] platformNames = {
-                "Normal",
-                "Invisible",
-                "Rainbow",
-                "Random Color",
-                "Noclip",
-                "Glass",
-                "Projectile"
-            };
+        public static void ChangePlatformType(bool positive = true) =>
+            ModHelpers.CycleMode(ref platformMode, PlatformNames, "Change Platform Type", positive);
 
-            if (positive)
-                platformMode++;
-            else
-                platformMode--;
-
-            platformMode %= platformNames.Length;
-            if (platformMode < 0)
-                platformMode = platformNames.Length - 1;
-
-            Buttons.GetIndex("Change Platform Type").overlapText = "Change Platform Type <color=grey>[</color><color=green>" + platformNames[platformMode] + "</color><color=grey>]</color>";
-        }
-
+        private static readonly string[] PlatformShapes = { "Sphere", "Cube", "Cylinder", "Legacy", "Small", "Long", "1x1", "Massive" };
         public static int platformShape;
-        public static void ChangePlatformShape(bool positive = true)
-        {
-            string[] platformShapes = {
-                "Sphere",
-                "Cube",
-                "Cylinder",
-                "Legacy",
-                "Small",
-                "Long",
-                "1x1",
-                "Massive"
-            };
-
-            if (positive)
-                platformShape++;
-            else
-                platformShape--;
-
-            platformShape %= platformShapes.Length;
-            if (platformShape < 0)
-                platformShape = platformShapes.Length - 1;
-
-            Buttons.GetIndex("Change Platform Shape").overlapText = "Change Platform Shape <color=grey>[</color><color=green>" + platformShapes[platformShape] + "</color><color=grey>]</color>";
-        }
+        public static void ChangePlatformShape(bool positive = true) =>
+            ModHelpers.CycleMode(ref platformShape, PlatformShapes, "Change Platform Shape", positive);
 
         public static PrimitiveType GetPlatformPrimitiveType()
         {
@@ -204,6 +166,8 @@ namespace iiMenu.Mods
             FriendManager.PlatformSpawned(true, platform.transform.position, platform.transform.rotation, platform.transform.localScale, GetPlatformPrimitiveType());
         }
 
+        private static readonly float[] FlySpeedAmounts = { 5f, 10f, 30f, 60f, 0.5f };
+        private static readonly string[] FlySpeedNames = { "Slow", "Normal", "Fast", "Extra Fast", "Extra Slow" };
         public static int flySpeedCycle = 1;
         public static float _flySpeed = 10f;
 
@@ -213,10 +177,15 @@ namespace iiMenu.Mods
             set => _flySpeed = value;
         }
 
+        private static readonly float[] JSpeedAmounts = { 2f, 7.5f, 8f, 9f, 200f };
+        private static readonly float[] JMultiAmounts = { 0.5f, 1.1f, 1.5f, 2f, 10f };
+        private static readonly string[] SpeedBoostAmountNames = { "Slow", "Normal", "Middle", "Fast", "Ultra Fast" };
         public static int speedboostCycle = 1;
         public static float jspeed = 7.5f;
         public static float jmulti = 1.1f;
 
+        private static readonly float[] ArmLengthAmounts = { 0.75f, 1.1f, 1.25f, 1.5f, 2f };
+        private static readonly string[] ArmLengthNames = { "Shorter", "Unnoticable", "Normal", "Long", "Extreme" };
         public static int longarmCycle = 2;
         public static float armlength = 1.25f;
 
@@ -329,23 +298,9 @@ namespace iiMenu.Mods
 
         public static void ChangeSpeedBoostAmount(bool positive = true)
         {
-            float[] jspeedamounts = { 2f, 7.5f, 8f, 9f, 200f };
-            float[] jmultiamounts = { 0.5f, 1.1f, 1.5f, 2f, 10f };
-            string[] speedNames = { "Slow", "Normal", "Middle", "Fast", "Ultra Fast" };
-
-            if (positive)
-                speedboostCycle++;
-            else
-                speedboostCycle--;
-
-            speedboostCycle %= jspeedamounts.Length;
-            if (speedboostCycle < 0)
-                speedboostCycle = jspeedamounts.Length - 1;
-
-            jspeed = jspeedamounts[speedboostCycle];
-            jmulti = jmultiamounts[speedboostCycle];
-            
-            Buttons.GetIndex("Change Speed Boost Amount").overlapText = "Change Speed Boost Amount <color=grey>[</color><color=green>" + speedNames[speedboostCycle] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref speedboostCycle, SpeedBoostAmountNames, "Change Speed Boost Amount", positive);
+            jspeed = JSpeedAmounts[speedboostCycle];
+            jmulti = JMultiAmounts[speedboostCycle];
         }
 
         public static void PlatformSpam()
@@ -388,90 +343,31 @@ namespace iiMenu.Mods
 
         public static void ChangeFlySpeed(bool positive = true)
         {
-            float[] speedamounts = { 5f, 10f, 30f, 60f, 0.5f };
-            string[] speedNames = { "Slow", "Normal", "Fast", "Extra Fast", "Extra Slow" };
-
-            if (positive)
-                flySpeedCycle++;
-            else
-                flySpeedCycle--;
-
-            flySpeedCycle %= speedamounts.Length;
-            if (flySpeedCycle < 0)
-                flySpeedCycle = speedamounts.Length - 1;
-
-            FlySpeed = speedamounts[flySpeedCycle];
-
-            Buttons.GetIndex("Change Fly Speed").overlapText = "Change Fly Speed <color=grey>[</color><color=green>" + speedNames[flySpeedCycle] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref flySpeedCycle, FlySpeedNames, "Change Fly Speed", positive);
+            FlySpeed = FlySpeedAmounts[flySpeedCycle];
         }
 
+        private static readonly float[] PlayspaceAbuseSpeedAmounts = { 0.004f, 0.01f, 0.1f, 0.001f, 0.002f };
+        private static readonly string[] PlayspaceAbuseSpeedNames = { "Normal", "Fast", "Extra Fast", "Extra Slow", "Slow" };
         public static int playspaceAbuseIndex;
         public static void ChangePlayspaceAbuseSpeed(bool positive = true)
         {
-            float[] speedamounts = { 0.004f, 0.01f, 0.1f, 0.001f, 0.002f };
-            string[] speedNames = { "Normal", "Fast", "Extra Fast", "Extra Slow", "Slow" };
-
-            if (positive)
-                playspaceAbuseIndex++;
-            else
-                playspaceAbuseIndex--;
-
-            playspaceAbuseIndex %= speedamounts.Length;
-            if (playspaceAbuseIndex < 0)
-                playspaceAbuseIndex = speedamounts.Length - 1;
-
-            playspaceAbusePower = speedamounts[playspaceAbuseIndex];
-
-            Buttons.GetIndex("Change Playspace Abuse Speed").overlapText = "Change Playspace Abuse Speed <color=grey>[</color><color=green>" + speedNames[playspaceAbuseIndex] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref playspaceAbuseIndex, PlayspaceAbuseSpeedNames, "Change Playspace Abuse Speed", positive);
+            playspaceAbusePower = PlayspaceAbuseSpeedAmounts[playspaceAbuseIndex];
         }
 
         public static void ChangeArmLength(bool positive = true)
         {
-            float[] lengthAmounts = { 0.75f, 1.1f, 1.25f, 1.5f, 2f };
-            string[] lengthNames = { "Shorter", "Unnoticable", "Normal", "Long", "Extreme" };
-
-            if (positive)
-                longarmCycle++;
-            else
-                longarmCycle--;
-
-            longarmCycle %= lengthAmounts.Length;
-            if (longarmCycle < 0)
-                longarmCycle = lengthAmounts.Length - 1;
-
-            armlength = lengthAmounts[longarmCycle];
-            Buttons.GetIndex("Change Arm Length").overlapText = "Change Arm Length <color=grey>[</color><color=green>" + lengthNames[longarmCycle] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref longarmCycle, ArmLengthNames, "Change Arm Length", positive);
+            armlength = ArmLengthAmounts[longarmCycle];
         }
 
+        private static readonly string[] FlyNames = { "Normal", "Trigger", "Noclip", "Joystick", "Bark", "Hand", "Gun", "Slingshot", "Zero G Slingshot", "Slingshot Bark", "Bird" };
         public static int flyMode;
         public static void ChangeFlyMode(bool positive = true)
         {
-            string[] flyNames = {
-                "Normal",
-                "Trigger",
-                "Noclip",
-                "Joystick",
-                "Bark",
-                "Hand",
-                "Gun",
-                "Slingshot",
-                "Zero G Slingshot",
-                "Slingshot Bark",
-                "Bird"
-            };
-
-            if (positive)
-                flyMode++;
-            else
-                flyMode--;
-
-            flyMode %= flyNames.Length;
-            if (flyMode < 0)
-                flyMode = flyNames.Length - 1;
-
-            string label = "Fly <color=grey>[</color><color=green>" + flyNames[flyMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Fly").overlapText = label;
-            Buttons.GetIndex("Change Fly Mode").overlapText = "Change Fly Mode <color=grey>[</color><color=green>" + flyNames[flyMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref flyMode, FlyNames, "Change Fly Mode", positive);
+            Buttons.GetIndex("Fly").overlapText = ModHelpers.FormatModeLabel("Fly", FlyNames[flyMode]);
         }
 
         public static void FlyMod()
@@ -501,30 +397,13 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] GravityNames = { "Feather Falling", "Low", "Zero", "High", "Reverse" };
         public static int gravityMode;
 
         public static void ChangeGravityMode(bool positive = true)
         {
-            string[] gravityNames = {
-                "Feather Falling",
-                "Low",
-                "Zero",
-                "High",
-                "Reverse"
-            };
-
-            if (positive)
-                gravityMode++;
-            else
-                gravityMode--;
-
-            gravityMode %= gravityNames.Length;
-            if (gravityMode < 0)
-                gravityMode = gravityNames.Length - 1;
-
-            string label = "Gravity <color=grey>[</color><color=green>" + gravityNames[gravityMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Gravity").overlapText = label;
-            Buttons.GetIndex("Change Gravity Mode").overlapText = "Change Gravity Mode <color=grey>[</color><color=green>" + gravityNames[gravityMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref gravityMode, GravityNames, "Change Gravity Mode", positive);
+            Buttons.GetIndex("Gravity").overlapText = ModHelpers.FormatModeLabel("Gravity", GravityNames[gravityMode]);
         }
 
         public static void GravityMod()
@@ -545,31 +424,13 @@ namespace iiMenu.Mods
                 UnflipCharacter();
         }
 
+        private static readonly string[] ArmNames = { "Steam", "Stick", "Multiplied", "Vertical", "Horizontal", "Extenders" };
         public static int longArmsMode;
 
         public static void ChangeLongArmsMode(bool positive = true)
         {
-            string[] armNames = {
-                "Steam",
-                "Stick",
-                "Multiplied",
-                "Vertical",
-                "Horizontal",
-                "Extenders"
-            };
-
-            if (positive)
-                longArmsMode++;
-            else
-                longArmsMode--;
-
-            longArmsMode %= armNames.Length;
-            if (longArmsMode < 0)
-                longArmsMode = armNames.Length - 1;
-
-            string label = "Long Arms <color=grey>[</color><color=green>" + armNames[longArmsMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Long Arms").overlapText = label;
-            Buttons.GetIndex("Change Long Arms Mode").overlapText = "Change Long Arms Mode <color=grey>[</color><color=green>" + armNames[longArmsMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref longArmsMode, ArmNames, "Change Long Arms Mode", positive);
+            Buttons.GetIndex("Long Arms").overlapText = ModHelpers.FormatModeLabel("Long Arms", ArmNames[longArmsMode]);
         }
 
         public static void LongArmsMod()
@@ -585,33 +446,16 @@ namespace iiMenu.Mods
             }
         }
 
-        public static void DisableLongArmsMod()
-        {
+        public static void DisableLongArmsMod() =>
             DisableSteamLongArms();
-        }
 
+        private static readonly string[] SpeedBoostModeNames = { "Normal", "Grip", "Dynamic" };
         public static int speedBoostMode;
 
         public static void ChangeSpeedBoostMode(bool positive = true)
         {
-            string[] speedNames = {
-                "Normal",
-                "Grip",
-                "Dynamic"
-            };
-
-            if (positive)
-                speedBoostMode++;
-            else
-                speedBoostMode--;
-
-            speedBoostMode %= speedNames.Length;
-            if (speedBoostMode < 0)
-                speedBoostMode = speedNames.Length - 1;
-
-            string label = "Speed Boost <color=grey>[</color><color=green>" + speedNames[speedBoostMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Speed Boost").overlapText = label;
-            Buttons.GetIndex("Change Speed Boost Mode").overlapText = "Change Speed Boost Mode <color=grey>[</color><color=green>" + speedNames[speedBoostMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref speedBoostMode, SpeedBoostModeNames, "Change Speed Boost Mode", positive);
+            Buttons.GetIndex("Speed Boost").overlapText = ModHelpers.FormatModeLabel("Speed Boost", SpeedBoostModeNames[speedBoostMode]);
         }
 
         public static void SpeedBoostMod()
@@ -624,27 +468,13 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] DriveNames = { "Normal", "Sticky" };
         public static int driveMode;
 
         public static void ChangeDriveMode(bool positive = true)
         {
-            string[] driveNames = {
-                "Normal",
-                "Sticky"
-            };
-
-            if (positive)
-                driveMode++;
-            else
-                driveMode--;
-
-            driveMode %= driveNames.Length;
-            if (driveMode < 0)
-                driveMode = driveNames.Length - 1;
-
-            string label = "Drive <color=grey>[</color><color=green>" + driveNames[driveMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Drive").overlapText = label;
-            Buttons.GetIndex("Change Drive Mode").overlapText = "Change Drive Mode <color=grey>[</color><color=green>" + driveNames[driveMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref driveMode, DriveNames, "Change Drive Mode", positive);
+            Buttons.GetIndex("Drive").overlapText = ModHelpers.FormatModeLabel("Drive", DriveNames[driveMode]);
         }
 
         public static void DriveMod()
@@ -656,28 +486,13 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] WallNames = { "Normal", "Legitimate", "Spider" };
         public static int wallWalkMode;
 
         public static void ChangeWallWalkMode(bool positive = true)
         {
-            string[] wallNames = {
-                "Normal",
-                "Legitimate",
-                "Spider"
-            };
-
-            if (positive)
-                wallWalkMode++;
-            else
-                wallWalkMode--;
-
-            wallWalkMode %= wallNames.Length;
-            if (wallWalkMode < 0)
-                wallWalkMode = wallNames.Length - 1;
-
-            string label = "Wall Walk <color=grey>[</color><color=green>" + wallNames[wallWalkMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Wall Walk").overlapText = label;
-            Buttons.GetIndex("Change Wall Walk Mode").overlapText = "Change Wall Walk Mode <color=grey>[</color><color=green>" + wallNames[wallWalkMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref wallWalkMode, WallNames, "Change Wall Walk Mode", positive);
+            Buttons.GetIndex("Wall Walk").overlapText = ModHelpers.FormatModeLabel("Wall Walk", WallNames[wallWalkMode]);
         }
 
         public static void WallWalkMod()
@@ -696,27 +511,13 @@ namespace iiMenu.Mods
                 UnflipCharacter();
         }
 
+        private static readonly string[] SlideNames = { "Normal", "Weak" };
         public static int slideControlMode;
 
         public static void ChangeSlideControlMode(bool positive = true)
         {
-            string[] slideNames = {
-                "Normal",
-                "Weak"
-            };
-
-            if (positive)
-                slideControlMode++;
-            else
-                slideControlMode--;
-
-            slideControlMode %= slideNames.Length;
-            if (slideControlMode < 0)
-                slideControlMode = slideNames.Length - 1;
-
-            string label = "Slide Control <color=grey>[</color><color=green>" + slideNames[slideControlMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Slide Control").overlapText = label;
-            Buttons.GetIndex("Change Slide Control Mode").overlapText = "Change Slide Control Mode <color=grey>[</color><color=green>" + slideNames[slideControlMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref slideControlMode, SlideNames, "Change Slide Control Mode", positive);
+            Buttons.GetIndex("Slide Control").overlapText = ModHelpers.FormatModeLabel("Slide Control", SlideNames[slideControlMode]);
         }
 
         public static void SlideControlMod()
@@ -728,27 +529,13 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] StrafeNames = { "Normal", "Dynamic" };
         public static int strafeMode;
 
         public static void ChangeStrafeMode(bool positive = true)
         {
-            string[] strafeNames = {
-                "Normal",
-                "Dynamic"
-            };
-
-            if (positive)
-                strafeMode++;
-            else
-                strafeMode--;
-
-            strafeMode %= strafeNames.Length;
-            if (strafeMode < 0)
-                strafeMode = strafeNames.Length - 1;
-
-            string label = "Strafe <color=grey>[</color><color=green>" + strafeNames[strafeMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Strafe").overlapText = label;
-            Buttons.GetIndex("Change Strafe Mode").overlapText = "Change Strafe Mode <color=grey>[</color><color=green>" + strafeNames[strafeMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref strafeMode, StrafeNames, "Change Strafe Mode", positive);
+            Buttons.GetIndex("Strafe").overlapText = ModHelpers.FormatModeLabel("Strafe", StrafeNames[strafeMode]);
         }
 
         public static void StrafeMod()
@@ -760,27 +547,13 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] CpNames = { "Normal", "Advanced" };
         public static int checkpointMode;
 
         public static void ChangeCheckpointMode(bool positive = true)
         {
-            string[] cpNames = {
-                "Normal",
-                "Advanced"
-            };
-
-            if (positive)
-                checkpointMode++;
-            else
-                checkpointMode--;
-
-            checkpointMode %= cpNames.Length;
-            if (checkpointMode < 0)
-                checkpointMode = cpNames.Length - 1;
-
-            string label = "Checkpoint <color=grey>[</color><color=green>" + cpNames[checkpointMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Checkpoint").overlapText = label;
-            Buttons.GetIndex("Change Checkpoint Mode").overlapText = "Change Checkpoint Mode <color=grey>[</color><color=green>" + cpNames[checkpointMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref checkpointMode, CpNames, "Change Checkpoint Mode", positive);
+            Buttons.GetIndex("Checkpoint").overlapText = ModHelpers.FormatModeLabel("Checkpoint", CpNames[checkpointMode]);
         }
 
         public static void CheckpointMod()
@@ -798,27 +571,13 @@ namespace iiMenu.Mods
             DisableAdvancedCheckpoints();
         }
 
+        private static readonly string[] TrigNames = { "Grip", "Trigger" };
         public static int platformTriggerMode;
 
         public static void ChangePlatformTriggerMode(bool positive = true)
         {
-            string[] trigNames = {
-                "Grip",
-                "Trigger"
-            };
-
-            if (positive)
-                platformTriggerMode++;
-            else
-                platformTriggerMode--;
-
-            platformTriggerMode %= trigNames.Length;
-            if (platformTriggerMode < 0)
-                platformTriggerMode = trigNames.Length - 1;
-
-            string label = "Platforms <color=grey>[</color><color=green>" + trigNames[platformTriggerMode] + "</color><color=grey>]</color>";
-            Buttons.GetIndex("Platforms").overlapText = label;
-            Buttons.GetIndex("Change Platform Trigger").overlapText = "Change Platform Trigger <color=grey>[</color><color=green>" + trigNames[platformTriggerMode] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref platformTriggerMode, TrigNames, "Change Platform Trigger", positive);
+            Buttons.GetIndex("Platforms").overlapText = ModHelpers.FormatModeLabel("Platforms", TrigNames[platformTriggerMode]);
         }
 
         public static void PlatformsMod()
@@ -1063,43 +822,24 @@ namespace iiMenu.Mods
         }
 
 
+        private static readonly float[] DriveSpeedAmounts = { 10f, 30f, 50f, 100f, 3f };
+        private static readonly string[] DriveSpeedNames = { "Normal", "Fast", "Ultra Fast", "The Flash", "Slow" };
         private static float driveSpeed;
         public static int driveInt;
         public static void ChangeDriveSpeed(bool positive = true)
         {
-            float[] speedamounts = { 10f, 30f, 50f, 100f, 3f };
-            string[] speedNames = { "Normal", "Fast", "Ultra Fast", "The Flash", "Slow",  };
-
-            if (positive)
-                driveInt++;
-            else
-                driveInt--;
-
-            driveInt %= speedamounts.Length;
-            if (driveInt < 0)
-                driveInt = speedamounts.Length - 1;
-
-            driveSpeed = speedamounts[driveInt];
-            Buttons.GetIndex("cdSpeed").overlapText = "Change Drive Speed <color=grey>[</color><color=green>" + speedNames[driveInt] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref driveInt, DriveSpeedNames, "cdSpeed", "Change Drive Speed", positive);
+            driveSpeed = DriveSpeedAmounts[driveInt];
         }
 
+        private static readonly float[] FastRopesSpeedAmounts = { 5f, 10f, 30f };
+        private static readonly string[] FastRopesSpeedNames = { "Normal", "Fast", "Ultra Fast" };
         public static int fastRopesInt;
         public static void ChangeFastRopesSpeed(bool positive = true)
         {
-            float[] speedamounts = { 5f, 10f, 30f };
-            string[] speedNames = { "Normal", "Fast", "Ultra Fast", };
-
-            if (positive)
-                fastRopesInt++;
-            else
-                fastRopesInt--;
-
-            fastRopesInt %= speedamounts.Length;
-            if (fastRopesInt < 0)
-                fastRopesInt = speedamounts.Length - 1;
-
-            RopePatch.amplifier = speedamounts[driveInt];
-            Buttons.GetIndex("Change Fast Ropes Speed").overlapText = "Change Fast Ropes Speed <color=grey>[</color><color=green>" + speedNames[driveInt] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref fastRopesInt, FastRopesSpeedNames, "Change Fast Ropes Speed", positive);
+            RopePatch.amplifier = FastRopesSpeedAmounts[driveInt];
+            Buttons.GetIndex("Change Fast Ropes Speed").overlapText = ModHelpers.FormatModeLabel("Change Fast Ropes Speed", FastRopesSpeedNames[driveInt]);
         }
 
 
@@ -2174,24 +1914,14 @@ namespace iiMenu.Mods
 
         public static void ClearRewind() => playerPositions.Clear();
 
+        private static readonly float[] MacroPlaybackRangeAmounts = { 0.5f, 1f, 2f, 3f, 0.25f };
+        private static readonly string[] MacroPlaybackRangeNames = { "Small", "Normal", "Large", "Extra Large", "Extra Small" };
         public static float macroPlaybackRange = 1f;
         public static int macroPlaybackRangeIndex = 1;
         public static void ChangeMacroPlaybackRange(bool positive = true)
         {
-            float[] rangeAmounts = { 0.5f, 1f, 2f, 3f, 0.25f };
-            string[] rangeNames = { "Small", "Normal", "Large", "Extra Large", "Extra Small", };
-
-            if (positive)
-                macroPlaybackRangeIndex++;
-            else
-                macroPlaybackRangeIndex--;
-
-            macroPlaybackRangeIndex %= rangeNames.Length;
-            if (macroPlaybackRangeIndex < 0)
-                macroPlaybackRangeIndex = rangeNames.Length - 1;
-
-            macroPlaybackRange = rangeAmounts[macroPlaybackRangeIndex];
-            Buttons.GetIndex("Change Macro Playback Range").overlapText = "Change Macro Playback Range <color=grey>[</color><color=green>" + rangeNames[macroPlaybackRangeIndex] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref macroPlaybackRangeIndex, MacroPlaybackRangeNames, "Change Macro Playback Range", positive);
+            macroPlaybackRange = MacroPlaybackRangeAmounts[macroPlaybackRangeIndex];
         }
 
         public struct PlayerPosition
@@ -2651,6 +2381,8 @@ namespace iiMenu.Mods
         private static Vector3 walkPos;
         private static Vector3 walkNormal;
 
+        private static readonly float[] WallWalkStrengthAmounts = { 2f, 5f, 9.81f, 15f, 50f };
+        private static readonly string[] WallWalkStrengthNames = { "Very Weak", "Weak", "Normal", "Strong", "Very Strong" };
         public static int wallWalkStrengthIndex = 2;
         private static float wallWalkStrength = 9.81f;
 
@@ -2659,21 +2391,8 @@ namespace iiMenu.Mods
 
         public static void ChangeWallWalkStrength(bool positive = true)
         {
-            float[] strengthAmounts = { 2f, 5f, 9.81f, 15f, 50f };
-            string[] strengthNames = { "Very Weak", "Weak", "Normal", "Strong", "Very Strong" };
-
-            if (positive)
-                wallWalkStrengthIndex++;
-            else
-                wallWalkStrengthIndex--;
-
-            wallWalkStrengthIndex %= strengthAmounts.Length;
-            if (wallWalkStrengthIndex < 0)
-                wallWalkStrengthIndex = strengthAmounts.Length - 1;
-
-            wallWalkStrength = strengthAmounts[wallWalkStrengthIndex];
-
-            Buttons.GetIndex("Change Wall Walk Strength").overlapText = "Change Wall Walk Strength <color=grey>[</color><color=green>" + strengthNames[wallWalkStrengthIndex] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref wallWalkStrengthIndex, WallWalkStrengthNames, "Change Wall Walk Strength", positive);
+            wallWalkStrength = WallWalkStrengthAmounts[wallWalkStrengthIndex];
         }
 
         public static void WallWalk()
@@ -2846,7 +2565,7 @@ namespace iiMenu.Mods
             List<ButtonInfo> tpbuttons = new List<ButtonInfo> { new ButtonInfo { buttonText = "Exit Teleport to Map", method = ExitTeleportToMap, isTogglable = false, toolTip = "Returns you back to the movement mods." } };
 
             foreach (string[] Data in mapData)
-                tpbuttons.Add(new ButtonInfo { buttonText = "TeleportMap" + tpbuttons.Count, overlapText = Data[0], method = () => TeleportToMap(Data[1], Data[2]), isTogglable = false, toolTip = "Teleports you to the " + Data[0] + " map." });
+                tpbuttons.Add(new ButtonInfo { buttonText = $"TeleportMap{tpbuttons.Count}", overlapText = Data[0], method = () => TeleportToMap(Data[1], Data[2]), isTogglable = false, toolTip = $"Teleports you to the {Data[0]} map." });
             
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = tpbuttons.ToArray();
 
@@ -3211,7 +2930,7 @@ namespace iiMenu.Mods
             if (Buttons.GetIndex("Uncap Max Velocity").enabled)
                 Toggle("Uncap Max Velocity");
             else
-                GTPlayer.Instance.jumpMultiplier = 99999f;
+                GTPlayer.Instance.jumpMultiplier = FarAwayPosition;
         }
 
         public static Playspace playspace;
@@ -3618,7 +3337,7 @@ namespace iiMenu.Mods
                 pullPowerInt = powerNames.Length - 1;
 
             pullPower = powers[pullPowerInt];
-            Buttons.GetIndex("Change Pull Mod Power").overlapText = "Change Pull Mod Power <color=grey>[</color><color=green>" + powerNames[pullPowerInt] + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Pull Mod Power").overlapText = ModHelpers.FormatModeLabel("Change Pull Mod Power", powerNames[pullPowerInt]);
         }
 
         private static float pullPower = 0.05f;
@@ -3904,34 +3623,14 @@ namespace iiMenu.Mods
             Object.Destroy(rvT);
         }
 
+        private static readonly float[] PredAmounts = { 0.00625f, 0.0125f, 0.025f, 0.05f };
+        private static readonly string[] PredAmountNames = { "Low", "Normal", "High", "Extreme" };
         public static float predCount = 0.0125f;
         public static int predInt = 1;
         public static void ChangePredictionAmount(bool positive = true)
         {
-            float[] predAmnts = {
-                0.00625f,
-                0.0125f,
-                0.025f,
-                0.05f
-            };
-            string[] predAmntNames = {
-                "Low",
-                "Normal",
-                "High",
-                "Extreme"
-            };
-
-            if (positive)
-                predInt++;
-            else
-                predInt--;
-
-            predInt %= predAmnts.Length;
-            if (predInt < 0)
-                predInt = predAmnts.Length - 1;
-
-            predCount = predAmnts[predInt];
-            Buttons.GetIndex("Change Prediction Amount").overlapText = "Change Prediction Amount <color=grey>[</color><color=green>" + predAmntNames[predInt] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref predInt, PredAmountNames, "Change Prediction Amount", positive);
+            predCount = PredAmounts[predInt];
         }
 
         public static void VelocityLongArms()
@@ -3947,17 +3646,8 @@ namespace iiMenu.Mods
 
         public static void ChangeFakeLagStrength(bool positive = true)
         {
-            if (positive)
-                fakeLagDelayIndex++;
-            else
-                fakeLagDelayIndex--;
-
-            fakeLagDelayIndex %= 21;
-            if (fakeLagDelayIndex < 0)
-                fakeLagDelayIndex = 20;
-
+            ModHelpers.CycleInt(ref fakeLagDelayIndex, 0, 20, "Change Fake Lag Strength", positive);
             fakeLagDelay = fakeLagDelayIndex / 10f;
-            Buttons.GetIndex("Change Fake Lag Strength").overlapText = "Change Fake Lag Strength <color=grey>[</color><color=green>" + fakeLagDelayIndex + "</color><color=grey>]</color>";
         }
 
         public static void FakeLag()
@@ -4021,7 +3711,7 @@ namespace iiMenu.Mods
                 timerPowerIndex = 50;
 
             timerPower = timerPowerIndex / 10f;
-            Buttons.GetIndex("Change Timer Speed").overlapText = "Change Timer Speed <color=grey>[</color><color=green>" + (timerPowerIndex / 10f) + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Timer Speed").overlapText = ModHelpers.FormatModeLabel("Change Timer Speed", timerPowerIndex / 10f);
         }
 
         private static float timerPower = 1.5f;
@@ -4290,7 +3980,7 @@ namespace iiMenu.Mods
 
             tinnitus = null;
 
-            Buttons.GetIndex("Change Tinnitus Hertz").overlapText = "Change Tinnitus Hertz <color=grey>[</color><color=green>" + targetHz + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Tinnitus Hertz").overlapText = ModHelpers.FormatModeLabel("Change Tinnitus Hertz", targetHz);
         }
         public static AudioClip CreateTinnitusSound()
         {
@@ -4343,7 +4033,7 @@ namespace iiMenu.Mods
                             VRRig.LocalRig.transform.position = lockTarget.transform.position - (lockTarget.headMesh.transform.forward * 0.2f);
                             SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = new[] { target.ActorNumber } });
 
-                            VRRig.LocalRig.transform.position = new Vector3(Random.Range(-99999f, 99999f), 99999f, Random.Range(-99999f, 99999f));
+                            VRRig.LocalRig.transform.position = new Vector3(Random.Range(-FarAwayPosition, FarAwayPosition), FarAwayPosition, Random.Range(-FarAwayPosition, FarAwayPosition));
                             SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = PhotonNetwork.PlayerList.Where(plr => plr.ActorNumber != target.ActorNumber).Select(plr => plr.ActorNumber).ToArray() });
 
                             RPCProtection();
@@ -4592,51 +4282,7 @@ namespace iiMenu.Mods
         public static void ShutdownHeadsetAll() =>
             Fun.HoverboardScreenAll(Color.black);
 
-        public static void SchizophrenicGun()
-        {
-            if (GetGunInput(false))
-            {
-                var GunData = RenderGun();
-                RaycastHit Ray = GunData.Ray;
-
-                if (GetGunInput(true))
-                {
-                    VRRig gunTarget = Ray.collider != null ? Ray.collider.GetComponentInParent<VRRig>() : null;
-                    if (gunTarget && !gunTarget.IsLocal() && !gunLocked)
-                    {
-                        gunLocked = true;
-                        lockTarget = gunTarget;
-
-                        SerializePatch.OverrideSerialization = () => 
-                        {
-                            NetPlayer target = GetPlayerFromVRRig(lockTarget);
-                            MassSerialize(true, new[] { GorillaTagger.Instance.myVRRig.GetView });
-
-                            Vector3 positionArchive = VRRig.LocalRig.transform.position;
-                            SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = PhotonNetwork.PlayerList.Where(plr => plr.ActorNumber != target.ActorNumber).Select(plr => plr.ActorNumber).ToArray() });
-
-                            VRRig.LocalRig.transform.position = new Vector3(Random.Range(-99999f, 99999f), 99999f, Random.Range(-99999f, 99999f));
-                            SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = new[] { target.ActorNumber } });
-
-                            RPCProtection();
-                            VRRig.LocalRig.transform.position = positionArchive;
-
-                            return false;
-                        };
-                    }
-                }
-            }
-            else
-            {
-                if (gunLocked)
-                {
-                    gunLocked = false;
-                    SerializePatch.OverrideSerialization = null;
-                }
-            }
-        }
-
-        public static void ReverseSchizoGun()
+        private static void SchizoGunInternal(bool reverse)
         {
             if (GetGunInput(false))
             {
@@ -4657,10 +4303,14 @@ namespace iiMenu.Mods
                             MassSerialize(true, new[] { GorillaTagger.Instance.myVRRig.GetView });
 
                             Vector3 positionArchive = VRRig.LocalRig.transform.position;
-                            SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = new[] { target.ActorNumber } });
 
-                            VRRig.LocalRig.transform.position = new Vector3(Random.Range(-99999f, 99999f), 99999f, Random.Range(-99999f, 99999f));
-                            SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = PhotonNetwork.PlayerList.Where(plr => plr.ActorNumber != target.ActorNumber).Select(plr => plr.ActorNumber).ToArray() });
+                            int[] targetOnly = new[] { target.ActorNumber };
+                            int[] everyoneElse = PhotonNetwork.PlayerList.Where(plr => plr.ActorNumber != target.ActorNumber).Select(plr => plr.ActorNumber).ToArray();
+
+                            SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = reverse ? targetOnly : everyoneElse });
+
+                            VRRig.LocalRig.transform.position = new Vector3(Random.Range(-FarAwayPosition, FarAwayPosition), FarAwayPosition, Random.Range(-FarAwayPosition, FarAwayPosition));
+                            SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = reverse ? everyoneElse : targetOnly });
 
                             RPCProtection();
                             VRRig.LocalRig.transform.position = positionArchive;
@@ -4680,20 +4330,15 @@ namespace iiMenu.Mods
             }
         }
 
+        public static void SchizophrenicGun() => SchizoGunInternal(false);
+        public static void ReverseSchizoGun() => SchizoGunInternal(true);
+
 
         public static int multiplicationAmount = 15;
         public static void MultiplicationAmount(bool positive = true)
         {
-            if (positive)
-                multiplicationAmount++;
-            else
-                multiplicationAmount--;
-
-            multiplicationAmount %= 1281;
-            if (multiplicationAmount < 0)
-                multiplicationAmount = 1280;
-
-            Buttons.GetIndex("Knockback Multiplication Amount").overlapText = "Knockback Multiplication Amount <color=grey>[</color><color=green>" + (multiplicationAmount / 10f) + "</color><color=grey>]</color>";
+            ModHelpers.CycleInt(ref multiplicationAmount, 0, MaxMultiplier, "Knockback Multiplication Amount", positive);
+            Buttons.GetIndex("Knockback Multiplication Amount").overlapText = ModHelpers.FormatModeLabel("Knockback Multiplication Amount", multiplicationAmount / 10f);
         }
     }
 }
