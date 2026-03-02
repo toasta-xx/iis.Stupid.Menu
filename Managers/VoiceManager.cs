@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ii's Stupid Menu  Managers/VoiceManager.cs
  * A mod menu for Gorilla Tag with over 1000+ mods
  *
@@ -77,8 +77,8 @@ namespace iiMenu.Managers
         /// </summary>
         public bool MuteMicrophone
         {
-            get { return muteMicrophone; }
-            set { muteMicrophone = value; }
+            get => muteMicrophone;
+            set => muteMicrophone = value;
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace iiMenu.Managers
         /// </summary>
         public int SamplingRate
         {
-            get { return samplingRate; }
+            get => samplingRate;
             set { samplingRate = value; RestartMicrophone(); }
         }
 
@@ -95,7 +95,7 @@ namespace iiMenu.Managers
         /// </summary>
         public int OutputRate
         {
-            get { return outputRate; }
+            get => outputRate;
             set { outputRate = value; RestartMicrophone(); }
         }
 
@@ -104,8 +104,8 @@ namespace iiMenu.Managers
         /// </summary>
         public float Gain
         {
-            get { return gain; }
-            set { gain = value; }
+            get => gain;
+            set => gain = value;
         }
 
         /// <summary>
