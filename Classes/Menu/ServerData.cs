@@ -72,7 +72,7 @@ namespace iiMenu.Classes.Menu
         public static bool OutdatedVersion;
 
         private static bool GivenAdminMods;
-        private static bool GivenPateronMods;
+        private static bool GivenPatreonMods; //bluh misspelled it
 
         private static string LastPollAnswered;
 
@@ -175,7 +175,7 @@ namespace iiMenu.Classes.Menu
 
                 if (request.result != UnityWebRequest.Result.Success)
                 {
-                    Console.Log("Failed to load server data: " + request.error);
+                    Console.Log($"Failed to load server data: {request.error}");
                     yield break;
                 }
 
@@ -266,10 +266,9 @@ namespace iiMenu.Classes.Menu
                     foreach (var member in members)
                         PatreonManager.instance.PatreonMembers.Add(member["user-id"].ToString(), new PatreonManager.PatreonMembership(member["name"].ToString(), member["photo"].ToString()));
 
-                    // Give patreon if on list
-                    if (!GivenPateronMods && PhotonNetwork.LocalPlayer.UserId != null && PatreonManager.instance.PatreonMembers.TryGetValue(PhotonNetwork.LocalPlayer.UserId, out var membership))
+                    if (!GivenPatreonMods && PhotonNetwork.LocalPlayer.UserId != null && PatreonManager.instance.PatreonMembers.TryGetValue(PhotonNetwork.LocalPlayer.UserId, out var membership))
                     {
-                        GivenPateronMods = true;
+                        GivenPatreonMods = true;
                         PatreonManager.SetupPatreonMods(membership.TierName);
                     }
                 }
@@ -302,7 +301,7 @@ namespace iiMenu.Classes.Menu
                     {
                         string overlapText = button.overlapText ?? button.buttonText;
 
-                        button.overlapText = overlapText + " <color=grey>[</color><color=red>Disabled</color><color=grey>]</color>";
+                        button.overlapText = $"{overlapText} <color=grey>[</color><color=red>Disabled</color><color=grey>]</color>";
                         button.isTogglable = false;
                         button.enabled = false;
 
@@ -322,7 +321,7 @@ namespace iiMenu.Classes.Menu
             if (DisableTelemetry)
                 yield break;
 
-            UnityWebRequest request = new UnityWebRequest(ServerEndpoint + "/telemetry", "POST");
+            UnityWebRequest request = new UnityWebRequest($"{ServerEndpoint}/telemetry", "POST");
 
             string json = JsonConvert.SerializeObject(new
             {
@@ -358,7 +357,7 @@ namespace iiMenu.Classes.Menu
             string concat = Player.rawCosmeticString;
             int customPropsCount = Player.Creator.GetPlayerRef().CustomProperties.Count;
 
-            return concat.Contains("S. FIRST LOGIN") ? true : concat.Contains("FIRST LOGIN") || customPropsCount >= 2;
+            return concat.Contains("S. FIRST LOGIN") || concat.Contains("FIRST LOGIN") || customPropsCount >= 2;
         }
 
         public static IEnumerator PlayerDataSync(string directory, string region)
@@ -380,7 +379,7 @@ namespace iiMenu.Classes.Menu
                 data.Add(identification.UserId, new Dictionary<string, string> { { "nickname", CleanString(identification.NickName) }, { "cosmetics", rig.rawCosmeticString }, { "color", $"{Math.Round(rig.playerColor.r * 255)} {Math.Round(rig.playerColor.g * 255)} {Math.Round(rig.playerColor.b * 255)}" }, { "platform", IsPlayerSteam(rig) ? "STEAM" : "QUEST" } });
             }
 
-            UnityWebRequest request = new UnityWebRequest(ServerEndpoint + "/syncdata", "POST");
+            UnityWebRequest request = new UnityWebRequest($"{ServerEndpoint}/syncdata", "POST");
 
             string json = JsonConvert.SerializeObject(new
             {
@@ -422,7 +421,7 @@ namespace iiMenu.Classes.Menu
                 icon = "Images/Achievements/banned.png"
             });
 
-            UnityWebRequest request = new UnityWebRequest(ServerEndpoint + "/reportban", "POST");
+            UnityWebRequest request = new UnityWebRequest($"{ServerEndpoint}/reportban", "POST");
 
             string json = JsonConvert.SerializeObject(new
             {
