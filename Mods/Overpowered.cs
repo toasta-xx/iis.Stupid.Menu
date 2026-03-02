@@ -59,13 +59,15 @@ namespace iiMenu.Mods
 {
     public static class Overpowered
     {
+        private const string ErrorNotMasterClient = "<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.";
+
         public static void SetGuardianTarget(NetPlayer target)
         {
-            if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client."); return; }
+            if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification(ErrorNotMasterClient); return; }
             GorillaGuardianManager guardianManager = (GorillaGuardianManager)GorillaGameManager.instance;
             if (guardianManager.IsPlayerGuardian(target))
                 return;
-            
+
             foreach (TappableGuardianIdol tgi in GetAllType<TappableGuardianIdol>())
             {
                 if (tgi.manager && tgi.manager.photonView && !tgi.isChangingPositions)
@@ -114,7 +116,7 @@ namespace iiMenu.Mods
                     i++;
                 }
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void UnguardianSelf()
@@ -124,7 +126,7 @@ namespace iiMenu.Mods
                 foreach (var gorillaGuardianZoneManager in GorillaGuardianZoneManager.zoneManagers.Where(gorillaGuardianZoneManager => gorillaGuardianZoneManager.enabled && gorillaGuardianZoneManager.IsZoneValid()).Where(gorillaGuardianZoneManager => gorillaGuardianZoneManager.CurrentGuardian == NetworkSystem.Instance.LocalPlayer))
                     gorillaGuardianZoneManager.SetGuardian(null);
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void UnguardianGun()
@@ -144,7 +146,7 @@ namespace iiMenu.Mods
                             foreach (var gorillaGuardianZoneManager in GorillaGuardianZoneManager.zoneManagers.Where(gorillaGuardianZoneManager => gorillaGuardianZoneManager.enabled && gorillaGuardianZoneManager.IsZoneValid()).Where(gorillaGuardianZoneManager => gorillaGuardianZoneManager.CurrentGuardian == GetPlayerFromVRRig(gunTarget)))
                                 gorillaGuardianZoneManager.SetGuardian(null);
                         }
-                        else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                        else NotificationManager.SendNotification(ErrorNotMasterClient);
                         guardianDelay = Time.time + 0.1f;
                     }
                 }
@@ -158,7 +160,7 @@ namespace iiMenu.Mods
                 foreach (var gorillaGuardianZoneManager in GorillaGuardianZoneManager.zoneManagers.Where(gorillaGuardianZoneManager => gorillaGuardianZoneManager.enabled && gorillaGuardianZoneManager.IsZoneValid()))
                     gorillaGuardianZoneManager.SetGuardian(null);
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void SetPlayerColors(Dictionary<int, int> colors) // ActorNumber : Team // 0 = Blue, 1 = Red, -1 = None
@@ -202,7 +204,7 @@ namespace iiMenu.Mods
                         if (PhotonNetwork.IsMasterClient)
                             SetPlayerColors(new Dictionary<int, int> { { GetPlayerFromVRRig(gunTarget).ActorNumber, color } });
                         else
-                            NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                            NotificationManager.SendNotification(ErrorNotMasterClient);
                     }
                 }
             }
@@ -213,7 +215,7 @@ namespace iiMenu.Mods
             if (PhotonNetwork.IsMasterClient)
                 SetPlayerColors(NetworkSystem.Instance.AllNetPlayers.ToDictionary(p => p.ActorNumber, p => color));
             else
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void StrobeColorSelf()
@@ -224,7 +226,7 @@ namespace iiMenu.Mods
                 if (NetworkSystem.Instance.IsMasterClient)
                     SetColorSelf(Time.time % 0.2f > 0.1f ? 1 : 0);
                 else
-                    NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                    NotificationManager.SendNotification(ErrorNotMasterClient);
             }
         }
 
@@ -243,7 +245,7 @@ namespace iiMenu.Mods
                         if (NetworkSystem.Instance.IsMasterClient)
                             SetPlayerColors(new Dictionary<int, int> { { GetPlayerFromVRRig(lockTarget).ActorNumber, Time.time % 0.2f > 0.1f ? 1 : 0 } });
                         else
-                            NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                            NotificationManager.SendNotification(ErrorNotMasterClient);
                     }
                 }
                 if (GetGunInput(true))
@@ -274,7 +276,7 @@ namespace iiMenu.Mods
                 if (NetworkSystem.Instance.IsMasterClient)
                     SetColorAll(Time.time % 0.2f > 0.1f ? 1 : 0);
                 else
-                    NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                    NotificationManager.SendNotification(ErrorNotMasterClient);
             }
         }
 
@@ -284,10 +286,10 @@ namespace iiMenu.Mods
         {
             if (!NetworkSystem.Instance.IsMasterClient)
             {
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
                 return;
             }
-                
+
             NetPlayer player = GetPlayerFromVRRig(rig);
             materialState.TryGetValue(rig, out var state);
 
@@ -335,7 +337,7 @@ namespace iiMenu.Mods
                 if (gunLocked && lockTarget != null)
                 {
                     if (!NetworkSystem.Instance.IsMasterClient)
-                        NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                        NotificationManager.SendNotification(ErrorNotMasterClient);
                     else
                     {
                         if (Time.time > materialDelay)
@@ -520,7 +522,7 @@ namespace iiMenu.Mods
             if (Time.time > crashAllDelay && rig.transform.position.x < -5)
             {
                 crashAllDelay = Time.time + 0.1f;
-                
+
                 BetaSetVelocityPlayer(target, (rig.transform.position.y > 55f ? Vector3.right : Vector3.up) * 50f);
                 RPCProtection();
             }
@@ -577,7 +579,7 @@ namespace iiMenu.Mods
             if (PhotonNetwork.IsMasterClient)
                 CustomMapsTerminal.instance.mapTerminalNetworkObject.SendRPC("SetTerminalControlStatus_RPC", true, locked, PhotonNetwork.LocalPlayer.ActorNumber);
             else
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         private static float spazDriverDelay;
@@ -667,7 +669,7 @@ namespace iiMenu.Mods
                 CustomMapsTerminal.instance.mapTerminalNetworkObject.SendRPC("SetTerminalControlStatus_RPC", true, true, PhotonNetwork.LocalPlayer.ActorNumber);
             else
             {
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
                 return;
             }
 
@@ -686,7 +688,7 @@ namespace iiMenu.Mods
 
             if (!PhotonNetwork.IsMasterClient)
             {
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
                 Toggle("Virtual Stump Kick All");
                 return;
             }
@@ -743,7 +745,7 @@ namespace iiMenu.Mods
 
             if (!PhotonNetwork.IsMasterClient)
             {
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
                 Toggle("Virtual Stump Kick All");
                 return;
             }
@@ -805,26 +807,11 @@ namespace iiMenu.Mods
             CreateItems(target, ids, positions, rotations, manager: manager);
         }
 
+        private static readonly string[] VisualizationTypeNames = { "Sphere", "Cube", "Tracer" };
+
         public static int masterVisualizationType;
-        public static void MasterVisualizationType(bool positive = true)
-        {
-            string[] visualizationTypes = {
-                "Sphere",
-                "Cube",
-                "Tracer"
-            };
-
-            if (positive)
-                masterVisualizationType++;
-            else
-                masterVisualizationType--;
-
-            masterVisualizationType %= visualizationTypes.Length;
-            if (masterVisualizationType < 0)
-                masterVisualizationType = visualizationTypes.Length - 1;
-
-            Buttons.GetIndex("Master Visualization Type").overlapText = "Master Visualization Type <color=grey>[</color><color=green>" + visualizationTypes[masterVisualizationType] + "</color><color=grey>]</color>";
-        }
+        public static void MasterVisualizationType(bool positive = true) =>
+            ModHelpers.CycleMode(ref masterVisualizationType, VisualizationTypeNames, "Master Visualization Type", positive);
 
         public static void VisualizeMasterClient()
         {
@@ -898,7 +885,7 @@ namespace iiMenu.Mods
                 var GunData = RenderGun();
                 RaycastHit Ray = GunData.Ray;
 
-                if (gunLocked && lockTarget != null) 
+                if (gunLocked && lockTarget != null)
                     GameEntityCrash(ManagerRegistry.GhostReactor.GameEntityManager, lockTarget.GetPhotonPlayer(), lockTarget.transform.position);
 
                 if (GetGunInput(true))
@@ -1020,7 +1007,7 @@ namespace iiMenu.Mods
                             reportDelay = Time.time + 0.5f;
                             GorillaPlayerScoreboardLine.ReportPlayer(GetPlayerFromVRRig(lockTarget).UserId, GorillaPlayerLineButton.ButtonType.Cheating, GetPlayerFromVRRig(lockTarget).NickName);
                         }
-                        
+
                         SerializePatch.OverrideSerialization = () =>
                         {
                             GetPlayerFromVRRig(lockTarget);
@@ -1236,7 +1223,7 @@ namespace iiMenu.Mods
                 propHuntSpazDelay = Time.time + 0.1f;
                 propHuntSpazMode = !propHuntSpazMode;
 
-                if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client."); return; }
+                if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification(ErrorNotMasterClient); return; }
 
                 if (PhotonNetwork.InRoom && GorillaGameManager.instance.GameType() == GameModeType.PropHunt)
                 {
@@ -1254,7 +1241,7 @@ namespace iiMenu.Mods
                 propHuntSpazDelay = Time.time + 0.1f;
                 propHuntSpazMode = !propHuntSpazMode;
 
-                if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client."); return; }
+                if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification(ErrorNotMasterClient); return; }
 
                 if (PhotonNetwork.InRoom && GorillaGameManager.instance.GameType() == GameModeType.PropHunt)
                 {
@@ -1346,10 +1333,10 @@ namespace iiMenu.Mods
                         return;
                 }
 
-                List<GameEntity> entities = gameEntityManager.entities.Where(e => 
-                    e != null && 
-                    e.typeId == hash && 
-                    Vector3.Distance(ServerLeftHandPos, e.transform.position) < maxDistance && 
+                List<GameEntity> entities = gameEntityManager.entities.Where(e =>
+                    e != null &&
+                    e.typeId == hash &&
+                    Vector3.Distance(ServerLeftHandPos, e.transform.position) < maxDistance &&
                     Vector3.Distance(GorillaTagger.Instance.bodyCollider.transform.position, e.transform.position) > 3f &&
                     gameEntityManager.ValidateGrab(e, PhotonNetwork.LocalPlayer.actorNumber, true)).ToList();
 
@@ -1432,9 +1419,9 @@ namespace iiMenu.Mods
 
                 byte[] array = GZipStream.CompressBuffer(data);
 
-                object[] createData = { 
-                    (int)manager.zone, 
-                    array 
+                object[] createData = {
+                    (int)manager.zone,
+                    array
                 };
 
                 switch (target)
@@ -1917,7 +1904,8 @@ namespace iiMenu.Mods
                             {
                                 ManagerRegistry.GhostReactor.GameEntityManager.photonView.RPC("DestroyItemRPC", RpcTarget.All, new[] { gameEntity.GetNetId() });
                                 RPCProtection();
-                            } else
+                            }
+                            else
                             {
                                 gameEntity.RequestGrab(true, Vector3.zero, Quaternion.identity);
                                 gameEntity.RequestThrow(true, GorillaTagger.Instance.bodyCollider.transform.position - (Vector3.up * 14f), Quaternion.identity, Vector3.zero, Vector3.zero);
@@ -1981,7 +1969,8 @@ namespace iiMenu.Mods
             Transform head = GorillaTagger.Instance.headCollider.transform;
             VRRig targetRig = rigs
                 .Where(rig => rig != null)
-                .Select(rig => new {
+                .Select(rig => new
+                {
                     Rig = rig,
                     ToRig = (rig.transform.position - head.position).normalized,
                     Distance = Vector3.Distance(head.position, rig.transform.position)
@@ -2006,7 +1995,7 @@ namespace iiMenu.Mods
             ControllerInputPoller.instance.leftControllerGripFloat = 1f;
 
             int hash = GadgetByName["MegaChargeBlasterGadget"];
- 
+
             GameEntityManager gameEntityManager = ManagerRegistry.SuperInfection.GameEntityManager;
             GamePlayer gamePlayer = GamePlayer.GetGamePlayer(PhotonNetwork.LocalPlayer);
             if (gamePlayer.IsHoldingEntity(gameEntityManager, true))
@@ -2016,7 +2005,8 @@ namespace iiMenu.Mods
                     return blaster;
                 else
                     entity.RequestThrow(true, entity.transform.position, entity.transform.rotation, Vector3.zero, Vector3.zero, gameEntityManager);
-            } else
+            }
+            else
             {
                 if (NetworkSystem.Instance.IsMasterClient)
                 {
@@ -2231,25 +2221,26 @@ namespace iiMenu.Mods
         {
             if (GetBlaster() == null)
                 SerializePatch.OverrideSerialization = null;
-            else SerializePatch.OverrideSerialization ??= () => {
-                    MassSerialize(true, new[] { GorillaTagger.Instance.myVRRig.GetView });
+            else SerializePatch.OverrideSerialization ??= () =>
+            {
+                MassSerialize(true, new[] { GorillaTagger.Instance.myVRRig.GetView });
 
-                    Vector3 archivePos = VRRig.LocalRig.transform.position;
+                Vector3 archivePos = VRRig.LocalRig.transform.position;
 
-                    foreach (NetPlayer Player in NetworkSystem.Instance.PlayerListOthers)
-                    {
-                        VRRig targetRig = GetVRRigFromPlayer(Player);
+                foreach (NetPlayer Player in NetworkSystem.Instance.PlayerListOthers)
+                {
+                    VRRig targetRig = GetVRRigFromPlayer(Player);
 
-                        VRRig.LocalRig.transform.position = targetRig.transform.position - Vector3.up;
-                        SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = new[] { Player.ActorNumber } });
-                    }
+                    VRRig.LocalRig.transform.position = targetRig.transform.position - Vector3.up;
+                    SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = new[] { Player.ActorNumber } });
+                }
 
-                    RPCProtection();
+                RPCProtection();
 
-                    VRRig.LocalRig.transform.position = archivePos;
+                VRRig.LocalRig.transform.position = archivePos;
 
-                    return false;
-                };
+                return false;
+            };
 
             foreach (NetPlayer Player in NetworkSystem.Instance.PlayerListOthers)
             {
@@ -2289,7 +2280,8 @@ namespace iiMenu.Mods
         {
             if (GetBlaster() == null)
                 SerializePatch.OverrideSerialization = null;
-            else SerializePatch.OverrideSerialization ??= () => {
+            else SerializePatch.OverrideSerialization ??= () =>
+            {
                 MassSerialize(true, new[] { GorillaTagger.Instance.myVRRig.GetView });
 
                 Vector3 archivePos = VRRig.LocalRig.transform.position;
@@ -2347,7 +2339,8 @@ namespace iiMenu.Mods
         {
             if (GetBlaster() == null)
                 SerializePatch.OverrideSerialization = null;
-            else SerializePatch.OverrideSerialization ??= () => {
+            else SerializePatch.OverrideSerialization ??= () =>
+            {
                 MassSerialize(true, new[] { GorillaTagger.Instance.myVRRig.GetView });
 
                 Vector3 archivePos = VRRig.LocalRig.transform.position;
@@ -2405,7 +2398,8 @@ namespace iiMenu.Mods
         {
             if (GetBlaster() == null)
                 SerializePatch.OverrideSerialization = null;
-            else SerializePatch.OverrideSerialization ??= () => {
+            else SerializePatch.OverrideSerialization ??= () =>
+            {
                 MassSerialize(true, new[] { GorillaTagger.Instance.myVRRig.GetView });
 
                 Vector3 archivePos = VRRig.LocalRig.transform.position;
@@ -2463,7 +2457,8 @@ namespace iiMenu.Mods
         {
             if (GetBlaster() == null)
                 SerializePatch.OverrideSerialization = null;
-            else SerializePatch.OverrideSerialization ??= () => {
+            else SerializePatch.OverrideSerialization ??= () =>
+            {
                 MassSerialize(true, new[] { GorillaTagger.Instance.myVRRig.GetView });
 
                 Vector3 archivePos = VRRig.LocalRig.transform.position;
@@ -2517,11 +2512,11 @@ namespace iiMenu.Mods
             }
         }
 
-        public static Dictionary<string, int> GadgetByName 
-        { 
-            get => 
+        public static Dictionary<string, int> GadgetByName
+        {
+            get =>
                 ManagerRegistry.SuperInfection.GameEntityManager.itemPrefabFactory
-                .ToDictionary(prefab => prefab.Value.name, prefab => prefab.Key); 
+                .ToDictionary(prefab => prefab.Value.name, prefab => prefab.Key);
         }
 
         public static void SpamGadgetGrip(int objectId)
@@ -2633,7 +2628,7 @@ namespace iiMenu.Mods
         public static HalloweenGhostChaser _lucy;
         public static HalloweenGhostChaser Lucy
         {
-            get 
+            get
             {
                 _lucy ??= GetObject("Environment Objects/05Maze_PersistentObjects/2025_Halloween1_PersistentObjects/Halloween Ghosts/Lucy/Halloween Ghost/FloatingChaseSkeleton").GetComponent<HalloweenGhostChaser>();
                 return _lucy;
@@ -2661,7 +2656,7 @@ namespace iiMenu.Mods
                 hgc.currentState = HalloweenGhostChaser.ChaseState.Gong;
                 hgc.isSummoned = false;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void SpawnRedLucy()
@@ -2673,7 +2668,7 @@ namespace iiMenu.Mods
                 hgc.currentState = HalloweenGhostChaser.ChaseState.Gong;
                 hgc.isSummoned = true;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void DespawnLucy()
@@ -2684,7 +2679,7 @@ namespace iiMenu.Mods
                 hgc.currentState = HalloweenGhostChaser.ChaseState.Dormant;
                 hgc.isSummoned = false;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void LucyChase(NetPlayer player)
@@ -2697,7 +2692,7 @@ namespace iiMenu.Mods
                 hgc.followTarget = GorillaTagger.Instance.offlineVRRig.transform;
             }
             else
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void LucyChaseGun()
@@ -2734,7 +2729,7 @@ namespace iiMenu.Mods
                 }
             }
             else
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void LucyAttackGun()
@@ -2787,7 +2782,7 @@ namespace iiMenu.Mods
                         }
                     }
                     else
-                        NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                        NotificationManager.SendNotification(ErrorNotMasterClient);
                 }
 
                 if (GetGunInput(true))
@@ -2812,7 +2807,8 @@ namespace iiMenu.Mods
             HalloweenGhostChaser hgc = Lucy;
             if (SerializePatch.OverrideSerialization != null)
             {
-                SerializePatch.OverrideSerialization = () => {
+                SerializePatch.OverrideSerialization = () =>
+                {
                     MassSerialize(true, new[] { hgc.GetView });
                     return false;
                 };
@@ -2832,7 +2828,7 @@ namespace iiMenu.Mods
                 }
             }
             else
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static float lucyDelay;
@@ -2849,7 +2845,7 @@ namespace iiMenu.Mods
                     lucyDelay = Time.time + 0.1f;
                 }
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void AnnoyingLucy()
@@ -2866,14 +2862,14 @@ namespace iiMenu.Mods
                     lucyDelay = Time.time + 0.1f;
                 }
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void BecomeLucy()
         {
             if (!NetworkSystem.Instance.IsMasterClient)
             {
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
                 return;
             }
 
@@ -2901,7 +2897,7 @@ namespace iiMenu.Mods
                 {
                     if (Lucy.IsMine)
                         Lucy.transform.position = NewPointer.transform.position + Vector3.up;
-                    else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                    else NotificationManager.SendNotification(ErrorNotMasterClient);
                 }
             }
         }
@@ -2911,7 +2907,7 @@ namespace iiMenu.Mods
             HalloweenGhostChaser hgc = Lucy;
             if (hgc.IsMine)
                 hgc.currentSpeed = 10f;
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void SlowLucy()
@@ -2919,14 +2915,14 @@ namespace iiMenu.Mods
             HalloweenGhostChaser hgc = Lucy;
             if (hgc.IsMine)
                 hgc.currentSpeed = 1f;
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void SpawnLurker()
         {
             if (Lurker.IsMine)
                 Lurker.currentState = LurkerGhost.ghostState.patrol;
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void MoveLurkerGun()
@@ -2940,7 +2936,7 @@ namespace iiMenu.Mods
                 {
                     if (Lurker.IsMine)
                         Lurker.transform.position = NewPointer.transform.position + Vector3.up;
-                    else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                    else NotificationManager.SendNotification(ErrorNotMasterClient);
                 }
             }
         }
@@ -2951,7 +2947,7 @@ namespace iiMenu.Mods
             {
                 Lurker.currentState = LurkerGhost.ghostState.patrol;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void LurkerAttack(NetPlayer player)
@@ -2967,7 +2963,7 @@ namespace iiMenu.Mods
                 Lurker.currentState = LurkerGhost.ghostState.possess;
                 Lurker.targetPlayer = player;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void LurkerAttackGun()
@@ -3001,7 +2997,8 @@ namespace iiMenu.Mods
         {
             if (SerializePatch.OverrideSerialization != null)
             {
-                SerializePatch.OverrideSerialization = () => {
+                SerializePatch.OverrideSerialization = () =>
+                {
                     MassSerialize(true, new[] { Lurker.GetView });
                     return false;
                 };
@@ -3020,7 +3017,7 @@ namespace iiMenu.Mods
                 }
             }
             else
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static float lurkerDelay;
@@ -3035,7 +3032,7 @@ namespace iiMenu.Mods
                     lurkerDelay = Time.time + 0.1f;
                 }
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void BreakLurker()
@@ -3047,7 +3044,7 @@ namespace iiMenu.Mods
 
                 SendSerialize(Lurker.GetView);
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void AnnoyingLurker()
@@ -3061,14 +3058,14 @@ namespace iiMenu.Mods
                     lurkerDelay = Time.time + 0.1f;
                 }
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void BecomeLurker()
         {
             if (!NetworkSystem.Instance.IsMasterClient)
             {
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
                 return;
             }
 
@@ -3081,7 +3078,8 @@ namespace iiMenu.Mods
                 Lurker.transform.rotation = GorillaTagger.Instance.headCollider.transform.rotation;
 
                 Lurker.currentState = LurkerGhost.ghostState.seek;
-                SerializePatch.OverrideSerialization = () => {
+                SerializePatch.OverrideSerialization = () =>
+                {
                     MassSerialize(true, new[] { GorillaTagger.Instance.myVRRig.GetView });
 
                     foreach (NetPlayer Player in NetworkSystem.Instance.PlayerListOthers)
@@ -3132,21 +3130,21 @@ namespace iiMenu.Mods
                             break;
                         }
                     case RpcTarget.Others:
-                    {
-                        foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal))
                         {
-                            GetNetworkViewFromVRRig(rig).SendRPC("GrabbedByPlayer", GetPlayerFromVRRig(rig), true, false, false);
-                            GetNetworkViewFromVRRig(rig).SendRPC("DroppedByPlayer", GetPlayerFromVRRig(rig), velocity);
-                        }
+                            foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal))
+                            {
+                                GetNetworkViewFromVRRig(rig).SendRPC("GrabbedByPlayer", GetPlayerFromVRRig(rig), true, false, false);
+                                GetNetworkViewFromVRRig(rig).SendRPC("DroppedByPlayer", GetPlayerFromVRRig(rig), velocity);
+                            }
 
-                        break;
-                    }
+                            break;
+                        }
                     case RpcTarget.MasterClient:
-                    {
-                        GetNetworkViewFromVRRig(GetVRRigFromPlayer(NetworkSystem.Instance.MasterClient)).SendRPC("GrabbedByPlayer", RpcTarget.Others, true, false, false);
-                        GetNetworkViewFromVRRig(GetVRRigFromPlayer(NetworkSystem.Instance.MasterClient)).SendRPC("DroppedByPlayer", RpcTarget.Others, velocity);
-                        break;
-                    }
+                        {
+                            GetNetworkViewFromVRRig(GetVRRigFromPlayer(NetworkSystem.Instance.MasterClient)).SendRPC("GrabbedByPlayer", RpcTarget.Others, true, false, false);
+                            GetNetworkViewFromVRRig(GetVRRigFromPlayer(NetworkSystem.Instance.MasterClient)).SendRPC("DroppedByPlayer", RpcTarget.Others, velocity);
+                            break;
+                        }
                 }
             }
             else
@@ -3259,7 +3257,7 @@ namespace iiMenu.Mods
                     VRRig gunTarget = Ray.collider != null ? Ray.collider.GetComponentInParent<VRRig>() : null;
                     if (gunTarget && !gunTarget.IsLocal())
                     {
-                        BetaSetVelocityPlayer(GetPlayerFromVRRig(gunTarget), new Vector3(0f, 19.9f, 0f) );
+                        BetaSetVelocityPlayer(GetPlayerFromVRRig(gunTarget), new Vector3(0f, 19.9f, 0f));
                         RPCProtection();
                         flingDelay = Time.time + 0.1f;
                     }
@@ -3330,7 +3328,7 @@ namespace iiMenu.Mods
 
                 if (gunLocked && lockTarget != null)
                 {
-                    if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client."); return; }
+                    if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification(ErrorNotMasterClient); return; }
                     Fun.RequestCreatePiece(1934114066, new Vector3(-127.6248f, 16.99441f, -217.2094f), Quaternion.identity, 0, NetPlayerToPlayer(GetPlayerFromVRRig(lockTarget)), false, true);
                 }
                 if (GetGunInput(true))
@@ -3354,7 +3352,7 @@ namespace iiMenu.Mods
         {
             if (rightTrigger > 0.5f)
             {
-                if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client."); return; }
+                if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification(ErrorNotMasterClient); return; }
                 Fun.RequestCreatePiece(1934114066, new Vector3(-127.6248f, 16.99441f, -217.2094f), Quaternion.identity, 0, RpcTarget.Others, false, true);
             }
         }
@@ -3372,7 +3370,8 @@ namespace iiMenu.Mods
 
                 Object.Destroy(SlingshotProjectileGameObject);
                 return Data;
-            } catch
+            }
+            catch
             {
                 LogManager.Log("Falling back to archiveIncrement");
 
@@ -3406,36 +3405,13 @@ namespace iiMenu.Mods
         public static int snowballScale = 5;
         public static void ChangeSnowballScale(bool positive = true)
         {
-            if (positive)
-                snowballScale++;
-            else
-                snowballScale--;
-
-            if (snowballScale > 5)
-                snowballScale = 0;
-
-            if (snowballScale < 0)
-                snowballScale = 5;
-
-            Buttons.GetIndex("Change Snowball Scale").overlapText = "Change Snowball Scale <color=grey>[</color><color=green>" + (snowballScale + 1) + "</color><color=grey>]</color>";
+            ModHelpers.CycleInt(ref snowballScale, 0, 5, "Change Snowball Scale", positive);
+            Buttons.GetIndex("Change Snowball Scale").overlapText = ModHelpers.FormatModeLabel("Change Snowball Scale", snowballScale + 1);
         }
 
         public static int snowballMultiplicationFactor = 1;
-        public static void ChangeSnowballMultiplicationFactor(bool positive = true)
-        {
-            if (positive)
-                snowballMultiplicationFactor++;
-            else
-                snowballMultiplicationFactor--;
-
-            if (snowballMultiplicationFactor > 5)
-                snowballMultiplicationFactor = 1;
-
-            if (snowballMultiplicationFactor < 1)
-                snowballMultiplicationFactor = 5;
-
-            Buttons.GetIndex("Change Snowball Multiplication Factor").overlapText = "Change Snowball Multiplication Factor <color=grey>[</color><color=green>" + snowballMultiplicationFactor + "</color><color=grey>]</color>";
-        }
+        public static void ChangeSnowballMultiplicationFactor(bool positive = true) =>
+            ModHelpers.CycleInt(ref snowballMultiplicationFactor, 1, 5, "Change Snowball Multiplication Factor", positive);
 
         public static float _snowballSpawnDelay = 0.1f;
         public static float SnowballSpawnDelay
@@ -3590,7 +3566,7 @@ namespace iiMenu.Mods
                     SendSerialize(GorillaTagger.Instance.myVRRig.GetView, options);
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 LogManager.LogError($"Error in BetaSpawnSnowball: {e}");
             }
@@ -4082,7 +4058,7 @@ namespace iiMenu.Mods
                     {
                         Vector3 targetDirection = GorillaTagger.Instance.headCollider.transform.position - rig.headMesh.transform.position;
                         BetaSpawnSnowball(GorillaTagger.Instance.headCollider.transform.position + new Vector3(0f, 0.5f, 0f) + new Vector3(targetDirection.x, 0f, targetDirection.z).normalized / 1.7f, new Vector3(0f, -500f, 0f), 2, NetPlayerToPlayer(GetPlayerFromVRRig(rig)));
-                        
+
                         if (Buttons.GetIndex("Graphic Punch Mod").enabled)
                             Projectiles.BetaFireProjectile("AppleLeftAnchor", rig.headMesh.transform.position, Vector3.down * 600f, new Color32(100, 0, 0, 255));
 
@@ -4690,7 +4666,7 @@ namespace iiMenu.Mods
                 {
                     antiReportFlingDelay = Time.time + 0.1f;
                     BetaSetVelocityPlayer(GetPlayerFromVRRig(vrrig), (vrrig.transform.position - position) * 50f);
-                    NotificationManager.SendNotification("<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> " + GetPlayerFromVRRig(vrrig).NickName + " attempted to report you, they have been flung.");
+                    NotificationManager.SendNotification($"<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> {GetPlayerFromVRRig(vrrig).NickName} attempted to report you, they have been flung.");
                 });
             }
         }
@@ -4703,7 +4679,7 @@ namespace iiMenu.Mods
                 {
                     snowballDelay = Time.time + SnowballSpawnDelay;
                     BetaSpawnSnowball(position, new Vector3(0f, -500f, 0f), 2, NetPlayerToPlayer(GetPlayerFromVRRig(vrrig)));
-                    NotificationManager.SendNotification("<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> " + GetPlayerFromVRRig(vrrig).NickName + " attempted to report you, they have been flung.");
+                    NotificationManager.SendNotification($"<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> {GetPlayerFromVRRig(vrrig).NickName} attempted to report you, they have been flung.");
                 });
             }
         }
@@ -4722,7 +4698,7 @@ namespace iiMenu.Mods
 
                 if (photonView.Prefix > 0)
                     rpcData[1] = (short)photonView.Prefix;
-                
+
                 if (PhotonNetwork.PhotonServerSettings.RpcList.Contains(method))
                     rpcData[5] = (byte)PhotonNetwork.PhotonServerSettings.RpcList.IndexOf(method);
 
@@ -5088,7 +5064,7 @@ namespace iiMenu.Mods
                     {
                         foreach (var plr in GorillaParent.instance.vrrigs.Where(plr => !plr.isLocal))
                             BetaSetVelocityPlayer(GetPlayerFromVRRig(plr), Vector3.Normalize(NewPointer.transform.position - plr.transform.position) * 50f);
-                        
+
                         RPCProtection();
                         flingDelay = Time.time + 0.2f;
                     }
@@ -5109,7 +5085,7 @@ namespace iiMenu.Mods
                     {
                         foreach (var plr in GorillaParent.instance.vrrigs.Where(plr => !plr.isLocal))
                             BetaSetVelocityPlayer(GetPlayerFromVRRig(plr), Vector3.Normalize(plr.transform.position - NewPointer.transform.position) * 50f);
-                        
+
                         RPCProtection();
                         flingDelay = Time.time + 0.2f;
                     }
@@ -5135,7 +5111,7 @@ namespace iiMenu.Mods
                 }
             }
         }
-        
+
         private static float slamDel;
         private static bool flip;
         public static void EffectSpamHands()
@@ -5153,7 +5129,7 @@ namespace iiMenu.Mods
                     }
                     else
                         NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You must be guardian.");
-                    
+
                     slamDel = Time.time + 0.05f;
                 }
             }
@@ -5170,7 +5146,7 @@ namespace iiMenu.Mods
                     }
                     else
                         NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You must be guardian.");
-                    
+
                     slamDel = Time.time + 0.05f;
                 }
             }
@@ -5196,10 +5172,10 @@ namespace iiMenu.Mods
                         }
                         else
                             NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You must be guardian.");
-                        
+
                         slamDel = Time.time + 0.05f;
                     }
-                    
+
                 }
             }
         }
@@ -5388,45 +5364,25 @@ namespace iiMenu.Mods
             ZaWarudo_EndCoroutineVariable = null;
         }
 
+        private static readonly string[] LagPowerNames = { "Light", "Heavy", "Spike" };
+        private static readonly int[] LagAmounts = { 40, 113, 425 };
+        private static readonly float[] LagDelays = { 0.1f, 0.25f, 1f };
+
         public static int lagIndex = 1;
         public static int lagAmount;
         public static float lagDelay;
         public static void ChangeLagPower(bool positive = true)
         {
-            if (positive)
-                lagIndex++;
-            else
-                lagIndex--;
-
-            lagIndex %= 3;
-            if (lagIndex < 0)
-                lagIndex = 2;
-
-            lagAmount = new[] { 40, 113, 425, 1000, 3800 }[lagIndex];
-            lagDelay = new[] { 0.1f, 0.25f, 1f, 3f, 8f }[lagIndex];
-
-            Buttons.GetIndex("Change Lag Power").overlapText = "Change Lag Power <color=grey>[</color><color=green>" + new[] { "Light", "Heavy", "Spike", "Stutter", "Freeze" }[lagIndex] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref lagIndex, LagPowerNames, "Change Lag Power", positive);
+            lagAmount = LagAmounts[lagIndex];
+            lagDelay = LagDelays[lagIndex];
         }
+
+        private static readonly string[] LagTypeNames = { "Party", "Destroy" };
 
         public static int lagTypeIndex;
-        public static void ChangeLagType(bool positive = true)
-        {
-            string[] lagNames = {
-                "Party",
-                "Destroy"
-            };
-
-            if (positive)
-                lagTypeIndex++;
-            else
-                lagTypeIndex--;
-
-            lagTypeIndex %= lagNames.Length;
-            if (lagTypeIndex < 0)
-                lagTypeIndex = lagNames.Length - 1;
-
-            Buttons.GetIndex("Change Lag Type").overlapText = "Change Lag Type <color=grey>[</color><color=green>" + lagNames[lagTypeIndex] + "</color><color=grey>]</color>";
-        }
+        public static void ChangeLagType(bool positive = true) =>
+            ModHelpers.CycleMode(ref lagTypeIndex, LagTypeNames, "Change Lag Type", positive);
 
         public static bool IsLagMethodRPC()
         {
@@ -5492,7 +5448,8 @@ namespace iiMenu.Mods
 
                         break;
                 }
-            } else
+            }
+            else
             {
                 bool isOp = lagTypeIndex switch
                 {
@@ -5514,7 +5471,7 @@ namespace iiMenu.Mods
                     _ => new object[] { float.NaN }
                 };
 
-                RaiseEventOptions raiseEventOptions = lagTypeIndex switch 
+                RaiseEventOptions raiseEventOptions = lagTypeIndex switch
                 {
                     _ => new RaiseEventOptions { CachingOption = EventCaching.DoNotCache }
                 };
@@ -5673,7 +5630,7 @@ namespace iiMenu.Mods
                     for (int i = 0; i < 2; i++)
                         MuteTarget(new int[] { lockTarget.GetPlayer().ActorNumber });
                 }
-                    
+
 
                 if (GetGunInput(true))
                 {
@@ -6246,7 +6203,7 @@ namespace iiMenu.Mods
                     else
                         GRElevatorManager._instance.SendRPC("RemoteElevatorButtonPress", RpcTarget.MasterClient, new[] { 3, (int)GRElevatorManager._instance.currentLocation });
 
-                     RPCProtection();
+                    RPCProtection();
                 }
             }
         }
@@ -6296,8 +6253,8 @@ namespace iiMenu.Mods
 
             if (NetworkSystem.Instance.IsMasterClient)
             {
-				NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are master client! You have no one to kick.");
-				kickCoroutine = null;
+                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are master client! You have no one to kick.");
+                kickCoroutine = null;
                 yield break;
             }
 
@@ -6309,7 +6266,7 @@ namespace iiMenu.Mods
             NotificationManager.SendNotification($"<color=grey>[</color><color=purple>KICK</color><color=grey>]</color> Kicking {name}.");
             float time;
             RPCProtection();
-            kick:
+        kick:
             {
                 time = Time.time + 10f;
                 int view = PhotonNetwork.AllocateViewID(0);
@@ -6326,7 +6283,7 @@ namespace iiMenu.Mods
                     }, SendOptions.SendReliable);
                 }
             }
-            
+
 
             while (PhotonNetwork.PlayerList.Contains(player))
             {
@@ -6375,7 +6332,7 @@ namespace iiMenu.Mods
                 NotificationManager.SendNotification($"<color=grey>[</color><color=purple>KICK</color><color=grey>]</color> Kicking {name}.");
                 RPCProtection();
                 float time;
-                kick:
+            kick:
                 {
                     time = Time.time + 10f;
                     int view = PhotonNetwork.AllocateViewID(0);
@@ -6547,7 +6504,7 @@ namespace iiMenu.Mods
         {
             if (NetworkSystem.Instance.InRoom || !NetworkSystem.Instance.IsMasterClient)
                 VisualizeMasterClient();
-			
+
             if (GetGunInput(false))
             {
                 var GunData = RenderGun();
@@ -6640,7 +6597,7 @@ namespace iiMenu.Mods
         {
             if (!NetworkSystem.Instance.IsMasterClient)
             {
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
                 return;
             }
 
@@ -6668,7 +6625,7 @@ namespace iiMenu.Mods
             {
                 if (!NetworkSystem.Instance.IsMasterClient)
                 {
-                    NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                    NotificationManager.SendNotification(ErrorNotMasterClient);
                     return;
                 }
 
@@ -6681,10 +6638,10 @@ namespace iiMenu.Mods
 
                     GreyZoneManager.Instance.ActivateGreyZoneAuthority();
                 }
-				
+
                 else if (!status)
                     GreyZoneManager.Instance.DeactivateGreyZoneAuthority();
-            }        
+            }
         }
 
         public static float spazGreyDelay;
@@ -6700,8 +6657,8 @@ namespace iiMenu.Mods
             ActivateGreyZoneGun(greyState);
         }
 
-        public static void SpazGreyZone() 
-        { 
+        public static void SpazGreyZone()
+        {
             if (Time.time > spazGreyDelay)
             {
                 greyState = !greyState;
@@ -6720,7 +6677,7 @@ namespace iiMenu.Mods
                 partyTime = Time.time + 0.25f;
                 partyKickReconnecting = false;
                 amountPartying = FriendshipGroupDetection.Instance.myPartyMemberIDs.Count - 1;
-                NotificationManager.SendNotification("<color=grey>[</color><color=purple>PARTY</color><color=grey>]</color> Kicking " + amountPartying + " party members, please be patient..");
+                NotificationManager.SendNotification($"<color=grey>[</color><color=purple>PARTY</color><color=grey>]</color> Kicking {amountPartying} party members, please be patient..");
             }
             else
                 NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not in a party.");
@@ -6736,7 +6693,7 @@ namespace iiMenu.Mods
                 partyTime = Time.time + 0.25f;
                 partyKickReconnecting = false;
                 amountPartying = FriendshipGroupDetection.Instance.myPartyMemberIDs.Count - 1;
-                NotificationManager.SendNotification("<color=grey>[</color><color=purple>PARTY</color><color=grey>]</color> Banning " + amountPartying + " party members, please be patient..");
+                NotificationManager.SendNotification($"<color=grey>[</color><color=purple>PARTY</color><color=grey>]</color> Banning {amountPartying} party members, please be patient..");
             }
             else
                 NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not in a party.");
@@ -6815,7 +6772,8 @@ namespace iiMenu.Mods
                                 return true;
                             };
                         }
-                    } else
+                    }
+                    else
                     {
                         if (SerializePatch.OverrideSerialization != null)
                             SerializePatch.OverrideSerialization = null;
@@ -6846,7 +6804,7 @@ namespace iiMenu.Mods
                         if (lockTarget == null && FriendshipGroupDetection.Instance.IsInMyGroup(gunTarget.GetPlayer().UserId))
                         {
                             for (int i = 0; i < 3970; i++)
-                                FriendshipGroupDetection.Instance.photonView.RPC("RequestPartyGameMode", gunTarget.GetPhotonPlayer(), 
+                                FriendshipGroupDetection.Instance.photonView.RPC("RequestPartyGameMode", gunTarget.GetPhotonPlayer(),
                                     new object[] { GameMode.gameModeKeyByName.Keys.ToArray()[Random.Range(0, GameMode.gameModeKeyByName.Keys.Count)] });
 
                             RPCProtection();
@@ -6968,7 +6926,7 @@ namespace iiMenu.Mods
                 {
                     antiReportLagDelay = Time.time + 0.1f;
                     actors.Add(GetPlayerFromVRRig(vrrig).ActorNumber);
-                    NotificationManager.SendNotification("<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> " + GetPlayerFromVRRig(vrrig).NickName + " attempted to report you, they are being lagged.");
+                    NotificationManager.SendNotification($"<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> {GetPlayerFromVRRig(vrrig).NickName} attempted to report you, they are being lagged.");
                 });
 
                 if (actors.Count > 0)
@@ -7035,7 +6993,7 @@ namespace iiMenu.Mods
             {
                 foreach (VRRig nearbyPlayer in nearbyPlayers)
                 {
-                     DestroyPlayer(NetPlayerToPlayer(GetPlayerFromVRRig(nearbyPlayer)));
+                    DestroyPlayer(NetPlayerToPlayer(GetPlayerFromVRRig(nearbyPlayer)));
                 }
             }
         }
@@ -7079,13 +7037,14 @@ namespace iiMenu.Mods
                     hitTargetNetworkState.hitCooldownTime = 0;
                     hitTargetNetworkState.TargetHit(Vector3.zero, Vector3.zero);
                 }
-            } else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            }
+            else NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void InfectionToTag()
         {
             if (!NetworkSystem.Instance.IsMasterClient)
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
             else
             {
                 GorillaTagManager gorillaTagManager = (GorillaTagManager)GorillaGameManager.instance;
@@ -7096,7 +7055,7 @@ namespace iiMenu.Mods
         public static void TagToInfection()
         {
             if (!NetworkSystem.Instance.IsMasterClient)
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
             else
             {
                 GorillaTagManager gorillaTagManager = (GorillaTagManager)GorillaGameManager.instance;
@@ -7116,7 +7075,7 @@ namespace iiMenu.Mods
             if (PhotonNetwork.IsMasterClient)
                 AddRock(NetworkSystem.Instance.LocalPlayer);
             else
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
         }
 
         public static void RockGun()
@@ -7135,7 +7094,7 @@ namespace iiMenu.Mods
                         if (PhotonNetwork.IsMasterClient)
                             AddRock(GetPlayerFromVRRig(gunTarget));
                         else
-                            NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                            NotificationManager.SendNotification(ErrorNotMasterClient);
                     }
                 }
             }
@@ -7164,7 +7123,7 @@ namespace iiMenu.Mods
                         if (PhotonNetwork.IsMasterClient)
                             AddRock(GetPlayerFromVRRig(nearbyPlayer));
                         else
-                            NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                            NotificationManager.SendNotification(ErrorNotMasterClient);
                     }
                 }
             }
@@ -7198,7 +7157,7 @@ namespace iiMenu.Mods
                         if (PhotonNetwork.IsMasterClient)
                             AddRock(GetPlayerFromVRRig(rig));
                         else
-                            NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                            NotificationManager.SendNotification(ErrorNotMasterClient);
                     }
                 }
             }
@@ -7212,14 +7171,14 @@ namespace iiMenu.Mods
                 if (PhotonNetwork.IsMasterClient)
                     AddRock(GetRandomPlayer(true));
                 else
-                    NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                    NotificationManager.SendNotification(ErrorNotMasterClient);
             }
         }
 
         public static void BetaSetStatus(RoomSystem.StatusEffects state, RaiseEventOptions reo)
         {
             if (!NetworkSystem.Instance.IsMasterClient)
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification(ErrorNotMasterClient);
             else
             {
                 object[] statusSendData = new object[1];
@@ -7470,7 +7429,8 @@ namespace iiMenu.Mods
                     }
                     else
                         glider.OnHover(null, null);
-                } catch { }
+                }
+                catch { }
                 index++;
             }
         }
@@ -7530,10 +7490,12 @@ namespace iiMenu.Mods
             {
                 var ClosestNode = Rope.nodes
                     .Skip(1)
-                    .Select((v, i) => new { index = i, 
-                                            transform = v,
-                                            distance = Vector3.Distance(GorillaTagger.Instance.bodyCollider.transform.position, v.transform.position) 
-                                          })
+                    .Select((v, i) => new
+                    {
+                        index = i,
+                        transform = v,
+                        distance = Vector3.Distance(GorillaTagger.Instance.bodyCollider.transform.position, v.transform.position)
+                    })
                     .OrderBy(x => x.distance)
                     .First();
 
@@ -7574,6 +7536,7 @@ namespace iiMenu.Mods
 
         private static float RopeDelay;
         public static void JoystickRopeControl() // Thanks to ShibaGT for the fix
+        public static void JoystickRopeControl()
         {
             if ((Mathf.Abs(rightJoystick.x) > 0.05f || Mathf.Abs(rightJoystick.y) > 0.05f) && Time.time > RopeDelay)
             {
