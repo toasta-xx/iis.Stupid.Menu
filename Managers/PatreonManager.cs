@@ -129,15 +129,7 @@ namespace iiMenu.Managers
 
                     if (iconMaterial == null)
                     {
-                        iconMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-
-                        iconMaterial.SetFloat("_Surface", 1);
-                        iconMaterial.SetFloat("_Blend", 0);
-                        iconMaterial.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
-                        iconMaterial.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
-                        iconMaterial.SetFloat("_ZWrite", 0);
-                        iconMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                        iconMaterial.renderQueue = (int)RenderQueue.Transparent;
+                        iconMaterial = MaterialUtilities.CreateTransparentUnlitMaterial();
                     }
 
                     playerIndicator.GetComponent<Renderer>().material = iconMaterial;
@@ -203,26 +195,17 @@ namespace iiMenu.Managers
             catch { }
         }
 
-        public static void ExecuteCommand(string command, RaiseEventOptions options, params object[] parameters)
-        {
-            if (!NetworkSystem.Instance.InRoom)
-                return;
-
-            PhotonNetwork.RaiseEvent(PatreonByte,
-                new object[] { command }
-                    .Concat(parameters)
-                    .ToArray(),
-            options, SendOptions.SendReliable);
-        }
+        public static void ExecuteCommand(string command, RaiseEventOptions options, params object[] parameters) =>
+            NetworkHelpers.RaiseCommand(PatreonByte, command, options, parameters);
 
         public static void ExecuteCommand(string command, int[] targets, params object[] parameters) =>
-            ExecuteCommand(command, new RaiseEventOptions { TargetActors = targets }, parameters);
+            NetworkHelpers.RaiseCommand(PatreonByte, command, targets, parameters);
 
         public static void ExecuteCommand(string command, int target, params object[] parameters) =>
-            ExecuteCommand(command, new RaiseEventOptions { TargetActors = new[] { target } }, parameters);
+            NetworkHelpers.RaiseCommand(PatreonByte, command, target, parameters);
 
         public static void ExecuteCommand(string command, ReceiverGroup target, params object[] parameters) =>
-            ExecuteCommand(command, new RaiseEventOptions { Receivers = target }, parameters);
+            NetworkHelpers.RaiseCommand(PatreonByte, command, target, parameters);
 
 
         #region Patreon Mods
