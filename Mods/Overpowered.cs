@@ -1416,18 +1416,20 @@ namespace iiMenu.Mods
                 sendData ??= Enumerable.Repeat(0L, hashes.Length).ToArray();
 
                 byte[] data = new byte[15360];
-                MemoryStream memoryStream = new MemoryStream(data);
-                BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
-                binaryWriter.Write(hashes.Length);
-
-                for (int i = 0; i < hashes.Length; i++)
+                using (MemoryStream memoryStream = new MemoryStream(data))
+                using (BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
                 {
-                    binaryWriter.Write(manager.CreateTypeNetId(hashes[i]));
-                    binaryWriter.Write(hashes[i]);
-                    binaryWriter.Write(BitPackUtils.PackWorldPosForNetwork(positions[i]));
-                    binaryWriter.Write(BitPackUtils.PackQuaternionForNetwork(rotations[i]));
-                    binaryWriter.Write(sendData[i]);
-                    binaryWriter.Write(gameEntityManager.GetInvalidNetId());
+                    binaryWriter.Write(hashes.Length);
+
+                    for (int i = 0; i < hashes.Length; i++)
+                    {
+                        binaryWriter.Write(manager.CreateTypeNetId(hashes[i]));
+                        binaryWriter.Write(hashes[i]);
+                        binaryWriter.Write(BitPackUtils.PackWorldPosForNetwork(positions[i]));
+                        binaryWriter.Write(BitPackUtils.PackQuaternionForNetwork(rotations[i]));
+                        binaryWriter.Write(sendData[i]);
+                        binaryWriter.Write(gameEntityManager.GetInvalidNetId());
+                    }
                 }
 
                 byte[] array = GZipStream.CompressBuffer(data);
