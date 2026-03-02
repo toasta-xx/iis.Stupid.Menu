@@ -86,6 +86,10 @@ namespace iiMenu.Menu
     [HarmonyPatch(typeof(GTPlayer), nameof(GTPlayer.LateUpdate))]
     public class Main : MonoBehaviour // Do not get rid of this. I don't know why, the entire class kills itself.
     {
+        private const float MenuWidthRatio = 0.54444444444f;
+        private static readonly Vector3 ButtonScale = new Vector3(0.09f, 0.102f, 0.08f);
+        private const string TextShaderName = "GUI/Text Shader";
+
         /// <summary>
         /// Runs on first frame of <see cref="GTPlayer.LateUpdate"/> after menu is launched
         /// </summary>
@@ -483,7 +487,7 @@ namespace iiMenu.Menu
                     string textToSet = ftCount ? $"FT: {Mathf.Floor(1f / lastDeltaTime * 10000f) / 10f} ms" : $"FPS: {lastDeltaTime}";
                     if (hidetitle && !noPageNumber) textToSet += "      ";
                     if (disableFpsCounter) textToSet = "";
-                    if (hidetitle && !noPageNumber) textToSet += "Page " + (pageNumber + 1);
+                    if (hidetitle && !noPageNumber) textToSet += $"Page {pageNumber + 1}";
 
                     fpsCount.text = FollowMenuSettings(textToSet, false);
                 }
@@ -708,18 +712,17 @@ namespace iiMenu.Menu
                     {
                         VRRig.LocalRig.PlayHandTapLocal(84, true, 0.4f);
                         VRRig.LocalRig.PlayHandTapLocal(84, false, 0.4f);
-                        NotificationManager.SendNotification("<color=grey>[</color><color=#FF00FF>FUN FACT</color><color=grey>]</color> " + facts[Random.Range(0, facts.Length - 1)] + "");
+                        NotificationManager.SendNotification($"<color=grey>[</color><color=#FF00FF>FUN FACT</color><color=grey>]</color> {facts[Random.Range(0, facts.Length - 1)]}");
                     }
                 }
 
-                // Party kick code (to return back to the main lobby when you're done)
                 if (PhotonNetwork.InRoom)
                 {
                     if (partyKickReconnecting)
                     {
                         partyLastCode = null;
                         partyKickReconnecting = false;
-                        NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully " + (waitForPlayerJoin ? "banned" : "kicked") + " " + amountPartying + " party member.");
+                        NotificationManager.SendNotification($"<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully {(waitForPlayerJoin ? "banned" : "kicked")} {amountPartying} party member.");
                         FriendshipGroupDetection.Instance.LeaveParty();
                     }
                     else
@@ -733,7 +736,7 @@ namespace iiMenu.Menu
                                 partyKickReconnecting = true;
                             } else
                             {
-                                NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully " + (waitForPlayerJoin ? "banned" : "kicked") + " " + amountPartying + " party member.");
+                                NotificationManager.SendNotification($"<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Successfully {(waitForPlayerJoin ? "banned" : "kicked")} {amountPartying} party member.");
                                 partyKickReconnecting = false;
                                 partyLastCode = null;
                             }
@@ -1113,7 +1116,7 @@ namespace iiMenu.Menu
                     }
 
                     if (GhostMaterial == null)
-                        GhostMaterial = new Material(Shader.Find("GUI/Text Shader"));
+                        GhostMaterial = new Material(Shader.Find(TextShaderName));
 
                     if (legacyGhostViewLeft == null)
                     {
@@ -1353,40 +1356,20 @@ namespace iiMenu.Menu
                         {
                             if (button.rebindKey != null)
                             {
-                                float buttonAmount = 0f;
-                                switch (button.rebindKey)
+                                float buttonAmount = button.rebindKey switch
                                 {
-                                    case "A":
-                                        buttonAmount = _rightPrimary ? 1f : 0f;
-                                        break;
-                                    case "B":
-                                        buttonAmount = _rightSecondary ? 1f : 0f;
-                                        break;
-                                    case "X":
-                                        buttonAmount = _leftPrimary ? 1f : 0f;
-                                        break;
-                                    case "Y":
-                                        buttonAmount = _leftSecondary ? 1f : 0f;
-                                        break;
-                                    case "LG":
-                                        buttonAmount = _leftGrab ? 1f : 0f;
-                                        break;
-                                    case "RG":
-                                        buttonAmount = _rightGrab ? 1f : 0f;
-                                        break;
-                                    case "LT":
-                                        buttonAmount = _leftTrigger;
-                                        break;
-                                    case "RT":
-                                        buttonAmount = _rightTrigger;
-                                        break;
-                                    case "LJ":
-                                        buttonAmount = _leftJoystickClick ? 1f : 0f;
-                                        break;
-                                    case "RJ":
-                                        buttonAmount = _rightJoystickClick ? 1f : 0f;
-                                        break;
-                                }
+                                    "A" => _rightPrimary ? 1f : 0f,
+                                    "B" => _rightSecondary ? 1f : 0f,
+                                    "X" => _leftPrimary ? 1f : 0f,
+                                    "Y" => _leftSecondary ? 1f : 0f,
+                                    "LG" => _leftGrab ? 1f : 0f,
+                                    "RG" => _rightGrab ? 1f : 0f,
+                                    "LT" => _leftTrigger,
+                                    "RT" => _rightTrigger,
+                                    "LJ" => _leftJoystickClick ? 1f : 0f,
+                                    "RJ" => _rightJoystickClick ? 1f : 0f,
+                                    _ => 0f
+                                };
                                 leftPrimary = buttonAmount > 0.5f;
                                 leftSecondary = buttonAmount > 0.5f;
                                 rightPrimary = buttonAmount > 0.5f;
@@ -1481,40 +1464,20 @@ namespace iiMenu.Menu
                         {
                             if (button.rebindKey != null)
                             {
-                                float buttonAmount = 0f;
-                                switch (button.rebindKey)
+                                float buttonAmount = button.rebindKey switch
                                 {
-                                    case "A":
-                                        buttonAmount = _rightPrimary ? 1f : 0f;
-                                        break;
-                                    case "B":
-                                        buttonAmount = _rightSecondary ? 1f : 0f;
-                                        break;
-                                    case "X":
-                                        buttonAmount = _leftPrimary ? 1f : 0f;
-                                        break;
-                                    case "Y":
-                                        buttonAmount = _leftSecondary ? 1f : 0f;
-                                        break;
-                                    case "LG":
-                                        buttonAmount = _leftGrab ? 1f : 0f;
-                                        break;
-                                    case "RG":
-                                        buttonAmount = _rightGrab ? 1f : 0f;
-                                        break;
-                                    case "LT":
-                                        buttonAmount = _leftTrigger;
-                                        break;
-                                    case "RT":
-                                        buttonAmount = _rightTrigger;
-                                        break;
-                                    case "LJ":
-                                        buttonAmount = _leftJoystickClick ? 1f : 0f;
-                                        break;
-                                    case "RJ":
-                                        buttonAmount = _rightJoystickClick ? 1f : 0f;
-                                        break;
-                                }
+                                    "A" => _rightPrimary ? 1f : 0f,
+                                    "B" => _rightSecondary ? 1f : 0f,
+                                    "X" => _leftPrimary ? 1f : 0f,
+                                    "Y" => _leftSecondary ? 1f : 0f,
+                                    "LG" => _leftGrab ? 1f : 0f,
+                                    "RG" => _rightGrab ? 1f : 0f,
+                                    "LT" => _leftTrigger,
+                                    "RT" => _rightTrigger,
+                                    "LJ" => _leftJoystickClick ? 1f : 0f,
+                                    "RJ" => _rightJoystickClick ? 1f : 0f,
+                                    _ => 0f
+                                };
                                 leftPrimary = buttonAmount > 0.5f;
                                 leftSecondary = buttonAmount > 0.5f;
                                 rightPrimary = buttonAmount > 0.5f;
@@ -1663,10 +1626,10 @@ namespace iiMenu.Menu
                                         {
                                             try
                                             {
-                                                List<string> texts = v.aliases == null ? new List<string>() : v.aliases.ToList();
+                                                List<string> texts = v.aliases?.ToList() ?? new List<string>();
                                                 texts.Add(v.overlapText ?? v.buttonText);
 
-                                                if (texts.Any(buttonText => buttonText.ClearTags().Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
+                                                if (texts.Any(buttonText => NoRichtextTags(buttonText).Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
                                                     searchedMods.Add(v);
                                             }
                                             catch { }
@@ -1687,10 +1650,10 @@ namespace iiMenu.Menu
                                                         || (v.detected && !allowDetected))
                                                         continue;
 
-                                                    List<string> texts = v.aliases == null ? new List<string>() : v.aliases.ToList();
+                                                    List<string> texts = v.aliases?.ToList() ?? new List<string>();
                                                     texts.Add(v.overlapText ?? v.buttonText);
 
-                                                    if (texts.Any(buttonText => buttonText.ClearTags().Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
+                                                    if (texts.Any(buttonText => NoRichtextTags(buttonText).Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
                                                         searchedMods.Add(v);
                                                 }
                                                 catch { }
@@ -1827,7 +1790,7 @@ namespace iiMenu.Menu
                     // Variable calculations: (menu scale y)0.3825 / (menu scale z)0.3 = 1.275 = Y
                     // 0.08 x Y = 0.102
 
-                    buttonObject.transform.localScale = new Vector3(0.09f, 0.102f, 0.08f);
+                    buttonObject.transform.localScale = ButtonScale;
                     buttonObject.transform.localPosition = thinMenu ? new Vector3(0.56f, 0.399f, 0.28f - offset) : new Vector3(0.56f, 0.599f, 0.28f - offset);
                 }
 
@@ -1959,7 +1922,7 @@ namespace iiMenu.Menu
             if (method.rebindKey != null)
             {
                 if (targetButtonText.Contains("</color><color=grey>]</color>"))
-                    targetButtonText = targetButtonText.Split("<color=grey>[</color><color=green>")[0] + "<color=grey>[</color><color=green>" + method.rebindKey + "</color><color=grey>]</color>";
+                    targetButtonText = $"{targetButtonText.Split("<color=grey>[</color><color=green>")[0]}<color=grey>[</color><color=green>{method.rebindKey}</color><color=grey>]</color>";
             }
             
             if (method.customBind != null)
@@ -2022,7 +1985,7 @@ namespace iiMenu.Menu
             buttonObject.transform.parent = menu.transform;
             buttonObject.transform.rotation = Quaternion.identity;
 
-            buttonObject.transform.localScale = new Vector3(0.09f, 0.102f, 0.08f);
+            buttonObject.transform.localScale = ButtonScale;
             buttonObject.transform.localPosition = thinMenu ? new Vector3(0.56f, -0.450f, -0.58f) : new Vector3(0.56f, -0.7f, -0.58f);
 
             buttonObject.AddComponent<ButtonCollider>().relatedText = "Search";
@@ -2063,7 +2026,7 @@ namespace iiMenu.Menu
             imageTransform.localPosition = Vector3.zero;
             imageTransform.sizeDelta = new Vector2(.03f, .03f);
 
-            imageTransform.localPosition = thinMenu ? new Vector3(.064f, -0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, -0.54444444444f / 2.6f, -0.58f / 2.6f);
+            imageTransform.localPosition = thinMenu ? new Vector3(.064f, -0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, -MenuWidthRatio / 2.6f, -0.58f / 2.6f);
 
             imageTransform.rotation = Quaternion.Euler(new Vector3(180f, 90f, 90f));
 
@@ -2093,8 +2056,8 @@ namespace iiMenu.Menu
 
                 for (int i = 1; i <= 3; i++)
                 {
-                    AddSprite("Left" + i, LoadTextureFromResource($"{PluginInfo.ClientResourcePath}.left{i}.png"));
-                    AddSprite("Right" + i, LoadTextureFromResource($"{PluginInfo.ClientResourcePath}.right{i}.png"));
+                    AddSprite($"Left{i}", LoadTextureFromResource($"{PluginInfo.ClientResourcePath}.left{i}.png"));
+                    AddSprite($"Right{i}", LoadTextureFromResource($"{PluginInfo.ClientResourcePath}.right{i}.png"));
                 }
 
                 int maxSize = 512;
@@ -2168,7 +2131,7 @@ namespace iiMenu.Menu
             buttonObject.transform.parent = menu.transform;
             buttonObject.transform.rotation = Quaternion.identity;
 
-            buttonObject.transform.localScale = new Vector3(0.09f, 0.102f, 0.08f);
+            buttonObject.transform.localScale = ButtonScale;
             buttonObject.transform.localPosition = thinMenu ? new Vector3(0.56f, 0.450f, -0.58f) : new Vector3(0.56f, 0.7f, -0.58f);
 
             buttonObject.AddComponent<ButtonCollider>().relatedText = "Info Screen";
@@ -2199,7 +2162,7 @@ namespace iiMenu.Menu
             imageTransform.localPosition = Vector3.zero;
             imageTransform.sizeDelta = new Vector2(.03f, .03f);
 
-            imageTransform.localPosition = thinMenu ? new Vector3(.064f, 0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, 0.54444444444f / 2.6f, -0.58f / 2.6f);
+            imageTransform.localPosition = thinMenu ? new Vector3(.064f, 0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, MenuWidthRatio / 2.6f, -0.58f / 2.6f);
 
             imageTransform.rotation = Quaternion.Euler(new Vector3(180f, 90f, 90f));
 
@@ -2216,7 +2179,7 @@ namespace iiMenu.Menu
             buttonObject.transform.parent = menu.transform;
             buttonObject.transform.rotation = Quaternion.identity;
 
-            buttonObject.transform.localScale = new Vector3(0.09f, 0.102f, 0.08f);
+            buttonObject.transform.localScale = ButtonScale;
             buttonObject.transform.localPosition = thinMenu ? new Vector3(0.56f, 0.450f, -0.58f) : new Vector3(0.56f, 0.7f, -0.58f);
 
             buttonObject.AddComponent<ButtonCollider>().relatedText = "Donate Button";
@@ -2247,7 +2210,7 @@ namespace iiMenu.Menu
             imageTransform.localPosition = Vector3.zero;
             imageTransform.sizeDelta = new Vector2(.03f, .03f);
 
-            imageTransform.localPosition = thinMenu ? new Vector3(.064f, 0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, 0.54444444444f / 2.6f, -0.58f / 2.6f);
+            imageTransform.localPosition = thinMenu ? new Vector3(.064f, 0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, MenuWidthRatio / 2.6f, -0.58f / 2.6f);
 
             imageTransform.rotation = Quaternion.Euler(new Vector3(180f, 90f, 90f));
 
@@ -2264,7 +2227,7 @@ namespace iiMenu.Menu
             buttonObject.transform.parent = menu.transform;
             buttonObject.transform.rotation = Quaternion.identity;
 
-            buttonObject.transform.localScale = new Vector3(0.09f, 0.102f, 0.08f);
+            buttonObject.transform.localScale = ButtonScale;
             buttonObject.transform.localPosition = thinMenu ? new Vector3(0.56f, 0.450f, -0.58f) : new Vector3(0.56f, 0.7f, -0.58f);
 
             buttonObject.AddComponent<ButtonCollider>().relatedText = "Update Button";
@@ -2295,7 +2258,7 @@ namespace iiMenu.Menu
             imageTransform.localPosition = Vector3.zero;
             imageTransform.sizeDelta = new Vector2(.03f, .03f);
 
-            imageTransform.localPosition = thinMenu ? new Vector3(.064f, 0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, 0.54444444444f / 2.6f, -0.58f / 2.6f);
+            imageTransform.localPosition = thinMenu ? new Vector3(.064f, 0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, MenuWidthRatio / 2.6f, -0.58f / 2.6f);
 
             imageTransform.rotation = Quaternion.Euler(new Vector3(180f, 90f, 90f));
 
@@ -2312,7 +2275,7 @@ namespace iiMenu.Menu
             buttonObject.transform.parent = menu.transform;
             buttonObject.transform.rotation = Quaternion.identity;
 
-            buttonObject.transform.localScale = new Vector3(0.09f, 0.102f, 0.08f);
+            buttonObject.transform.localScale = ButtonScale;
             buttonObject.transform.localPosition = thinMenu ? new Vector3(0.56f, -0.450f, -0.58f) : new Vector3(0.56f, -0.7f, -0.58f);
 
             if (offcenteredPosition)
@@ -2352,7 +2315,7 @@ namespace iiMenu.Menu
             imageTransform.localPosition = Vector3.zero;
             imageTransform.sizeDelta = new Vector2(.03f, .03f);
 
-            imageTransform.localPosition = thinMenu ? new Vector3(.064f, -0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, -0.54444444444f / 2.6f, -0.58f / 2.6f);
+            imageTransform.localPosition = thinMenu ? new Vector3(.064f, -0.35f / 2.6f, -0.58f / 2.6f) : new Vector3(.064f, -MenuWidthRatio / 2.6f, -0.58f / 2.6f);
 
             if (offcenteredPosition)
                 imageTransform.localPosition += new Vector3(0f, 0.0475f, 0f);
@@ -2674,7 +2637,7 @@ namespace iiMenu.Menu
                 };
 
                     if (Random.Range(1, 5) == 2)
-                        title.text = randomMenuNames[Random.Range(0, randomMenuNames.Length)] + " v" + Random.Range(8, 159);
+                        title.text = $"{randomMenuNames[Random.Range(0, randomMenuNames.Length)]} v{Random.Range(8, 159)}";
                 }
 
                 title.text = FollowMenuSettings(title.text, !doCustomName, true);
@@ -2797,7 +2760,7 @@ namespace iiMenu.Menu
 
                 string textToSet = ftCount ? $"FT: {Mathf.Floor(1f / lastDeltaTime * 10000f) / 10f} ms" : $"FPS: {lastDeltaTime}";
                 if (hidetitle && !noPageNumber) textToSet += "      ";
-                if (hidetitle && !noPageNumber) textToSet += "Page " + (pageNumber + 1);
+                if (hidetitle && !noPageNumber) textToSet += $"Page {pageNumber + 1}";
 
                 fps.text = FollowMenuSettings(textToSet, false);
 
@@ -2954,10 +2917,10 @@ namespace iiMenu.Menu
                             {
                                 try
                                 {
-                                    List<string> texts = v.aliases == null ? new List<string>() : v.aliases.ToList();
+                                    List<string> texts = v.aliases?.ToList() ?? new List<string>();
                                     texts.Add(v.overlapText ?? v.buttonText);
 
-                                    if (texts.Any(buttonText => buttonText.ClearTags().Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
+                                    if (texts.Any(buttonText => NoRichtextTags(buttonText).Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
                                         searchedMods.Add(v);
                                 }
                                 catch { }
@@ -2978,10 +2941,10 @@ namespace iiMenu.Menu
                                             || (v.detected && !allowDetected))
                                             continue;
 
-                                        List<string> texts = v.aliases == null ? new List<string>() : v.aliases.ToList();
+                                        List<string> texts = v.aliases?.ToList() ?? new List<string>();
                                         texts.Add(v.overlapText ?? v.buttonText);
 
-                                        if (texts.Any(buttonText => buttonText.ClearTags().Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
+                                        if (texts.Any(buttonText => NoRichtextTags(buttonText).Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
                                             searchedMods.Add(v);
                                     }
                                     catch { }
@@ -3558,11 +3521,11 @@ namespace iiMenu.Menu
                 case 6:
                     CreatePageButtonPair(
                         "PreviousPage", "NextPage",
-                        new Vector3(0.09f, 0.102f, 0.08f),
+                        ButtonScale,
                         new Vector3(0.56f, thinMenu ? 0.450f : 0.7f, -0.58f),
                         new Vector3(0.56f, thinMenu ? 0.450f : 0.7f, -0.58f) - new Vector3(0f, 0.16f, 0f),
-                        new Vector3(0.064f, thinMenu ? 0.35f / 2.6f : 0.54444444444f / 2.6f, -0.58f / 2.7f),
-                        new Vector3(0.064f, thinMenu ? 0.35f / 2.6f : 0.54444444444f / 2.6f, -0.58f / 2.7f) - new Vector3(0f, 0.0475f, 0f),
+                        new Vector3(0.064f, thinMenu ? 0.35f / 2.6f : MenuWidthRatio / 2.6f, -0.58f / 2.7f),
+                        new Vector3(0.064f, thinMenu ? 0.35f / 2.6f : MenuWidthRatio / 2.6f, -0.58f / 2.7f) - new Vector3(0f, 0.0475f, 0f),
                         Gradient,
                         new Vector2(0.03f, 0.03f)
                     );
@@ -4401,8 +4364,8 @@ namespace iiMenu.Menu
 
             Renderer PointerRenderer = GunPointer.GetComponent<Renderer>();
 
-            if (PointerRenderer.material.shader.name != "GUI/Text Shader")
-                PointerRenderer.material.shader = Shader.Find("GUI/Text Shader");
+            if (PointerRenderer.material.shader.name != TextShaderName)
+                PointerRenderer.material.shader = Shader.Find(TextShaderName);
             
             PointerRenderer.material.color = gunLocked || GetGunInput(true) ? buttonColors[1].GetCurrentColor() : buttonColors[0].GetCurrentColor();
 
@@ -4414,7 +4377,7 @@ namespace iiMenu.Menu
                 GameObject Particle = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 Particle.transform.position = EndPosition;
                 Particle.transform.localScale = Vector3.one * (0.025f * (scaleWithPlayer ? GTPlayer.Instance.scale : 1f));
-                Particle.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+                Particle.GetComponent<Renderer>().material.shader = Shader.Find(TextShaderName);
                 Particle.AddComponent<CustomParticle>();
                 Destroy(Particle.GetComponent<Collider>());
             }
@@ -4431,8 +4394,8 @@ namespace iiMenu.Menu
             }
 
             GunLine.gameObject.SetActive(true);
-            if (GunLine.material.shader.name != "GUI/Text Shader")
-                GunLine.material.shader = Shader.Find("GUI/Text Shader");
+            if (GunLine.material.shader.name != TextShaderName)
+                GunLine.material.shader = Shader.Find(TextShaderName);
             GunLine.startColor = backgroundColor.GetCurrentColor();
             GunLine.endColor = backgroundColor.GetCurrentColor(0.5f);
             GunLine.startWidth = 0.025f * (scaleWithPlayer ? GTPlayer.Instance.scale : 1f);
@@ -4652,16 +4615,14 @@ namespace iiMenu.Menu
         /// </summary>
         /// <param name="isShooting">Trigger</param>
         /// <returns>Holding Button</returns>
-        public static bool GetGunInput(bool isShooting)
-        {
-            return GiveGunTarget != null
+        public static bool GetGunInput(bool isShooting) =>
+            GiveGunTarget != null
                 ? isShooting
                     ? TriggerlessGuns || (SwapGunHand ? GiveGunTarget.leftIndex.calcT > 0.5f : GiveGunTarget.rightIndex.calcT > 0.5f)
                     : GriplessGuns || (SwapGunHand ? GiveGunTarget.leftMiddle.calcT > 0.5f : GiveGunTarget.rightMiddle.calcT > 0.5f)
                 : isShooting
                 ? TriggerlessGuns || (SwapGunHand ? leftTrigger > 0.5f : rightTrigger > 0.5f) || Mouse.current.leftButton.isPressed
                 : GriplessGuns || (SwapGunHand ? leftGrab : rightGrab) || (HardGunLocks && gunLocked && !rightSecondary) || Mouse.current.rightButton.isPressed;
-        }
 
         /// <summary>
         /// Returns the gun direction vector based on the specified transform and the current GunDirection setting.
@@ -4690,7 +4651,7 @@ namespace iiMenu.Menu
 
             string fileName = !string.IsNullOrEmpty(customPath) ? SanitizeFileName(customFileName) : $"{GetSHA256(text)}{(narratorIndex == 0 ? ".wav" : ".mp3")}";
             string directoryPath = !string.IsNullOrEmpty(customPath) ? customPath : $"{PluginInfo.BaseDirectory}/TTS{(narratorName == "Default" ? "" : narratorName)}";
-            string filePath = directoryPath + "/" + fileName;
+            string filePath = $"{directoryPath}/{fileName}";
 
             if (!Directory.Exists(directoryPath))
                 Directory.CreateDirectory(directoryPath);
@@ -4715,7 +4676,7 @@ namespace iiMenu.Menu
 
                             if (request.result != UnityWebRequest.Result.Success)
                             {
-                                LogManager.LogError("Error downloading TTS: " + request.error);
+                                LogManager.LogError($"Error downloading TTS: {request.error}");
                                 onComplete?.Invoke(null);
                                 yield break;
                             }
@@ -4739,13 +4700,13 @@ namespace iiMenu.Menu
                             if (text.Length > 550)
                                 text = text[..550];
 
-                            using UnityWebRequest request = new UnityWebRequest("https://lazypy.ro/tts/request_tts.php?service=Streamlabs&voice=" + narratorName + "&text=" + UnityWebRequest.EscapeURL(text), "POST");
+                            using UnityWebRequest request = new UnityWebRequest($"https://lazypy.ro/tts/request_tts.php?service=Streamlabs&voice={narratorName}&text={UnityWebRequest.EscapeURL(text)}", "POST");
                             request.downloadHandler = new DownloadHandlerBuffer();
                             yield return request.SendWebRequest();
 
                             if (request.result != UnityWebRequest.Result.Success)
                             {
-                                LogManager.LogError("Error getting TTS: " + request.error);
+                                LogManager.LogError($"Error getting TTS: {request.error}");
                                 onComplete?.Invoke(null);
                                 yield break;
                             }
@@ -4757,7 +4718,7 @@ namespace iiMenu.Menu
                             yield return dataRequest.SendWebRequest();
 
                             if (dataRequest.result != UnityWebRequest.Result.Success)
-                                LogManager.LogError("Error downloading TTS: " + responseData["audio_url"]);
+                                LogManager.LogError($"Error downloading TTS: {responseData["audio_url"]}");
                             else
                                 File.WriteAllBytes(filePath, dataRequest.downloadHandler.data);
 
@@ -4801,13 +4762,13 @@ namespace iiMenu.Menu
                             if (text.Length > 300)
                                 text = text[..300];
 
-                            using UnityWebRequest request = new UnityWebRequest("https://lazypy.ro/tts/request_tts.php?service=TikTok&voice=" + voiceCodenames[narratorIndex] + "&text=" + UnityWebRequest.EscapeURL(text), "POST");
+                            using UnityWebRequest request = new UnityWebRequest($"https://lazypy.ro/tts/request_tts.php?service=TikTok&voice={voiceCodenames[narratorIndex]}&text={UnityWebRequest.EscapeURL(text)}", "POST");
                             request.downloadHandler = new DownloadHandlerBuffer();
                             yield return request.SendWebRequest();
 
                             if (request.result != UnityWebRequest.Result.Success)
                             {
-                                LogManager.LogError("Error getting TTS: " + request.error);
+                                LogManager.LogError($"Error getting TTS: {request.error}");
                                 onComplete?.Invoke(null);
                                 yield break;
                             }
@@ -4819,7 +4780,7 @@ namespace iiMenu.Menu
                             yield return dataRequest.SendWebRequest();
 
                             if (dataRequest.result != UnityWebRequest.Result.Success)
-                                LogManager.LogError("Error downloading TTS: " + responseData["audio_url"]);
+                                LogManager.LogError($"Error downloading TTS: {responseData["audio_url"]}");
                             else
                                 File.WriteAllBytes(filePath, dataRequest.downloadHandler.data);
 
@@ -4838,13 +4799,13 @@ namespace iiMenu.Menu
                             if (text.Length > 300)
                                 text = text[..300];
 
-                            using UnityWebRequest request = new UnityWebRequest("https://lazypy.ro/tts/request_tts.php?service=Google%20Translate&voice=" + voiceCodenames[narratorIndex] + "&text=" + UnityWebRequest.EscapeURL(text), "POST");
+                            using UnityWebRequest request = new UnityWebRequest($"https://lazypy.ro/tts/request_tts.php?service=Google%20Translate&voice={voiceCodenames[narratorIndex]}&text={UnityWebRequest.EscapeURL(text)}", "POST");
                             request.downloadHandler = new DownloadHandlerBuffer();
                             yield return request.SendWebRequest();
 
                             if (request.result != UnityWebRequest.Result.Success)
                             {
-                                LogManager.LogError("Error getting TTS: " + request.error);
+                                LogManager.LogError($"Error getting TTS: {request.error}");
                                 onComplete?.Invoke(null);
                                 yield break;
                             }
@@ -4856,7 +4817,7 @@ namespace iiMenu.Menu
                             yield return dataRequest.SendWebRequest();
 
                             if (dataRequest.result != UnityWebRequest.Result.Success)
-                                LogManager.LogError("Error downloading TTS: " + responseData["audio_url"]);
+                                LogManager.LogError($"Error downloading TTS: {responseData["audio_url"]}");
                             else
                                 File.WriteAllBytes(filePath, dataRequest.downloadHandler.data);
 
@@ -4881,13 +4842,13 @@ namespace iiMenu.Menu
                             if (text.Length > 300)
                                 text = text[..300];
 
-                            using UnityWebRequest request = new UnityWebRequest("https://lazypy.ro/tts/request_tts.php?service=VoiceForge&voice=" + voiceCodenames[narratorIndex] + "&text=" + UnityWebRequest.EscapeURL(text), "POST");
+                            using UnityWebRequest request = new UnityWebRequest($"https://lazypy.ro/tts/request_tts.php?service=VoiceForge&voice={voiceCodenames[narratorIndex]}&text={UnityWebRequest.EscapeURL(text)}", "POST");
                             request.downloadHandler = new DownloadHandlerBuffer();
                             yield return request.SendWebRequest();
 
                             if (request.result != UnityWebRequest.Result.Success)
                             {
-                                LogManager.LogError("Error getting TTS: " + request.error);
+                                LogManager.LogError($"Error getting TTS: {request.error}");
                                 onComplete?.Invoke(null);
                                 yield break;
                             }
@@ -4899,7 +4860,7 @@ namespace iiMenu.Menu
                             yield return dataRequest.SendWebRequest();
 
                             if (dataRequest.result != UnityWebRequest.Result.Success)
-                                LogManager.LogError("Error downloading TTS: " + responseData["audio_url"]);
+                                LogManager.LogError($"Error downloading TTS: {responseData["audio_url"]}");
                             else
                                 File.WriteAllBytes(filePath, dataRequest.downloadHandler.data);
 
@@ -4924,10 +4885,8 @@ namespace iiMenu.Menu
         /// Initiates narration of the specified text by transcribing it to audio and playing it through your microphone.
         /// </summary>
         /// <param name="text">The text to be narrated.</param>
-        public static void SpeakText(string text)
-        {
+        public static void SpeakText(string text) =>
             SpeakText(text, false);
-        }
 
         /// <summary>
         /// Initiates narration of the specified text by transcribing it to audio and playing it through your microphone.
@@ -6193,7 +6152,7 @@ namespace iiMenu.Menu
                                         lastClickedName = target.buttonText;
 
                                     if (fromMenu)
-                                        NotificationManager.SendNotification("<color=grey>[</color><color=green>ENABLE</color><color=grey>]</color> " + target.toolTip);
+                                        NotificationManager.SendNotification($"<color=grey>[</color><color=green>ENABLE</color><color=grey>]</color> {target.toolTip}");
 
                                     if (target.method != null)
                                         try { target.method.Invoke(); } catch (Exception exc) { LogManager.LogError(
@@ -6667,10 +6626,10 @@ jgs \_   _/ |Oo\
                         {
                             try
                             {
-                                List<string> texts = v.aliases == null ? new List<string>() : v.aliases.ToList();
+                                List<string> texts = v.aliases?.ToList() ?? new List<string>();
                                 texts.Add(v.overlapText ?? v.buttonText);
 
-                                if (texts.Any(buttonText => buttonText.ClearTags().Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
+                                if (texts.Any(buttonText => NoRichtextTags(buttonText).Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower())))
                                     searchedMods.Add(v);
                             }
                             catch { }
@@ -7153,7 +7112,8 @@ jgs \_   _/ |Oo\
             "You're wasting your time reading this.",
             "rocklobster222 is awsum",
             "kingofnetflix was here </3",
-            "multifactor was also here - kingofnetflix"
+            "multifactor was also here - kingofnetflix",
+            "Toast is always watching"
         };
     }
 }
