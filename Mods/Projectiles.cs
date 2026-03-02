@@ -26,6 +26,7 @@ using iiMenu.Extensions;
 using iiMenu.Managers;
 using iiMenu.Menu;
 using iiMenu.Patches.Menu;
+using iiMenu.Utilities;
 using Photon.Pun;
 using Photon.Realtime;
 using System;
@@ -141,20 +142,8 @@ namespace iiMenu.Mods
 
         public static bool friendSided;
         public static int friendProjectileScale = 1;
-        public static void FriendProjectileScale(bool positive = true)
-        {
-            if (positive)
-                friendProjectileScale += 1;
-            else
-                friendProjectileScale -= 1;
-
-            if (friendProjectileScale > 5)
-                friendProjectileScale = 1;
-            if (friendProjectileScale < 1)
-                friendProjectileScale = 5;
-
-            Buttons.GetIndex("Friend Projectile Scale").overlapText = "Friend Projectile Scale <color=grey>[</color><color=green>" + friendProjectileScale + "</color><color=grey>]</color>";
-        }
+        public static void FriendProjectileScale(bool positive = true) =>
+            ModHelpers.CycleInt(ref friendProjectileScale, 1, 5, "Friend Projectile Scale", positive);
         public static void LaunchLocalProjectile(Vector3 position, Vector3 velocity, int projectileType, int index, bool overrideColor, Color32 color, int scale, SnowballThrowable throwable, VRRig rig)
         {
             try
@@ -383,204 +372,76 @@ namespace iiMenu.Mods
             }
         }
 
+        private static readonly string[] ShortProjectileNames = {
+            "Snowball",        "Growing Snowball", "Water Balloon",  "Lava Rock",
+            "Present",         "Science Candy",    "Fish Food",      "Apple",
+            "Candy Corn",      "Voting Rock",      "Book",           "Coin",
+            "Egg",             "Ice Cream",        "Hot Dog",        "Fireworks",
+            "Paper",           "Ice Cream Scoop",  "Chips",          "Salsa",
+            "Apple Pie",       "Mashed Potatoes",  "Berry Pie",      "Layer Dip",
+            "Pumpkin Pie",     "Stuffing",         "Corn",           "Turkey Leg",
+            "Football",        "Popcorn Ball",     "Plate",          "Stick",
+            "Walnut",          "Hot Cocoa",        "Slingshot",      "Pillow",
+            "Cake",            "Balloon Animal"
+        };
+
         public static int projMode;
-        public static void ChangeProjectile(bool positive = true)
-        {
-            string[] shortProjectileNames = {
-                "Snowball",
-                "Growing Snowball",
-                "Water Balloon",
-                "Lava Rock",
-                "Present",
-                "Science Candy",
-                "Fish Food",
-                "Apple",
-                "Candy Corn",
-                "Voting Rock",
-                "Book",
-                "Coin",
-                "Egg",
-                "Ice Cream",
-                "Hot Dog",
-                "Fireworks",
-                "Paper",
-                "Ice Cream Scoop",
-                "Chips",
-                "Salsa",
-                "Apple Pie",
-                "Mashed Potatoes",
-                "Berry Pie",
-                "Layer Dip",
-                "Pumpkin Pie",
-                "Stuffing",
-                "Corn",
-                "Turkey Leg",
-                "Football",
-                "Popcorn Ball",
-                "Plate",
-                "Stick",
-                "Walnut",
-                "Hot Cocoa",
-                "Slingshot",
-                "Pillow",
-                "Cake",
-                "Balloon Animal"
-            };
+        public static void ChangeProjectile(bool positive = true) =>
+            ModHelpers.CycleMode(ref projMode, ShortProjectileNames, "Change Projectile", positive);
 
-            if (positive)
-                projMode++;
-            else
-                projMode--;
-
-            projMode %= shortProjectileNames.Length;
-            if (projMode < 0)
-                projMode = shortProjectileNames.Length - 1;
-
-            Buttons.GetIndex("Change Projectile").overlapText = "Change Projectile <color=grey>[</color><color=green>" + shortProjectileNames[projMode] + "</color><color=grey>]</color>";
-        }
+        private static readonly string[] GrowingProjectileNames = { "Growing Snowball", "Mashed Potatoes", "Stuffing" };
+        private static readonly string[] GrowingProjectileLongNames = { "GrowingSnowball", "GrowingMashedPotato", "GrowingStuffing" };
 
         public static int snowballIndex;
         public static void ChangeGrowingProjectile(bool positive = true)
         {
-            string[] shortProjectileNames = {
-                "Growing Snowball",
-                "Mashed Potatoes",
-                "Stuffing"
-            };
-
-            string[] longProjectileNames =
-            {
-                "GrowingSnowball",
-                "GrowingMashedPotato",
-                "GrowingStuffing"
-            };
-
-            if (positive)
-                snowballIndex++;
-            else
-                snowballIndex--;
-
-            snowballIndex %= shortProjectileNames.Length;
-            if (snowballIndex < 0)
-                snowballIndex = shortProjectileNames.Length - 1;
-
-            Buttons.GetIndex("Change Growing Projectile").overlapText = "Change Growing Projectile <color=grey>[</color><color=green>" + shortProjectileNames[snowballIndex] + "</color><color=grey>]</color>";
-            SnowballName = longProjectileNames[snowballIndex];
+            ModHelpers.CycleMode(ref snowballIndex, GrowingProjectileNames, "Change Growing Projectile", positive);
+            SnowballName = GrowingProjectileLongNames[snowballIndex];
         }
 
         public static int targetProjectileIndex;
         public static void ChangeProjectileIndex(bool positive = true)
         {
-            if (positive)
-                targetProjectileIndex++;
-            else
-                targetProjectileIndex--;
-
-            targetProjectileIndex %= 16;
-            if (targetProjectileIndex < 0)
-                targetProjectileIndex = 15;
-
-            Buttons.GetIndex("Change Projectile Index").overlapText = "Change Projectile Index <color=grey>[</color><color=green>" + (targetProjectileIndex + 1) + "</color><color=grey>]</color>";
+            ModHelpers.CycleInt(ref targetProjectileIndex, 0, 15, "Change Projectile Index", positive);
+            Buttons.GetIndex("Change Projectile Index").overlapText = ModHelpers.FormatModeLabel("Change Projectile Index", targetProjectileIndex + 1);
         }
+
+        private static readonly string[] ShootSpeedNames = { "Slow", "Medium", "Fast", "Ultra Fast", "Instant" };
+        private static readonly float[] ShootSpeedValues = { 9.72f, 19.44f, 38.88f, 200f, 1000000f };
 
         public static int shootCycle = 1;
         public static void ChangeShootSpeed(bool positive = true)
         {
-            float[] ShootStrengthTypes = {
-                9.72f,
-                19.44f,
-                38.88f,
-                200f,
-                1000000f
-            };
-
-            string[] ShootStrengthNames = {
-                "Slow",
-                "Medium",
-                "Fast",
-                "Ultra Fast",
-                "Instant"
-            };
-
-            if (positive)
-                shootCycle++;
-            else
-                shootCycle--;
-
-            shootCycle %= ShootStrengthTypes.Length;
-            if (shootCycle < 0)
-                shootCycle = ShootStrengthTypes.Length - 1;
-
-            ShootStrength = ShootStrengthTypes[shootCycle];
-            Buttons.GetIndex("Change Shoot Speed").overlapText = "Change Shoot Speed <color=grey>[</color><color=green>" + ShootStrengthNames[shootCycle] + "</color><color=grey>]</color>";
+            ModHelpers.CycleMode(ref shootCycle, ShootSpeedNames, "Change Shoot Speed", positive);
+            ShootStrength = ShootSpeedValues[shootCycle];
         }
 
         public static int red = 10;
         public static int green = 5;
         public static int blue;
 
-        public static void IncreaseRed(bool positive = true)
-        {
-            if (positive)
-                red++;
-            else
-                red--;
+        public static void IncreaseRed(bool positive = true) =>
+            ModHelpers.CycleInt(ref red, 0, 10, "RedProj", positive, "Red");
 
-            red %= 11;
-            if (red < 0)
-                red = 10;
+        public static void IncreaseGreen(bool positive = true) =>
+            ModHelpers.CycleInt(ref green, 0, 10, "GreenProj", positive, "Green");
 
-            Buttons.GetIndex("RedProj").overlapText = "Red <color=grey>[</color><color=green>" + red + "</color><color=grey>]</color>";
-        }
-
-        public static void IncreaseGreen(bool positive = true)
-        {
-            if (positive)
-                green++;
-            else
-                green--;
-
-            green %= 11;
-            if (green < 0)
-                green = 10;
-
-            Buttons.GetIndex("GreenProj").overlapText = "Green <color=grey>[</color><color=green>" + green + "</color><color=grey>]</color>";
-        }
-
-        public static void IncreaseBlue(bool positive = true)
-        {
-            if (positive)
-                blue++;
-            else
-                blue--;
-
-            blue %= 11;
-            if (blue < 0)
-                blue = 10;
-
-            Buttons.GetIndex("BlueProj").overlapText = "Blue <color=grey>[</color><color=green>" + blue + "</color><color=grey>]</color>";
-        }
+        public static void IncreaseBlue(bool positive = true) =>
+            ModHelpers.CycleInt(ref blue, 0, 10, "BlueProj", positive, "Blue");
 
         public static float projDebounce;
         public static float projDebounceType = 0.1f;
         public static int projDebounceIndex = 2;
         public static void ChangeProjectileDelay(bool positive = true, bool fromMenu = false)
         {
-            if (positive)
-                projDebounceIndex++;
-            else
-                projDebounceIndex--;
-
-            projDebounceIndex %= 21;
-            if (projDebounceIndex < 0)
-                projDebounceIndex = 20;
+            ModHelpers.CycleInt(ref projDebounceIndex, 0, 20, "Change Projectile Delay", positive);
 
             if (projDebounceIndex < 8 && fromMenu && (!Buttons.GetIndex("Friend Sided Projectiles").enabled || !Buttons.GetIndex("Client Sided Projectiles").enabled))
                 NotificationManager.SendNotification("<color=grey>[</color><color=red>WARNING</color><color=grey>]</color> Using a projectile delay lower than 0.4 could get you banned. Use at your own caution.", 5000);
 
             projDebounceType = projDebounceIndex / 20f;
             Overpowered.SnowballSpawnDelay = Mathf.Max(projDebounceType, 0.1f);
-            Buttons.GetIndex("Change Projectile Delay").overlapText = "Change Projectile Delay <color=grey>[</color><color=green>" + projDebounceType + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Projectile Delay").overlapText = ModHelpers.FormatModeLabel("Change Projectile Delay", projDebounceType);
         }
 
         public static Color CalculateProjectileColor()
@@ -624,143 +485,80 @@ namespace iiMenu.Mods
             return new Color32(r, g, b, 255);
         }
 
-        public static void ProjectileSpam()
+        private static void FireProjectileWithModifiers(Vector3 startpos, Vector3 charvel)
         {
             int projIndex = projMode * 2;
 
-            if (rightGrab || Mouse.current.leftButton.isPressed)
+            if (Buttons.GetIndex("Random Projectile").enabled)
+                projIndex = Random.Range(0, ProjectileObjectNames.Length);
+
+            string projectilename = ProjectileObjectNames[projIndex];
+
+            if (Buttons.GetIndex("Shoot Projectiles").enabled)
             {
-                if (Buttons.GetIndex("Random Projectile").enabled)
-                    projIndex = Random.Range(0, ProjectileObjectNames.Length);
-                
-                string projectilename = ProjectileObjectNames[projIndex];
-
-                Vector3 startpos = GorillaTagger.Instance.rightHandTransform.position;
-                Vector3 charvel = GTPlayer.Instance.RigidbodyVelocity;
-
-                if (Buttons.GetIndex("Shoot Projectiles").enabled)
+                charvel = GTPlayer.Instance.RigidbodyVelocity + GetGunDirection(GorillaTagger.Instance.rightHandTransform) * ShootStrength;
+                if (Mouse.current.leftButton.isPressed)
                 {
-                    charvel = GTPlayer.Instance.RigidbodyVelocity + GetGunDirection(GorillaTagger.Instance.rightHandTransform) * ShootStrength;
-                    if (Mouse.current.leftButton.isPressed)
-                    {
-                        Ray ray = TPC.ScreenPointToRay(Mouse.current.position.ReadValue());
-                        Physics.Raycast(ray, out var hit, 512f, NoInvisLayerMask());
-                        charvel = hit.point - GorillaTagger.Instance.rightHandTransform.transform.position;
-                        charvel.Normalize();
-                        charvel *= ShootStrength * 2f;
-                    }
+                    Ray ray = TPC.ScreenPointToRay(Mouse.current.position.ReadValue());
+                    Physics.Raycast(ray, out var hit, 512f, NoInvisLayerMask());
+                    charvel = hit.point - GorillaTagger.Instance.rightHandTransform.transform.position;
+                    charvel.Normalize();
+                    charvel *= ShootStrength * 2f;
                 }
-
-                if (Buttons.GetIndex("Random Direction").enabled)
-                    charvel = RandomVector3(100f);
-
-                if (Buttons.GetIndex("Above Players").enabled)
-                {
-                    VRRig targetRig = GetTargetPlayer();
-                    startpos = targetRig.transform.position + Vector3.up;
-                }
-
-                if (Buttons.GetIndex("Rain Projectiles").enabled)
-                {
-                    startpos = GorillaTagger.Instance.headCollider.transform.position + new Vector3(Random.Range(-2f, 2f), 2f, Random.Range(-2f, 2f));
-                    charvel = Vector3.zero;
-                }
-
-                if (Buttons.GetIndex("Projectile Aura").enabled)
-                {
-                    float time = Time.frameCount;
-                    startpos = GorillaTagger.Instance.headCollider.transform.position + new Vector3(MathF.Cos(time / 20), 2, MathF.Sin(time / 20));
-                }
-
-                if (Buttons.GetIndex("True Projectile Aura").enabled)
-                {
-                    startpos = GorillaTagger.Instance.headCollider.transform.position + RandomVector3();
-                    charvel = RandomVector3(10f);
-                }
-
-                if (Buttons.GetIndex("Projectile Fountain").enabled)
-                {
-                    startpos = GorillaTagger.Instance.headCollider.transform.position + new Vector3(0, 1, 0);
-                    charvel = new Vector3(Random.Range(-10, 10), 15, Random.Range(-10, 10));
-                }
-
-                if (Buttons.GetIndex("Include Hand Velocity").enabled)
-                    charvel = GTPlayer.Instance.RightHand.velocityTracker.GetAverageVelocity(true, 0);
-
-                BetaFireProjectile(projectilename, startpos, charvel, CalculateProjectileColor());
             }
+
+            if (Buttons.GetIndex("Random Direction").enabled)
+                charvel = RandomVector3(100f);
+
+            if (Buttons.GetIndex("Above Players").enabled)
+            {
+                VRRig targetRig = GetTargetPlayer();
+                startpos = targetRig.transform.position + Vector3.up;
+            }
+
+            if (Buttons.GetIndex("Rain Projectiles").enabled)
+            {
+                startpos = GorillaTagger.Instance.headCollider.transform.position + new Vector3(Random.Range(-2f, 2f), 2f, Random.Range(-2f, 2f));
+                charvel = Vector3.zero;
+            }
+
+            if (Buttons.GetIndex("Projectile Aura").enabled)
+            {
+                float time = Time.frameCount;
+                startpos = GorillaTagger.Instance.headCollider.transform.position + new Vector3(MathF.Cos(time / 20), 2, MathF.Sin(time / 20));
+            }
+
+            if (Buttons.GetIndex("True Projectile Aura").enabled)
+            {
+                startpos = GorillaTagger.Instance.headCollider.transform.position + RandomVector3();
+                charvel = RandomVector3(10f);
+            }
+
+            if (Buttons.GetIndex("Projectile Fountain").enabled)
+            {
+                startpos = GorillaTagger.Instance.headCollider.transform.position + new Vector3(0, 1, 0);
+                charvel = new Vector3(Random.Range(-10, 10), 15, Random.Range(-10, 10));
+            }
+
+            if (Buttons.GetIndex("Include Hand Velocity").enabled)
+                charvel = GTPlayer.Instance.RightHand.velocityTracker.GetAverageVelocity(true, 0);
+
+            BetaFireProjectile(projectilename, startpos, charvel, CalculateProjectileColor());
+        }
+
+        public static void ProjectileSpam()
+        {
+            if (rightGrab || Mouse.current.leftButton.isPressed)
+                FireProjectileWithModifiers(GorillaTagger.Instance.rightHandTransform.position, GTPlayer.Instance.RigidbodyVelocity);
         }
 
         public static void ProjectileGun()
         {
-            int projIndex = projMode * 2;
-
             if (GetGunInput(false))
             {
                 var GunData = RenderGun();
-                GameObject NewPointer = GunData.NewPointer;
-
                 if (GetGunInput(true))
-                {
-                    if (Buttons.GetIndex("Random Projectile").enabled)
-                        projIndex = Random.Range(0, ProjectileObjectNames.Length);
-
-                    string projectilename = ProjectileObjectNames[projIndex];
-
-                    Vector3 startpos = NewPointer.transform.position + Vector3.up;
-                    Vector3 charvel = Vector3.up * 30f;
-
-                    if (Buttons.GetIndex("Shoot Projectiles").enabled)
-                    {
-                        charvel = GTPlayer.Instance.RigidbodyVelocity + GetGunDirection(GorillaTagger.Instance.rightHandTransform) * ShootStrength;
-                        if (Mouse.current.leftButton.isPressed)
-                        {
-                            Ray ray = TPC.ScreenPointToRay(Mouse.current.position.ReadValue());
-                            Physics.Raycast(ray, out var hit, 512f, NoInvisLayerMask());
-                            charvel = hit.point - GorillaTagger.Instance.rightHandTransform.transform.position;
-                            charvel.Normalize();
-                            charvel *= ShootStrength * 2f;
-                        }
-                    }
-
-                    if (Buttons.GetIndex("Random Direction").enabled)
-                        charvel = RandomVector3(100f);
-
-                    if (Buttons.GetIndex("Above Players").enabled)
-                    {
-                        VRRig targetRig = GetTargetPlayer();
-                        startpos = targetRig.transform.position + Vector3.up;
-                    }
-
-                    if (Buttons.GetIndex("Rain Projectiles").enabled)
-                    {
-                        startpos = GorillaTagger.Instance.headCollider.transform.position + new Vector3(Random.Range(-2f, 2f), 2f, Random.Range(-2f, 2f));
-                        charvel = Vector3.zero;
-                    }
-
-                    if (Buttons.GetIndex("Projectile Aura").enabled)
-                    {
-                        float time = Time.frameCount;
-                        startpos = GorillaTagger.Instance.headCollider.transform.position + new Vector3(MathF.Cos(time / 20), 2, MathF.Sin(time / 20));
-                    }
-
-                    if (Buttons.GetIndex("True Projectile Aura").enabled)
-                    {
-                        startpos = GorillaTagger.Instance.headCollider.transform.position + RandomVector3();
-                        charvel = RandomVector3(10f);
-                    }
-
-                    if (Buttons.GetIndex("Projectile Fountain").enabled)
-                    {
-                        startpos = GorillaTagger.Instance.headCollider.transform.position + new Vector3(0, 1, 0);
-                        charvel = new Vector3(Random.Range(-10, 10), 15, Random.Range(-10, 10));
-                    }
-
-                    if (Buttons.GetIndex("Include Hand Velocity").enabled)
-                        charvel = GTPlayer.Instance.RightHand.velocityTracker.GetAverageVelocity(true, 0);
-
-                    BetaFireProjectile(projectilename, startpos, charvel, CalculateProjectileColor());
-                }
+                    FireProjectileWithModifiers(GunData.NewPointer.transform.position + Vector3.up, Vector3.up * 30f);
             }
         }
 
