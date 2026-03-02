@@ -136,6 +136,11 @@ namespace iiMenu.Menu
                 GameObject closeMessage = uiPrefab.transform.Find("Canvas")?.Find("HideMessage")?.gameObject;
                 closeMessage?.SetActive(false);
             }
+            
+            versionLabelDefaultAnchorMin = versionLabel.rectTransform.anchorMin;
+            versionLabelDefaultAnchorMax = versionLabel.rectTransform.anchorMax;
+            versionLabelDefaultPivot     = versionLabel.rectTransform.pivot;
+            versionLabelDefaultPosition  = versionLabel.rectTransform.anchoredPosition;
 
             Update();
         }
@@ -148,6 +153,10 @@ namespace iiMenu.Menu
 
         private Image watermark;
         private TextMeshProUGUI versionLabel;
+        private Vector2 versionLabelDefaultAnchorMin,
+                        versionLabelDefaultAnchorMax,
+                        versionLabelDefaultPivot,
+                        versionLabelDefaultPosition;
         private TextMeshProUGUI roomStatus;
         private TextMeshProUGUI arraylist;
 
@@ -182,6 +191,8 @@ namespace iiMenu.Menu
                 roomStatus.color = guiColor;
                 arraylist.color = guiColor;
                 watermark.color = guiColor;
+                
+                watermark.gameObject.SetActive(!disableWatermark);
 
                 versionLabel.SafeSetFont(activeFont);
                 roomStatus.SafeSetFont(activeFont);
@@ -206,6 +217,21 @@ namespace iiMenu.Menu
                 watermark.transform.rotation = Quaternion.Euler(0f, 0f, rockWatermark ? Mathf.Sin(Time.time * 2f) * 10f : 0f);
                 versionLabel.SafeSetText(FollowMenuSettings("Build") + " " + PluginInfo.Version + "\n" +
                                     serverLink.Replace("https://", ""));
+                
+                if (disableWatermark)
+                {
+                    versionLabel.rectTransform.anchorMin = new Vector2(1f, versionLabel.rectTransform.anchorMin.y);
+                    versionLabel.rectTransform.anchorMax = new Vector2(1f, versionLabel.rectTransform.anchorMax.y);
+                    versionLabel.rectTransform.pivot     = new Vector2(1f, 0.5f);
+                    versionLabel.rectTransform.anchoredPosition = new Vector2(-10f, versionLabel.rectTransform.anchoredPosition.y); 
+                }
+                else
+                {
+                    versionLabel.rectTransform.anchorMin        = versionLabelDefaultAnchorMin;
+                    versionLabel.rectTransform.anchorMax        = versionLabelDefaultAnchorMax;
+                    versionLabel.rectTransform.pivot            = versionLabelDefaultPivot;
+                    versionLabel.rectTransform.anchoredPosition = versionLabelDefaultPosition;
+                }
 
                 roomStatus.SafeSetText(FollowMenuSettings(!PhotonNetwork.InRoom ? "Not connected to room" : "Connected to room ") +
                    (PhotonNetwork.InRoom ? PhotonNetwork.CurrentRoom.Name : ""));
