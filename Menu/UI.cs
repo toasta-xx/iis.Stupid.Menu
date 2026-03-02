@@ -192,6 +192,7 @@ namespace iiMenu.Menu
                 arraylist.color = guiColor;
                 watermark.color = guiColor;
                 
+                versionLabel.gameObject.SetActive(!disableGUIInfo);
                 watermark.gameObject.SetActive(!disableWatermark);
 
                 versionLabel.SafeSetFont(activeFont);
@@ -216,7 +217,8 @@ namespace iiMenu.Menu
 
                 watermark.transform.rotation = Quaternion.Euler(0f, 0f, rockWatermark ? Mathf.Sin(Time.time * 2f) * 10f : 0f);
                 versionLabel.SafeSetText(FollowMenuSettings("Build") + " " + PluginInfo.Version + "\n" +
-                                    serverLink.Replace("https://", ""));
+                                             serverLink.Replace("https://", ""));
+                
                 
                 if (disableWatermark)
                 {

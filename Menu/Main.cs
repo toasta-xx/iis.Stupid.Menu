@@ -6839,6 +6839,7 @@ jgs \_   _/ |Oo\
         public static bool lastChecker;
         public static bool rockWatermark = true;
         public static bool disableWatermark;
+        public static bool disableGUIInfo;
         public static string CosmeticsOwned;
 
         public static Vector3 MidPosition;
