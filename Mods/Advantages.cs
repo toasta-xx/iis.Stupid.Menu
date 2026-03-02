@@ -43,6 +43,25 @@ namespace iiMenu.Mods
     {
         public static bool instantTag;
 
+        private static void RandomizeFingers()
+        {
+            VRRig.LocalRig.leftIndex.calcT = 0f;
+            VRRig.LocalRig.leftMiddle.calcT = 0f;
+            VRRig.LocalRig.leftThumb.calcT = 0f;
+
+            VRRig.LocalRig.leftIndex.LerpFinger(1f, false);
+            VRRig.LocalRig.leftMiddle.LerpFinger(1f, false);
+            VRRig.LocalRig.leftThumb.LerpFinger(1f, false);
+
+            VRRig.LocalRig.rightIndex.calcT = 0f;
+            VRRig.LocalRig.rightMiddle.calcT = 0f;
+            VRRig.LocalRig.rightThumb.calcT = 0f;
+
+            VRRig.LocalRig.rightIndex.LerpFinger(1f, false);
+            VRRig.LocalRig.rightMiddle.LerpFinger(1f, false);
+            VRRig.LocalRig.rightThumb.LerpFinger(1f, false);
+        }
+
         public static void TagSelf()
         {
             if (PhotonNetwork.IsMasterClient)
@@ -107,21 +126,7 @@ namespace iiMenu.Mods
                         VRRig.LocalRig.leftHand.rigTarget.transform.rotation = RandomQuaternion();
                         VRRig.LocalRig.rightHand.rigTarget.transform.rotation = RandomQuaternion();
 
-                        VRRig.LocalRig.leftIndex.calcT = 0f;
-                        VRRig.LocalRig.leftMiddle.calcT = 0f;
-                        VRRig.LocalRig.leftThumb.calcT = 0f;
-
-                        VRRig.LocalRig.leftIndex.LerpFinger(1f, false);
-                        VRRig.LocalRig.leftMiddle.LerpFinger(1f, false);
-                        VRRig.LocalRig.leftThumb.LerpFinger(1f, false);
-
-                        VRRig.LocalRig.rightIndex.calcT = 0f;
-                        VRRig.LocalRig.rightMiddle.calcT = 0f;
-                        VRRig.LocalRig.rightThumb.calcT = 0f;
-
-                        VRRig.LocalRig.rightIndex.LerpFinger(1f, false);
-                        VRRig.LocalRig.rightMiddle.LerpFinger(1f, false);
-                        VRRig.LocalRig.rightThumb.LerpFinger(1f, false);
+                        RandomizeFingers();
                     }
                 }
             }
@@ -493,21 +498,7 @@ namespace iiMenu.Mods
                             VRRig.LocalRig.leftHand.rigTarget.transform.rotation = RandomQuaternion();
                             VRRig.LocalRig.rightHand.rigTarget.transform.rotation = RandomQuaternion();
 
-                            VRRig.LocalRig.leftIndex.calcT = 0f;
-                            VRRig.LocalRig.leftMiddle.calcT = 0f;
-                            VRRig.LocalRig.leftThumb.calcT = 0f;
-
-                            VRRig.LocalRig.leftIndex.LerpFinger(1f, false);
-                            VRRig.LocalRig.leftMiddle.LerpFinger(1f, false);
-                            VRRig.LocalRig.leftThumb.LerpFinger(1f, false);
-
-                            VRRig.LocalRig.rightIndex.calcT = 0f;
-                            VRRig.LocalRig.rightMiddle.calcT = 0f;
-                            VRRig.LocalRig.rightThumb.calcT = 0f;
-
-                            VRRig.LocalRig.rightIndex.LerpFinger(1f, false);
-                            VRRig.LocalRig.rightMiddle.LerpFinger(1f, false);
-                            VRRig.LocalRig.rightThumb.LerpFinger(1f, false);
+                            RandomizeFingers();
                         }
 
                         if (ValidateTag(lockTarget))
@@ -591,27 +582,13 @@ namespace iiMenu.Mods
                     VRRig.LocalRig.transform.position = position;
 
                     VRRig.LocalRig.head.rigTarget.transform.rotation = RandomQuaternion();
-                    VRRig.LocalRig.leftHand.rigTarget.transform.position = lockTarget.transform.position + RandomVector3();
-                    VRRig.LocalRig.rightHand.rigTarget.transform.position = lockTarget.transform.position + RandomVector3();
+                    VRRig.LocalRig.leftHand.rigTarget.transform.position = targetRig.transform.position + RandomVector3();
+                    VRRig.LocalRig.rightHand.rigTarget.transform.position = targetRig.transform.position + RandomVector3();
 
                     VRRig.LocalRig.leftHand.rigTarget.transform.rotation = RandomQuaternion();
                     VRRig.LocalRig.rightHand.rigTarget.transform.rotation = RandomQuaternion();
 
-                    VRRig.LocalRig.leftIndex.calcT = 0f;
-                    VRRig.LocalRig.leftMiddle.calcT = 0f;
-                    VRRig.LocalRig.leftThumb.calcT = 0f;
-
-                    VRRig.LocalRig.leftIndex.LerpFinger(1f, false);
-                    VRRig.LocalRig.leftMiddle.LerpFinger(1f, false);
-                    VRRig.LocalRig.leftThumb.LerpFinger(1f, false);
-
-                    VRRig.LocalRig.rightIndex.calcT = 0f;
-                    VRRig.LocalRig.rightMiddle.calcT = 0f;
-                    VRRig.LocalRig.rightThumb.calcT = 0f;
-
-                    VRRig.LocalRig.rightIndex.LerpFinger(1f, false);
-                    VRRig.LocalRig.rightMiddle.LerpFinger(1f, false);
-                    VRRig.LocalRig.rightThumb.LerpFinger(1f, false);
+                    RandomizeFingers();
                 }
 
                 if (ValidateTag(targetRig))
@@ -733,21 +710,7 @@ namespace iiMenu.Mods
                                 VRRig.LocalRig.leftHand.rigTarget.transform.rotation = RandomQuaternion();
                                 VRRig.LocalRig.rightHand.rigTarget.transform.rotation = RandomQuaternion();
 
-                                VRRig.LocalRig.leftIndex.calcT = 0f;
-                                VRRig.LocalRig.leftMiddle.calcT = 0f;
-                                VRRig.LocalRig.leftThumb.calcT = 0f;
-
-                                VRRig.LocalRig.leftIndex.LerpFinger(1f, false);
-                                VRRig.LocalRig.leftMiddle.LerpFinger(1f, false);
-                                VRRig.LocalRig.leftThumb.LerpFinger(1f, false);
-
-                                VRRig.LocalRig.rightIndex.calcT = 0f;
-                                VRRig.LocalRig.rightMiddle.calcT = 0f;
-                                VRRig.LocalRig.rightThumb.calcT = 0f;
-
-                                VRRig.LocalRig.rightIndex.LerpFinger(1f, false);
-                                VRRig.LocalRig.rightMiddle.LerpFinger(1f, false);
-                                VRRig.LocalRig.rightThumb.LerpFinger(1f, false);
+                                RandomizeFingers();
                             }
 
                             if (ValidateTag(vrrig))
@@ -847,21 +810,7 @@ namespace iiMenu.Mods
                     VRRig.LocalRig.leftHand.rigTarget.transform.rotation = RandomQuaternion();
                     VRRig.LocalRig.rightHand.rigTarget.transform.rotation = RandomQuaternion();
 
-                    VRRig.LocalRig.leftIndex.calcT = 0f;
-                    VRRig.LocalRig.leftMiddle.calcT = 0f;
-                    VRRig.LocalRig.leftThumb.calcT = 0f;
-
-                    VRRig.LocalRig.leftIndex.LerpFinger(1f, false);
-                    VRRig.LocalRig.leftMiddle.LerpFinger(1f, false);
-                    VRRig.LocalRig.leftThumb.LerpFinger(1f, false);
-
-                    VRRig.LocalRig.rightIndex.calcT = 0f;
-                    VRRig.LocalRig.rightMiddle.calcT = 0f;
-                    VRRig.LocalRig.rightThumb.calcT = 0f;
-
-                    VRRig.LocalRig.rightIndex.LerpFinger(1f, false);
-                    VRRig.LocalRig.rightMiddle.LerpFinger(1f, false);
-                    VRRig.LocalRig.rightThumb.LerpFinger(1f, false);
+                    RandomizeFingers();
                 }
 
                 if (ValidateTag(vrrig))
