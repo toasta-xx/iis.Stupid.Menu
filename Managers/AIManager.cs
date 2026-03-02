@@ -37,6 +37,19 @@ namespace iiMenu.Managers
 {
     public class AIManager
     {
+        private static ButtonInfo FindButtonByName(string name)
+        {
+            ButtonInfo button = Buttons.GetIndex(name);
+            return button ?? Buttons.buttons
+                .SelectMany((buttonList, i) =>
+                    !Buttons.categoryNames[i].Contains("settings", StringComparison.OrdinalIgnoreCase)
+                        ? buttonList
+                        : Enumerable.Empty<ButtonInfo>())
+                .FirstOrDefault(b =>
+                    (b.overlapText ?? b.buttonText)
+                    .Contains(name, StringComparison.OrdinalIgnoreCase));
+        }
+
         public static string SystemPrompt = @"NAME: ii's Voice Assistant
         MENU VERSION: {2}
         MOD COUNT: {0}
@@ -150,76 +163,42 @@ namespace iiMenu.Managers
                 switch (commandName)
                 {
                     case "ENABLEMOD":
+                    {
+                        ButtonInfo button = FindButtonByName(argument);
+                        if (button != null)
                         {
-                            ButtonInfo button = Buttons.GetIndex(argument);
-                            button ??= Buttons.buttons
-                                .SelectMany(
-                                    (buttonList, i) =>
-                                        !Buttons.categoryNames[i].Contains("settings", StringComparison.OrdinalIgnoreCase)
-                                            ? buttonList
-                                            : Enumerable.Empty<ButtonInfo>()
-                                )
-                                .FirstOrDefault(b =>
-                                    (b.overlapText ?? b.buttonText)
-                                    .Contains(argument, StringComparison.OrdinalIgnoreCase));
-
-                            if (button != null)
-                            {
-                                if (!button.enabled)
-                                    Main.Toggle(button.buttonText, true);
-                                else
-                                    NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod is already enabled.");
-                            } else
-                                NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod \"{argument}\" does not exist.");
-
-                            break;
-                        }
-                    case "DISABLEMOD":
-                        {
-                            ButtonInfo button = Buttons.GetIndex(argument);
-                            button ??= Buttons.buttons
-                                .SelectMany(
-                                    (buttonList, i) =>
-                                        !Buttons.categoryNames[i].Contains("settings", StringComparison.OrdinalIgnoreCase)
-                                            ? buttonList
-                                            : Enumerable.Empty<ButtonInfo>()
-                                )
-                                .FirstOrDefault(b =>
-                                    (b.overlapText ?? b.buttonText)
-                                    .Contains(argument, StringComparison.OrdinalIgnoreCase));
-
-                            if (button != null)
-                            {
-                                if (button.enabled)
-                                    Main.Toggle(button.buttonText, true);
-                                else
-                                    NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod is already enabled.");
-                            }
-                            else
-                                NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod \"{argument}\" does not exist.");
-
-                            break;
-                        }
-                    case "TOGGLEMOD":
-                        {
-                            ButtonInfo button = Buttons.GetIndex(argument);
-                            button ??= Buttons.buttons
-                                .SelectMany(
-                                    (buttonList, i) =>
-                                        !Buttons.categoryNames[i].Contains("settings", StringComparison.OrdinalIgnoreCase)
-                                            ? buttonList
-                                            : Enumerable.Empty<ButtonInfo>()
-                                )
-                                .FirstOrDefault(b =>
-                                    (b.overlapText ?? b.buttonText)
-                                    .Contains(argument, StringComparison.OrdinalIgnoreCase));
-
-                            if (button != null)
+                            if (!button.enabled)
                                 Main.Toggle(button.buttonText, true);
                             else
-                                NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod \"{argument}\" does not exist.");
-                            break;
+                                NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod is already enabled.");
                         }
+                        else
+                            NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod \"{argument}\" does not exist.");
+                        break;
+                    }
+                    case "DISABLEMOD":
+                    {
+                        ButtonInfo button = FindButtonByName(argument);
+                        if (button != null)
+                        {
+                            if (button.enabled)
+                                Main.Toggle(button.buttonText, true);
+                            else
+                                NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod is already disabled.");
+                        }
+                        else
+                            NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod \"{argument}\" does not exist.");
+                        break;
+                    }
+                    case "TOGGLEMOD":
+                    {
+                        ButtonInfo button = FindButtonByName(argument);
+                        if (button != null)
+                            Main.Toggle(button.buttonText, true);
+                        else
+                            NotificationManager.SendNotification($"<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Mod \"{argument}\" does not exist.");
+                        break;
+                    }
                     case "JOINROOM":
                         {
                             if (argument.ToLower() == "random")
