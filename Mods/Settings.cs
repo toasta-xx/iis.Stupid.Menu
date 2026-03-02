@@ -155,23 +155,14 @@ namespace iiMenu.Mods
             inTextInput = false;
             isKeyboardPc = false;
 
-            if (lKeyReference != null)
-            {
-                Object.Destroy(lKeyReference);
-                lKeyReference = null;
-            }
+            if (lKeyReference != null) Object.Destroy(lKeyReference);
+            lKeyReference = null;
 
-            if (rKeyReference != null)
-            {
-                Object.Destroy(rKeyReference);
-                rKeyReference = null;
-            }
+            if (rKeyReference != null) Object.Destroy(rKeyReference);
+            rKeyReference = null;
 
-            if (VRKeyboard != null)
-            {
-                Object.Destroy(VRKeyboard);
-                VRKeyboard = null;
-            }
+            if (VRKeyboard != null) Object.Destroy(VRKeyboard);
+            VRKeyboard = null;
 
             if (TPC != null && TPC.transform.parent.gameObject.name.Contains("CameraTablet") && isOnPC)
             {
@@ -312,9 +303,9 @@ namespace iiMenu.Mods
             int category = Buttons.GetCategory("Temporary Category");
 
             string version = PluginInfo.Version;
-            if (PluginInfo.BetaBuild) version = "<color=blue>Beta</color> " + version;
+            if (PluginInfo.BetaBuild) version = $"<color=blue>Beta</color> {version}";
             Buttons.AddButton(category, new ButtonInfo { buttonText = "Exit Info Screen", method =() => Toggle("Info Screen"), isTogglable = false, toolTip = "Returns you back to the main page." });
-            Buttons.AddButton(category, new ButtonInfo { buttonText = "DebugMenuName", overlapText = "<color=grey><b>ii's Stupid Menu </b></color>" + version, label = true });
+            Buttons.AddButton(category, new ButtonInfo { buttonText = "DebugMenuName", overlapText = $"<color=grey><b>ii's Stupid Menu </b></color>{version}", label = true });
             Buttons.AddButton(category, new ButtonInfo { buttonText = "DebugColor", overlapText = "Loading...", label = true });
             Buttons.AddButton(category, new ButtonInfo { buttonText = "DebugName", overlapText = "Loading...", label = true });
             Buttons.AddButton(category, new ButtonInfo { buttonText = "DebugId", overlapText = "Loading...", label = true });
@@ -330,21 +321,21 @@ namespace iiMenu.Mods
         public static bool hideId;
         public static void Debug()
         {
-            string red = "<color=red>" + MathF.Floor(PlayerPrefs.GetFloat("redValue") * 255f) + "</color>";
-            string green = ", <color=green>" + MathF.Floor(PlayerPrefs.GetFloat("greenValue") * 255f) + "</color>";
-            string blue = ", <color=blue>" + MathF.Floor(PlayerPrefs.GetFloat("blueValue") * 255f) + "</color>";
-            Buttons.GetIndex("DebugColor").overlapText = "Color: " + red + green + blue;
+            string red = $"<color=red>{MathF.Floor(PlayerPrefs.GetFloat("redValue") * 255f)}</color>";
+            string green = $", <color=green>{MathF.Floor(PlayerPrefs.GetFloat("greenValue") * 255f)}</color>";
+            string blue = $", <color=blue>{MathF.Floor(PlayerPrefs.GetFloat("blueValue") * 255f)}</color>";
+            Buttons.GetIndex("DebugColor").overlapText = $"Color: {red}{green}{blue}";
 
             string master = PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient ? "<color=red> [Master]</color>" : "";
             Buttons.GetIndex("DebugName").overlapText = PhotonNetwork.LocalPlayer.NickName + master;
 
-            Buttons.GetIndex("DebugId").overlapText = "<color=green>ID: </color>" + (hideId ? "Hidden" : PhotonNetwork.LocalPlayer.UserId);
-            Buttons.GetIndex("DebugClip").overlapText = "<color=green>Clip: </color>" + (GUIUtility.systemCopyBuffer.Length > 25 ? GUIUtility.systemCopyBuffer[..25] : GUIUtility.systemCopyBuffer);
-            Buttons.GetIndex("DebugFps").overlapText = "<b>" + lastDeltaTime + "</b> FPS <b>" + PhotonNetwork.GetPing() + "</b> Ping";
-            Buttons.GetIndex("DebugRoomA").overlapText = "<color=blue>" + NetworkSystem.Instance.regionNames[NetworkSystem.Instance.currentRegionIndex].ToUpper() + "</color> " + PhotonNetwork.PlayerList.Length + " Players";
+            Buttons.GetIndex("DebugId").overlapText = $"<color=green>ID: </color>{(hideId ? "Hidden" : PhotonNetwork.LocalPlayer.UserId)}";
+            Buttons.GetIndex("DebugClip").overlapText = $"<color=green>Clip: </color>{(GUIUtility.systemCopyBuffer.Length > 25 ? GUIUtility.systemCopyBuffer[..25] : GUIUtility.systemCopyBuffer)}";
+            Buttons.GetIndex("DebugFps").overlapText = $"<b>{lastDeltaTime}</b> FPS <b>{PhotonNetwork.GetPing()}</b> Ping";
+            Buttons.GetIndex("DebugRoomA").overlapText = $"<color=blue>{NetworkSystem.Instance.regionNames[NetworkSystem.Instance.currentRegionIndex].ToUpper()}</color> {PhotonNetwork.PlayerList.Length} Players";
 
             string priv = PhotonNetwork.InRoom ? NetworkSystem.Instance.SessionIsPrivate ? "Private" : "Public" : "";
-            Buttons.GetIndex("DebugRoomB").overlapText = "<color=blue>" + priv + "</color> " + (PhotonNetwork.InRoom ? PhotonNetwork.CurrentRoom.Name : "Not in room");
+            Buttons.GetIndex("DebugRoomB").overlapText = $"<color=blue>{priv}</color> {(PhotonNetwork.InRoom ? PhotonNetwork.CurrentRoom.Name : "Not in room")}";
         }
         public static void HideDebug()
         {
@@ -389,7 +380,7 @@ namespace iiMenu.Mods
                     buttons.Add(new ButtonInfo
                     {
                         buttonText = $"PlayerButton{i}",
-                        overlapText = $"<color={playerColor}>" + player.NickName + "</color>",
+                        overlapText = $"<color={playerColor}>{player.NickName}</color>",
                         method =() => NavigatePlayer(player),
                         isTogglable = false,
                         toolTip = $"See information on the player {player.NickName}."
@@ -405,7 +396,7 @@ namespace iiMenu.Mods
         {
             string targetName = player.NickName;
 
-            VRRig playerRig = GetVRRigFromPlayer(player) ?? null;
+            VRRig playerRig = GetVRRigFromPlayer(player);
 
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo {
@@ -661,7 +652,7 @@ namespace iiMenu.Mods
                     enabled = !skipButtons.Contains(button.buttonText),
                     enableMethod =() => skipButtons.Remove(button.buttonText),
                     disableMethod =() => skipButtons.Add(button.buttonText),
-                    toolTip = "Toggles the visibility of the category " + button.buttonText + "."
+                    toolTip = $"Toggles the visibility of the category {button.buttonText}."
                 });
             }
 
@@ -798,7 +789,7 @@ exit";
 
                     File.WriteAllText(fileName, updateScript);
 
-                    string filePath = FileUtilities.GetGamePath() + "/" + fileName;
+                    string filePath = $"{FileUtilities.GetGamePath()}/{fileName}";
                     Process.Start(filePath);
                     Application.Quit();
                     break;
@@ -937,80 +928,34 @@ exit 0";
             Object.Destroy(watchobject);
         }
 
+        private static readonly string[] LanguageNames = {
+            "English", "Español", "Français", "Deutsch", "日本語",
+            "Italiano", "Português", "Nederlands", "Русский", "Polski"
+        };
+        private static readonly string[] LanguageCodenames = {
+            "en", "es", "fr", "de", "ja", "it", "pt", "nl", "ru", "pl"
+        };
+
         public static int langInd;
         public static void ChangeMenuLanguage(bool positive = true)
         {
-            string[] languageNames = {
-                "English",
-                "Español",
-                "Français",
-                "Deutsch",
-                "日本語",
-                "Italiano",
-                "Português",
-                "Nederlands",
-                "Русский",
-                "Polski"
-            };
-
-            string[] codenames = {
-                "en",
-                "es",
-                "fr",
-                "de",
-                "ja",
-                "it",
-                "pt",
-                "nl",
-                "ru",
-                "pl"
-            };
-
-            if (positive)
-                langInd++;
-            else
-                langInd--;
-
-            langInd %= languageNames.Length;
-            if (langInd < 0)
-                langInd = languageNames.Length - 1;
-
+            ModHelpers.CycleMode(ref langInd, LanguageNames, "Change Menu Language", positive);
             TranslationManager.translateCache.Clear();
-            TranslationManager.language = codenames[langInd];
-
-            Buttons.GetIndex("Change Menu Language").overlapText = "Change Menu Language <color=grey>[</color><color=green>" + languageNames[langInd] + "</color><color=grey>]</color>";
-
+            TranslationManager.language = LanguageCodenames[langInd];
             translate = langInd != 0;
         }
 
-        public static void ChangeMenuButton(bool positive = true)
-        {
-            string[] buttonNames = {
-                "Primary",
-                "Secondary",
-                "Grip",
-                "Trigger",
-                "Joystick"
-            };
+        private static readonly string[] MenuButtonNames = { "Primary", "Secondary", "Grip", "Trigger", "Joystick" };
 
-            if (positive)
-                menuButtonIndex++;
-            else
-                menuButtonIndex--;
-
-            menuButtonIndex %= buttonNames.Length;
-            if (menuButtonIndex < 0)
-                menuButtonIndex = buttonNames.Length - 1;
-
-            Buttons.GetIndex("Change Menu Button").overlapText = "Change Menu Button <color=grey>[</color><color=green>" + buttonNames[menuButtonIndex] + "</color><color=grey>]</color>";
-        }
+        public static void ChangeMenuButton(bool positive = true) =>
+            ModHelpers.CycleMode(ref menuButtonIndex, MenuButtonNames, "Change Menu Button", positive);
 
         // I know there's better ways to do this. Trust me.
         public static void ChangeMenuTheme(bool increment = true)
         {
-            if (increment) 
-                themeType++; 
-            else 
+            if (increment)
+                themeType++;
+            else
                 themeType--;
 
             const int themeCount = 66;
@@ -3185,73 +3130,30 @@ exit 0";
         private static int menuScaleIndex = 10;
         public static void ChangeMenuScale(bool positive = true)
         {
-            if (positive)
-                menuScaleIndex++;
-            else
-                menuScaleIndex--;
-
-            if (menuScaleIndex > 30)
-                menuScaleIndex = 2;
-            if (menuScaleIndex < 2)
-                menuScaleIndex = 30;
-
+            ModHelpers.CycleInt(ref menuScaleIndex, 2, 30, "Change Menu Scale", positive);
             menuScale = menuScaleIndex / 10f;
-
-            Buttons.GetIndex("Change Menu Scale").overlapText = "Change Menu Scale <color=grey>[</color><color=green>" + menuScale + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Menu Scale").overlapText = ModHelpers.FormatModeLabel("Change Menu Scale", menuScale);
         }
 
         private static int notificationScaleIndex = 6;
         public static void ChangeNotificationScale(bool positive = true)
         {
-            if (positive)
-                notificationScaleIndex++;
-            else
-                notificationScaleIndex--;
-
-            if (notificationScaleIndex > 20)
-                notificationScaleIndex = 1;
-            if (notificationScaleIndex < 1)
-                notificationScaleIndex = 20;
-
+            ModHelpers.CycleInt(ref notificationScaleIndex, 1, 20, "Change Notification Scale", positive);
             notificationScale = notificationScaleIndex * 5;
-
-            Buttons.GetIndex("Change Notification Scale").overlapText = "Change Notification Scale <color=grey>[</color><color=green>" + notificationScaleIndex + "</color><color=grey>]</color>";
         }
 
         private static int arraylistScaleIndex = 4;
         public static void ChangeArraylistScale(bool positive = true)
         {
-            if (positive)
-                arraylistScaleIndex++;
-            else
-                arraylistScaleIndex--;
-
-            if (arraylistScaleIndex > 20)
-                arraylistScaleIndex = 1;
-            if (arraylistScaleIndex < 1)
-                arraylistScaleIndex = 20;
-
+            ModHelpers.CycleInt(ref arraylistScaleIndex, 1, 20, "Change Arraylist Scale", positive);
             arraylistScale = arraylistScaleIndex * 5;
-
-            Buttons.GetIndex("Change Arraylist Scale").overlapText = "Change Arraylist Scale <color=grey>[</color><color=green>" + arraylistScaleIndex + "</color><color=grey>]</color>";
         }
 
         private static int overlayScaleIndex = 6;
         public static void ChangeOverlayScale(bool positive = true)
         {
-            if (positive)
-                overlayScaleIndex++;
-            else
-                overlayScaleIndex--;
-
-            if (overlayScaleIndex > 20)
-                overlayScaleIndex = 1;
-            if (overlayScaleIndex < 1)
-                overlayScaleIndex = 20;
-
+            ModHelpers.CycleInt(ref overlayScaleIndex, 1, 20, "Change Overlay Scale", positive);
             overlayScale = overlayScaleIndex * 5;
-
-            Buttons.GetIndex("Change Overlay Scale").overlapText = "Change Overlay Scale <color=grey>[</color><color=green>" + overlayScaleIndex + "</color><color=grey>]</color>";
         }
 
         private static int modifyWhatId;
@@ -3275,8 +3177,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             backgroundColor.SetColor(0, new Color(r / 10f, backgroundColor.GetColor(0).g, backgroundColor.GetColor(0).b));
 
-                        Buttons.GetIndex("Red").overlapText = "Red <color=grey>[</color><color=green>" + r + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(backgroundColor.GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Red").overlapText = ModHelpers.FormatModeLabel("Red", r);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(backgroundColor.GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 1:
@@ -3295,8 +3197,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             backgroundColor.SetColor(1, new Color(r / 10f, backgroundColor.GetColor(1).g, backgroundColor.GetColor(1).b));
 
-                        Buttons.GetIndex("Red").overlapText = "Red <color=grey>[</color><color=green>" + r + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(backgroundColor.GetColor(1)) + ">Preview</color>";
+                        Buttons.GetIndex("Red").overlapText = ModHelpers.FormatModeLabel("Red", r);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(backgroundColor.GetColor(1))}>Preview</color>";
                         break;
                     }
                 case 2:
@@ -3315,8 +3217,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[0].SetColor(0, new Color(r / 10f, buttonColors[0].GetColor(0).g, buttonColors[0].GetColor(0).b));
 
-                        Buttons.GetIndex("Red").overlapText = "Red <color=grey>[</color><color=green>" + r + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[0].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Red").overlapText = ModHelpers.FormatModeLabel("Red", r);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[0].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 3:
@@ -3335,8 +3237,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[0].SetColor(1, new Color(r / 10f, buttonColors[0].GetColor(1).g, buttonColors[0].GetColor(1).b));
 
-                        Buttons.GetIndex("Red").overlapText = "Red <color=grey>[</color><color=green>" + r + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[0].GetColor(1)) + ">Preview</color>";
+                        Buttons.GetIndex("Red").overlapText = ModHelpers.FormatModeLabel("Red", r);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[0].GetColor(1))}>Preview</color>";
                         break;
                     }
                 case 4:
@@ -3355,8 +3257,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[1].SetColor(0, new Color(r / 10f, buttonColors[1].GetColor(0).g, buttonColors[1].GetColor(0).b));
 
-                        Buttons.GetIndex("Red").overlapText = "Red <color=grey>[</color><color=green>" + r + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[1].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Red").overlapText = ModHelpers.FormatModeLabel("Red", r);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[1].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 5:
@@ -3375,8 +3277,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[1].SetColor(1, new Color(r / 10f, buttonColors[1].GetColor(1).g, buttonColors[1].GetColor(1).b));
 
-                        Buttons.GetIndex("Red").overlapText = "Red <color=grey>[</color><color=green>" + r + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[1].GetColor(1)) + ">Preview</color>";
+                        Buttons.GetIndex("Red").overlapText = ModHelpers.FormatModeLabel("Red", r);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[1].GetColor(1))}>Preview</color>";
                         break;
                     }
                 case 6:
@@ -3395,8 +3297,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             textColors[0].SetColors(new Color(r / 10f, textColors[0].GetColor(0).g, textColors[0].GetColor(0).b));
 
-                        Buttons.GetIndex("Red").overlapText = "Red <color=grey>[</color><color=green>" + r + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(textColors[0].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Red").overlapText = ModHelpers.FormatModeLabel("Red", r);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(textColors[0].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 7:
@@ -3414,8 +3316,8 @@ exit 0";
 
                         textColors[1].SetColors(new Color(r / 10f, textColors[1].GetColor(0).g, textColors[1].GetColor(0).b));
 
-                        Buttons.GetIndex("Red").overlapText = "Red <color=grey>[</color><color=green>" + r + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(textColors[1].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Red").overlapText = ModHelpers.FormatModeLabel("Red", r);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(textColors[1].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 8:
@@ -3434,8 +3336,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             textColors[2].SetColors(new Color(r / 10f, textColors[2].GetColor(0).g, textColors[2].GetColor(0).b));
 
-                        Buttons.GetIndex("Red").overlapText = "Red <color=grey>[</color><color=green>" + r + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(textColors[2].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Red").overlapText = ModHelpers.FormatModeLabel("Red", r);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(textColors[2].GetColor(0))}>Preview</color>";
                         break;
                     }
             }
@@ -3462,8 +3364,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             backgroundColor.SetColor(0, new Color(backgroundColor.GetColor(0).r, g / 10f, backgroundColor.GetColor(0).b));
 
-                        Buttons.GetIndex("Green").overlapText = "Green <color=grey>[</color><color=green>" + g + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(backgroundColor.GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Green").overlapText = ModHelpers.FormatModeLabel("Green", g);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(backgroundColor.GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 1:
@@ -3482,8 +3384,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             backgroundColor.SetColor(1, new Color(backgroundColor.GetColor(1).r, g / 10f, backgroundColor.GetColor(1).b));
 
-                        Buttons.GetIndex("Green").overlapText = "Green <color=grey>[</color><color=green>" + g + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(backgroundColor.GetColor(1)) + ">Preview</color>";
+                        Buttons.GetIndex("Green").overlapText = ModHelpers.FormatModeLabel("Green", g);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(backgroundColor.GetColor(1))}>Preview</color>";
                         break;
                     }
                 case 2:
@@ -3502,8 +3404,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[0].SetColor(0, new Color(buttonColors[0].GetColor(0).r, g / 10f, buttonColors[0].GetColor(0).b));
 
-                        Buttons.GetIndex("Green").overlapText = "Green <color=grey>[</color><color=green>" + g + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[0].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Green").overlapText = ModHelpers.FormatModeLabel("Green", g);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[0].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 3:
@@ -3522,8 +3424,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[0].SetColor(1, new Color(buttonColors[0].GetColor(1).r, g / 10f, buttonColors[0].GetColor(1).b));
 
-                        Buttons.GetIndex("Green").overlapText = "Green <color=grey>[</color><color=green>" + g + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[0].GetColor(1)) + ">Preview</color>";
+                        Buttons.GetIndex("Green").overlapText = ModHelpers.FormatModeLabel("Green", g);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[0].GetColor(1))}>Preview</color>";
                         break;
                     }
                 case 4:
@@ -3542,8 +3444,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[1].SetColor(0, new Color(buttonColors[1].GetColor(0).r, g / 10f, buttonColors[1].GetColor(0).b));
 
-                        Buttons.GetIndex("Green").overlapText = "Green <color=grey>[</color><color=green>" + g + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[1].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Green").overlapText = ModHelpers.FormatModeLabel("Green", g);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[1].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 5:
@@ -3562,8 +3464,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[1].SetColor(1, new Color(buttonColors[1].GetColor(1).r, g / 10f, buttonColors[1].GetColor(1).b));
 
-                        Buttons.GetIndex("Green").overlapText = "Green <color=grey>[</color><color=green>" + g + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[1].GetColor(1)) + ">Preview</color>";
+                        Buttons.GetIndex("Green").overlapText = ModHelpers.FormatModeLabel("Green", g);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[1].GetColor(1))}>Preview</color>";
                         break;
                     }
                 case 6:
@@ -3582,8 +3484,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             textColors[0].SetColors(new Color(textColors[0].GetColor(0).r, g / 10f, textColors[0].GetColor(0).b));
 
-                        Buttons.GetIndex("Green").overlapText = "Green <color=grey>[</color><color=green>" + g + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(textColors[0].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Green").overlapText = ModHelpers.FormatModeLabel("Green", g);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(textColors[0].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 7:
@@ -3602,8 +3504,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             textColors[1].SetColors(new Color(textColors[1].GetColor(0).r, g / 10f, textColors[1].GetColor(0).b));
 
-                        Buttons.GetIndex("Green").overlapText = "Green <color=grey>[</color><color=green>" + g + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(textColors[1].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Green").overlapText = ModHelpers.FormatModeLabel("Green", g);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(textColors[1].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 8:
@@ -3622,8 +3524,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             textColors[2].SetColors(new Color(textColors[2].GetColor(0).r, g / 10f, textColors[2].GetColor(0).b));
 
-                        Buttons.GetIndex("Green").overlapText = "Green <color=grey>[</color><color=green>" + g + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(textColors[2].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Green").overlapText = ModHelpers.FormatModeLabel("Green", g);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(textColors[2].GetColor(0))}>Preview</color>";
                         break;
                     }
             }
@@ -3649,8 +3551,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             backgroundColor.SetColor(0, new Color(backgroundColor.GetColor(0).r, backgroundColor.GetColor(0).g, b / 10f));
 
-                        Buttons.GetIndex("Blue").overlapText = "Blue <color=grey>[</color><color=green>" + b + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(backgroundColor.GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Blue").overlapText = ModHelpers.FormatModeLabel("Blue", b);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(backgroundColor.GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 1:
@@ -3669,8 +3571,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             backgroundColor.SetColor(1, new Color(backgroundColor.GetColor(1).r, backgroundColor.GetColor(1).g, b / 10f));
 
-                        Buttons.GetIndex("Blue").overlapText = "Blue <color=grey>[</color><color=green>" + b + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(backgroundColor.GetColor(1)) + ">Preview</color>";
+                        Buttons.GetIndex("Blue").overlapText = ModHelpers.FormatModeLabel("Blue", b);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(backgroundColor.GetColor(1))}>Preview</color>";
                         break;
                     }
                 case 2:
@@ -3689,8 +3591,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[0].SetColor(0, new Color(buttonColors[0].GetColor(0).r, buttonColors[0].GetColor(0).g, b / 10f));
 
-                        Buttons.GetIndex("Blue").overlapText = "Blue <color=grey>[</color><color=green>" + b + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[0].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Blue").overlapText = ModHelpers.FormatModeLabel("Blue", b);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[0].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 3:
@@ -3709,8 +3611,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[0].SetColor(1, new Color(buttonColors[0].GetColor(1).r, buttonColors[0].GetColor(1).g, b / 10f));
 
-                        Buttons.GetIndex("Blue").overlapText = "Blue <color=grey>[</color><color=green>" + b + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[0].GetColor(1)) + ">Preview</color>";
+                        Buttons.GetIndex("Blue").overlapText = ModHelpers.FormatModeLabel("Blue", b);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[0].GetColor(1))}>Preview</color>";
                         break;
                     }
                 case 4:
@@ -3729,8 +3631,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[1].SetColor(0, new Color(buttonColors[1].GetColor(0).r, buttonColors[1].GetColor(0).g, b / 10f));
 
-                        Buttons.GetIndex("Blue").overlapText = "Blue <color=grey>[</color><color=green>" + b + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[1].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Blue").overlapText = ModHelpers.FormatModeLabel("Blue", b);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[1].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 5:
@@ -3749,8 +3651,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             buttonColors[1].SetColor(1, new Color(buttonColors[1].GetColor(1).r, buttonColors[1].GetColor(1).g, b / 10f));
 
-                        Buttons.GetIndex("Blue").overlapText = "Blue <color=grey>[</color><color=green>" + b + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(buttonColors[1].GetColor(1)) + ">Preview</color>";
+                        Buttons.GetIndex("Blue").overlapText = ModHelpers.FormatModeLabel("Blue", b);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(buttonColors[1].GetColor(1))}>Preview</color>";
                         break;
                     }
                 case 6:
@@ -3769,8 +3671,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             textColors[0].SetColors(new Color(textColors[0].GetColor(0).r, textColors[0].GetColor(0).g, b / 10f));
 
-                        Buttons.GetIndex("Blue").overlapText = "Blue <color=grey>[</color><color=green>" + b + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(textColors[0].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Blue").overlapText = ModHelpers.FormatModeLabel("Blue", b);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(textColors[0].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 7:
@@ -3789,8 +3691,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             textColors[1].SetColors(new Color(textColors[1].GetColor(0).r, textColors[1].GetColor(0).g, b / 10f));
 
-                        Buttons.GetIndex("Blue").overlapText = "Blue <color=grey>[</color><color=green>" + b + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(textColors[1].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Blue").overlapText = ModHelpers.FormatModeLabel("Blue", b);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(textColors[1].GetColor(0))}>Preview</color>";
                         break;
                     }
                 case 8:
@@ -3809,8 +3711,8 @@ exit 0";
                         if (Buttons.GetIndex("Custom Menu Theme").enabled)
                             textColors[2].SetColors(new Color(textColors[2].GetColor(0).r, textColors[2].GetColor(0).g, b / 10f));
 
-                        Buttons.GetIndex("Blue").overlapText = "Blue <color=grey>[</color><color=green>" + b + "</color><color=grey>]</color>";
-                        Buttons.GetIndex("PreviewLabel").overlapText = "<color=#" + ColorToHex(textColors[2].GetColor(0)) + ">Preview</color>";
+                        Buttons.GetIndex("Blue").overlapText = ModHelpers.FormatModeLabel("Blue", b);
+                        Buttons.GetIndex("PreviewLabel").overlapText = $"<color=#{ColorToHex(textColors[2].GetColor(0))}>Preview</color>";
                         break;
                     }
             }
@@ -3862,10 +3764,10 @@ exit 0";
 
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo { buttonText = "Exit First Color", method = () => CMTBackground(), isTogglable = false, toolTip = "Returns you back to the background menu." },
-                new ButtonInfo { buttonText = "Red", overlapText = "Red <color=grey>[</color><color=green>" + (int)Math.Round(backgroundColor.GetColor(0).r * 10f) + "</color><color=grey>]</color>", method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the background." },
-                new ButtonInfo { buttonText = "Green", overlapText = "Green <color=grey>[</color><color=green>" + (int)Math.Round(backgroundColor.GetColor(0).g * 10f) + "</color><color=grey>]</color>", method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the background." },
-                new ButtonInfo { buttonText = "Blue", overlapText = "Blue <color=grey>[</color><color=green>" + (int)Math.Round(backgroundColor.GetColor(0).b * 10f) + "</color><color=grey>]</color>", method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the background." },
-                new ButtonInfo { buttonText = "PreviewLabel", overlapText = "<color=#" + ColorToHex(backgroundColor.GetColor(0)) + ">Preview</color>", label = true },
+                new ButtonInfo { buttonText = "Red", overlapText = ModHelpers.FormatModeLabel("Red", (int)Math.Round(backgroundColor.GetColor(0).r * 10f)), method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the background." },
+                new ButtonInfo { buttonText = "Green", overlapText = ModHelpers.FormatModeLabel("Green", (int)Math.Round(backgroundColor.GetColor(0).g * 10f)), method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the background." },
+                new ButtonInfo { buttonText = "Blue", overlapText = ModHelpers.FormatModeLabel("Blue", (int)Math.Round(backgroundColor.GetColor(0).b * 10f)), method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the background." },
+                new ButtonInfo { buttonText = "PreviewLabel", overlapText = $"<color=#{ColorToHex(backgroundColor.GetColor(0))}>Preview</color>", label = true },
             };
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
@@ -3877,10 +3779,10 @@ exit 0";
   
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo { buttonText = "Exit Second Color", method = () => CMTBackground(), isTogglable = false, toolTip = "Returns you back to the background menu." },
-                new ButtonInfo { buttonText = "Red", overlapText = "Red <color=grey>[</color><color=green>" + (int)Math.Round(backgroundColor.GetColor(1).r * 10f) + "</color><color=grey>]</color>", method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the second color of the background." },
-                new ButtonInfo { buttonText = "Green", overlapText = "Green <color=grey>[</color><color=green>" + (int)Math.Round(backgroundColor.GetColor(1).g * 10f) + "</color><color=grey>]</color>", method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the second color of the background." },
-                new ButtonInfo { buttonText = "Blue", overlapText = "Blue <color=grey>[</color><color=green>" + (int)Math.Round(backgroundColor.GetColor(1).b * 10f) + "</color><color=grey>]</color>", method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the second color of the background." },
-                new ButtonInfo { buttonText = "PreviewLabel", overlapText = "<color=#" + ColorToHex(backgroundColor.GetColor(1)) + ">Preview</color>", label = true },
+                new ButtonInfo { buttonText = "Red", overlapText = ModHelpers.FormatModeLabel("Red", (int)Math.Round(backgroundColor.GetColor(1).r * 10f)), method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the second color of the background." },
+                new ButtonInfo { buttonText = "Green", overlapText = ModHelpers.FormatModeLabel("Green", (int)Math.Round(backgroundColor.GetColor(1).g * 10f)), method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the second color of the background." },
+                new ButtonInfo { buttonText = "Blue", overlapText = ModHelpers.FormatModeLabel("Blue", (int)Math.Round(backgroundColor.GetColor(1).b * 10f)), method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the second color of the background." },
+                new ButtonInfo { buttonText = "PreviewLabel", overlapText = $"<color=#{ColorToHex(backgroundColor.GetColor(1))}>Preview</color>", label = true },
             };
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
@@ -3926,10 +3828,10 @@ exit 0";
 
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo { buttonText = "Exit First Color", method = () => CMTButtonEnabled(), isTogglable = false, toolTip = "Returns you back to the enabled button menu." },
-                new ButtonInfo { buttonText = "Red", overlapText = "Red <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[1].GetColor(0).r * 10f) + "</color><color=grey>]</color>", method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the enabled button color." },
-                new ButtonInfo { buttonText = "Green", overlapText = "Green <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[1].GetColor(0).g * 10f) + "</color><color=grey>]</color>", method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the enabled button color." },
-                new ButtonInfo { buttonText = "Blue", overlapText = "Blue <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[1].GetColor(0).b * 10f) + "</color><color=grey>]</color>", method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the enabled button color." },
-                new ButtonInfo { buttonText = "PreviewLabel", overlapText = "<color=#" + ColorToHex(buttonColors[1].GetColor(0)) + ">Preview</color>", label = true },
+                new ButtonInfo { buttonText = "Red", overlapText = ModHelpers.FormatModeLabel("Red", (int)Math.Round(buttonColors[1].GetColor(0).r * 10f)), method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the enabled button color." },
+                new ButtonInfo { buttonText = "Green", overlapText = ModHelpers.FormatModeLabel("Green", (int)Math.Round(buttonColors[1].GetColor(0).g * 10f)), method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the enabled button color." },
+                new ButtonInfo { buttonText = "Blue", overlapText = ModHelpers.FormatModeLabel("Blue", (int)Math.Round(buttonColors[1].GetColor(0).b * 10f)), method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the enabled button color." },
+                new ButtonInfo { buttonText = "PreviewLabel", overlapText = $"<color=#{ColorToHex(buttonColors[1].GetColor(0))}>Preview</color>", label = true },
             };
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
@@ -3941,10 +3843,10 @@ exit 0";
 
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo { buttonText = "Exit Second Color", method = () => CMTButtonEnabled(), isTogglable = false, toolTip = "Returns you back to the enabled button menu." },
-                new ButtonInfo { buttonText = "Red", overlapText = "Red <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[1].GetColor(1).r * 10f) + "</color><color=grey>]</color>", method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the enabled button color." },
-                new ButtonInfo { buttonText = "Green", overlapText = "Green <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[1].GetColor(1).g * 10f) + "</color><color=grey>]</color>", method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the enabled button color." },
-                new ButtonInfo { buttonText = "Blue", overlapText = "Blue <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[1].GetColor(1).b * 10f) + "</color><color=grey>]</color>", method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the enabled button color." },
-                new ButtonInfo { buttonText = "PreviewLabel", overlapText = "<color=#" + ColorToHex(buttonColors[1].GetColor(1)) + ">Preview</color>", label = true },
+                new ButtonInfo { buttonText = "Red", overlapText = ModHelpers.FormatModeLabel("Red", (int)Math.Round(buttonColors[1].GetColor(1).r * 10f)), method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the enabled button color." },
+                new ButtonInfo { buttonText = "Green", overlapText = ModHelpers.FormatModeLabel("Green", (int)Math.Round(buttonColors[1].GetColor(1).g * 10f)), method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the enabled button color." },
+                new ButtonInfo { buttonText = "Blue", overlapText = ModHelpers.FormatModeLabel("Blue", (int)Math.Round(buttonColors[1].GetColor(1).b * 10f)), method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the enabled button color." },
+                new ButtonInfo { buttonText = "PreviewLabel", overlapText = $"<color=#{ColorToHex(buttonColors[1].GetColor(1))}>Preview</color>", label = true },
             };
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
@@ -3955,10 +3857,10 @@ exit 0";
             modifyWhatId = 2;
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo { buttonText = "Exit First Color", method = () => CMTButtonDisabled(), isTogglable = false, toolTip = "Returns you back to the disabled button menu." },
-                new ButtonInfo { buttonText = "Red", overlapText = "Red <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[0].GetColor(0).r * 10f) + "</color><color=grey>]</color>", method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the disabled button color." },
-                new ButtonInfo { buttonText = "Green", overlapText = "Green <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[0].GetColor(0).g * 10f) + "</color><color=grey>]</color>", method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the disabled button color." },
-                new ButtonInfo { buttonText = "Blue", overlapText = "Blue <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[0].GetColor(0).b * 10f) + "</color><color=grey>]</color>", method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the disabled button color." },
-                new ButtonInfo { buttonText = "PreviewLabel", overlapText = "<color=#" + ColorToHex(buttonColors[0].GetColor(0)) + ">Preview</color>", label = true },
+                new ButtonInfo { buttonText = "Red", overlapText = ModHelpers.FormatModeLabel("Red", (int)Math.Round(buttonColors[0].GetColor(0).r * 10f)), method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the disabled button color." },
+                new ButtonInfo { buttonText = "Green", overlapText = ModHelpers.FormatModeLabel("Green", (int)Math.Round(buttonColors[0].GetColor(0).g * 10f)), method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the disabled button color." },
+                new ButtonInfo { buttonText = "Blue", overlapText = ModHelpers.FormatModeLabel("Blue", (int)Math.Round(buttonColors[0].GetColor(0).b * 10f)), method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the disabled button color." },
+                new ButtonInfo { buttonText = "PreviewLabel", overlapText = $"<color=#{ColorToHex(buttonColors[0].GetColor(0))}>Preview</color>", label = true },
             };
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
@@ -3970,10 +3872,10 @@ exit 0";
 
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo { buttonText = "Exit Second Color", method = CMTButtonDisabled, isTogglable = false, toolTip = "Returns you back to the disabled button menu." },
-                new ButtonInfo { buttonText = "Red", overlapText = "Red <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[0].GetColor(1).r * 10f) + "</color><color=grey>]</color>", method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the disabled button color." },
-                new ButtonInfo { buttonText = "Green", overlapText = "Green <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[0].GetColor(1).g * 10f) + "</color><color=grey>]</color>", method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the disabled button color." },
-                new ButtonInfo { buttonText = "Blue", overlapText = "Blue <color=grey>[</color><color=green>" + (int)Math.Round(buttonColors[0].GetColor(1).b * 10f) + "</color><color=grey>]</color>", method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the disabled button color." },
-                new ButtonInfo { buttonText = "PreviewLabel", overlapText = "<color=#" + ColorToHex(buttonColors[0].GetColor(1)) + ">Preview</color>", label = true },
+                new ButtonInfo { buttonText = "Red", overlapText = ModHelpers.FormatModeLabel("Red", (int)Math.Round(buttonColors[0].GetColor(1).r * 10f)), method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the first color of the disabled button color." },
+                new ButtonInfo { buttonText = "Green", overlapText = ModHelpers.FormatModeLabel("Green", (int)Math.Round(buttonColors[0].GetColor(1).g * 10f)), method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the first color of the disabled button color." },
+                new ButtonInfo { buttonText = "Blue", overlapText = ModHelpers.FormatModeLabel("Blue", (int)Math.Round(buttonColors[0].GetColor(1).b * 10f)), method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the first color of the disabled button color." },
+                new ButtonInfo { buttonText = "PreviewLabel", overlapText = $"<color=#{ColorToHex(buttonColors[0].GetColor(1))}>Preview</color>", label = true },
             };
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
@@ -3998,10 +3900,10 @@ exit 0";
 
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo { buttonText = "Exit Title", method = CMTText, isTogglable = false, toolTip = "Returns you back to the text menu." },
-                new ButtonInfo { buttonText = "Red", overlapText = "Red <color=grey>[</color><color=green>" + (int)Math.Round(textColors[0].GetColor(0).r * 10f) + "</color><color=grey>]</color>", method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the title color." },
-                new ButtonInfo { buttonText = "Green", overlapText = "Green <color=grey>[</color><color=green>" + (int)Math.Round(textColors[0].GetColor(0).g * 10f) + "</color><color=grey>]</color>", method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the title color." },
-                new ButtonInfo { buttonText = "Blue", overlapText = "Blue <color=grey>[</color><color=green>" + (int)Math.Round(textColors[0].GetColor(0).b * 10f) + "</color><color=grey>]</color>", method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the title color." },
-                new ButtonInfo { buttonText = "PreviewLabel", overlapText = "<color=#" + ColorToHex(textColors[0].GetColor(0)) + ">Preview</color>", label = true },
+                new ButtonInfo { buttonText = "Red", overlapText = ModHelpers.FormatModeLabel("Red", (int)Math.Round(textColors[0].GetColor(0).r * 10f)), method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the title color." },
+                new ButtonInfo { buttonText = "Green", overlapText = ModHelpers.FormatModeLabel("Green", (int)Math.Round(textColors[0].GetColor(0).g * 10f)), method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the title color." },
+                new ButtonInfo { buttonText = "Blue", overlapText = ModHelpers.FormatModeLabel("Blue", (int)Math.Round(textColors[0].GetColor(0).b * 10f)), method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the title color." },
+                new ButtonInfo { buttonText = "PreviewLabel", overlapText = $"<color=#{ColorToHex(textColors[0].GetColor(0))}>Preview</color>", label = true },
             };
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
@@ -4013,10 +3915,10 @@ exit 0";
 
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo { buttonText = "Exit Second Color", method = () => CMTText(), isTogglable = false, toolTip = "Returns you back to the text menu." },
-                new ButtonInfo { buttonText = "Red", overlapText = "Red <color=grey>[</color><color=green>" + (int)Math.Round(textColors[2].GetColor(0).r * 10f) + "</color><color=grey>]</color>", method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the enabled text color." },
-                new ButtonInfo { buttonText = "Green", overlapText = "Green <color=grey>[</color><color=green>" + (int)Math.Round(textColors[2].GetColor(0).g * 10f) + "</color><color=grey>]</color>", method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the enabled text color." },
-                new ButtonInfo { buttonText = "Blue", overlapText = "Blue <color=grey>[</color><color=green>" + (int)Math.Round(textColors[2].GetColor(0).b * 10f) + "</color><color=grey>]</color>", method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the enabled text color." },
-                new ButtonInfo { buttonText = "PreviewLabel", overlapText = "<color=#" + ColorToHex(textColors[2].GetColor(0)) + ">Preview</color>", label = true },
+                new ButtonInfo { buttonText = "Red", overlapText = ModHelpers.FormatModeLabel("Red", (int)Math.Round(textColors[2].GetColor(0).r * 10f)), method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the enabled text color." },
+                new ButtonInfo { buttonText = "Green", overlapText = ModHelpers.FormatModeLabel("Green", (int)Math.Round(textColors[2].GetColor(0).g * 10f)), method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the enabled text color." },
+                new ButtonInfo { buttonText = "Blue", overlapText = ModHelpers.FormatModeLabel("Blue", (int)Math.Round(textColors[2].GetColor(0).b * 10f)), method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the enabled text color." },
+                new ButtonInfo { buttonText = "PreviewLabel", overlapText = $"<color=#{ColorToHex(textColors[2].GetColor(0))}>Preview</color>", label = true },
             };
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
@@ -4028,10 +3930,10 @@ exit 0";
 
             List<ButtonInfo> buttons = new List<ButtonInfo> {
                 new ButtonInfo { buttonText = "Exit Second Color", method = () => CMTText(), isTogglable = false, toolTip = "Returns you back to the text menu." },
-                new ButtonInfo { buttonText = "Red", overlapText = "Red <color=grey>[</color><color=green>" + (int)Math.Round(textColors[1].GetColor(0).r * 10f) + "</color><color=grey>]</color>", method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the disabled text color." },
-                new ButtonInfo { buttonText = "Green", overlapText = "Green <color=grey>[</color><color=green>" + (int)Math.Round(textColors[1].GetColor(0).g * 10f) + "</color><color=grey>]</color>", method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the disabled text color." },
-                new ButtonInfo { buttonText = "Blue", overlapText = "Blue <color=grey>[</color><color=green>" + (int)Math.Round(textColors[1].GetColor(0).b * 10f) + "</color><color=grey>]</color>", method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the disabled text color." },
-                new ButtonInfo { buttonText = "PreviewLabel", overlapText = "<color=#" + ColorToHex(textColors[1].GetColor(0)) + ">Preview</color>", label = true },
+                new ButtonInfo { buttonText = "Red", overlapText = ModHelpers.FormatModeLabel("Red", (int)Math.Round(textColors[1].GetColor(0).r * 10f)), method =() => CMTRed(), enableMethod =() => CMTRed(), disableMethod =() => CMTRed(false), incremental = true, isTogglable = false, toolTip = "Change the red of the disabled text color." },
+                new ButtonInfo { buttonText = "Green", overlapText = ModHelpers.FormatModeLabel("Green", (int)Math.Round(textColors[1].GetColor(0).g * 10f)), method =() => CMTGreen(), enableMethod =() => CMTGreen(), disableMethod =() => CMTGreen(false), incremental = true, isTogglable = false, toolTip = "Change the green of the disabled text color." },
+                new ButtonInfo { buttonText = "Blue", overlapText = ModHelpers.FormatModeLabel("Blue", (int)Math.Round(textColors[1].GetColor(0).b * 10f)), method =() => CMTBlue(), enableMethod =() => CMTBlue(), disableMethod =() => CMTBlue(false), incremental = true, isTogglable = false, toolTip = "Change the blue of the disabled text color." },
+                new ButtonInfo { buttonText = "PreviewLabel", overlapText = $"<color=#{ColorToHex(textColors[1].GetColor(0))}>Preview</color>", label = true },
             };
 
             Buttons.buttons[Buttons.GetCategory("Temporary Category")] = buttons.ToArray();
@@ -4097,7 +3999,7 @@ exit 0";
                 if (output != "")
                     output += "\n";
 
-                output += Math.Round(Mathf.Round(clr.r * 10) / 10 * 255f) + "," + Math.Round(Mathf.Round(clr.g * 10) / 10 * 255f) + "," + Math.Round(Mathf.Round(clr.b * 10) / 10 * 255f);
+                output += $"{Math.Round(Mathf.Round(clr.r * 10) / 10 * 255f)},{Math.Round(Mathf.Round(clr.g * 10) / 10 * 255f)},{Math.Round(Mathf.Round(clr.b * 10) / 10 * 255f)}";
             }
 
             return output;
@@ -4428,7 +4330,7 @@ exit 0";
             if (notificationDecayTime < 0)
                 notificationDecayTime = 5000;
 
-            Buttons.GetIndex("Change Notification Time").overlapText = "Change Notification Time <color=grey>[</color><color=green>" + notificationDecayTime / 1000 + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Notification Time").overlapText = ModHelpers.FormatModeLabel("Change Notification Time", notificationDecayTime / 1000);
         }
 
         public static readonly Dictionary<string, string> notificationSounds = new Dictionary<string, string>
@@ -4472,7 +4374,7 @@ exit 0";
             if (notificationSoundIndex < 0)
                 notificationSoundIndex = notificationSounds.Keys.Count - 1;
 
-            Buttons.GetIndex("Change Notification Sound").overlapText = "Change Notification Sound <color=grey>[</color><color=green>" + notificationSounds.Keys.ToArray()[notificationSoundIndex] + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Notification Sound").overlapText = ModHelpers.FormatModeLabel("Change Notification Sound", notificationSounds.Keys.ToArray()[notificationSoundIndex]);
 
             if (fromMenu)
             {
@@ -4526,7 +4428,7 @@ exit 0";
             if (narratorIndex < 0)
                 narratorIndex = narratorNames.Length - 1;
 
-            Buttons.GetIndex("Change Narration Voice").overlapText = "Change Narration Voice <color=grey>[</color><color=green>" + narratorNames[narratorIndex] + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Narration Voice").overlapText = ModHelpers.FormatModeLabel("Change Narration Voice", narratorNames[narratorIndex]);
             narratorName = narratorNames[narratorIndex];
 
             if (krec != null && krec.IsRunning && Time.time > dRestartTime)
@@ -4593,7 +4495,7 @@ exit 0";
             if (gunVariation < 0)
                 gunVariation = VariationNames.Length - 1;
 
-            Buttons.GetIndex("Change Gun Variation").overlapText = "Change Gun Variation <color=grey>[</color><color=green>" + VariationNames[gunVariation] + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Gun Variation").overlapText = ModHelpers.FormatModeLabel("Change Gun Variation", VariationNames[gunVariation]);
         }
 
         public static void ChangeGunDirection(bool positive = true)
@@ -4615,7 +4517,7 @@ exit 0";
             if (GunDirection < 0)
                 GunDirection = DirectionNames.Length - 1;
 
-            Buttons.GetIndex("Change Gun Direction").overlapText = "Change Gun Direction <color=grey>[</color><color=green>" + DirectionNames[GunDirection] + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Gun Direction").overlapText = ModHelpers.FormatModeLabel("Change Gun Direction", DirectionNames[GunDirection]);
         }
 
         private static int gunLineQualityIndex = 2;
@@ -4647,7 +4549,7 @@ exit 0";
                 gunLineQualityIndex = Names.Length - 1;
 
             GunLineQuality = Qualities[gunLineQualityIndex];
-            Buttons.GetIndex("Change Gun Line Quality").overlapText = "Change Gun Line Quality <color=grey>[</color><color=green>" + Names[gunLineQualityIndex] + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Gun Line Quality").overlapText = ModHelpers.FormatModeLabel("Change Gun Line Quality", Names[gunLineQualityIndex]);
         }
 
         public static void FreezePlayerInMenu()
@@ -4835,7 +4737,7 @@ exit 0";
             if (modTarget != null)
             {
                 ButtonInfo mod = Buttons.GetIndex(modTarget);
-                NotificationManager.SendNotification("<color=grey>[</color><color=" + (mod.enabled ? "red" : "green") + ">VOICE</color><color=grey>]</color> " + (mod.enabled ? "Disabling " : "Enabling ") + (mod.overlapText ?? mod.buttonText) +"...", 3000);
+                NotificationManager.SendNotification($"<color=grey>[</color><color={(mod.enabled ? "red" : "green")}>VOICE</color><color=grey>]</color> {(mod.enabled ? "Disabling " : "Enabling ")}{mod.overlapText ?? mod.buttonText}...", 3000);
                 if (dynamicSounds)
                     DictationPlay(LoadSoundFromURL($"{PluginInfo.ServerResourcePath}/Audio/Menu/confirm.ogg", "Audio/Menu/confirm.ogg"), buttonClickVolume / 10f);
                 
@@ -5487,7 +5389,7 @@ exit 0";
 
             inputField.text = keyboardInput;
             foreach (GameObject button in canvas.transform.Find("Main/ModuleTab/Modules/Viewport/Content").Children())
-                button.SetActive(keyboardInput.IsNullOrEmpty() || button.name.ClearTags().Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower()));
+                button.SetActive(keyboardInput.IsNullOrEmpty() || NoRichtextTags(button.name).Replace(" ", "").ToLower().Contains(keyboardInput.Replace(" ", "").ToLower()));
         }
 
         public static void ClickGUI()
@@ -5600,7 +5502,7 @@ exit 0";
 
                     isDragging = false;
                     draggedUI = ExecuteEvents.GetEventHandler<IDragHandler>(currentUI);
-                    pointerData.pointerDrag = draggedUI ?? null;
+                    pointerData.pointerDrag = draggedUI;
                 }
 
                 switch (trigger)
@@ -6010,9 +5912,9 @@ exit 0";
                     if (v.rebindKey != null)
                     {
                         if (rebindingtext == "")
-                            rebindingtext += v.buttonText + ";" + v.rebindKey;
+                            rebindingtext += $"{v.buttonText};{v.rebindKey}";
                         else
-                            rebindingtext += seperator + v.buttonText + ";" + v.rebindKey;
+                            rebindingtext += $"{seperator}{v.buttonText};{v.rebindKey}";
                     }
                 }
             }
@@ -6454,7 +6356,7 @@ exit 0";
 
                 string text = File.ReadAllText($"{PluginInfo.BaseDirectory}/iiMenu_Preferences.txt");
                 LoadPreferencesFromText(text);
-            } catch (Exception e) { LogManager.Log("Error loading preferences: " + e.Message); }
+            } catch (Exception e) { LogManager.Log($"Error loading preferences: {e.Message}"); }
         }
 
         public static void Panic()
@@ -6546,7 +6448,7 @@ exit 0";
             if (Important.reconnectDelay < 1)
                 Important.reconnectDelay = 5;
 
-            Buttons.GetIndex("crTime").overlapText = "Change Reconnect Time <color=grey>[</color><color=green>" + Important.reconnectDelay + "</color><color=grey>]</color>";
+            Buttons.GetIndex("crTime").overlapText = ModHelpers.FormatModeLabel("Change Reconnect Time", Important.reconnectDelay);
         }
 
         public static void ChangeButtonSound(bool positive = true, bool fromMenu = false)
@@ -6630,7 +6532,7 @@ exit 0";
                 buttonClickIndex = sounds.Length - 1;
 
             buttonClickSound = sounds[buttonClickIndex];
-            Buttons.GetIndex("Change Button Sound").overlapText = "Change Button Sound <color=grey>[</color><color=green>" + buttonSoundNames[buttonClickIndex] + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Button Sound").overlapText = ModHelpers.FormatModeLabel("Change Button Sound", buttonSoundNames[buttonClickIndex]);
 
             if (fromMenu)
             {
@@ -6651,7 +6553,7 @@ exit 0";
             if (buttonClickVolume < 0)
                 buttonClickVolume = 10;
 
-            Buttons.GetIndex("Change Button Volume").overlapText = "Change Button Volume <color=grey>[</color><color=green>" + buttonClickVolume + "</color><color=grey>]</color>";
+            Buttons.GetIndex("Change Button Volume").overlapText = ModHelpers.FormatModeLabel("Change Button Volume", buttonClickVolume);
 
             if (fromMenu)
             {
