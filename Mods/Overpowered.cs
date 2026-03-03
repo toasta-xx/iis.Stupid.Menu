@@ -7536,7 +7536,6 @@ namespace iiMenu.Mods
 
         private static float RopeDelay;
         public static void JoystickRopeControl() // Thanks to ShibaGT for the fix
-        public static void JoystickRopeControl()
         {
             if ((Mathf.Abs(rightJoystick.x) > 0.05f || Mathf.Abs(rightJoystick.y) > 0.05f) && Time.time > RopeDelay)
             {
