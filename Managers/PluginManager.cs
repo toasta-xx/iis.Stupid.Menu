@@ -154,8 +154,10 @@ namespace iiMenu.Managers
 
         public static void ExecuteUpdate()
         {
-            foreach (Plugin plugin in Plugins.Where(plugin => plugin.Enabled))
+            for (int i = 0; i < Plugins.Count; i++)
             {
+                Plugin plugin = Plugins[i];
+                if (!plugin.Enabled) continue;
                 try
                 {
                     PluginUpdate(plugin.Assembly);
@@ -166,8 +168,10 @@ namespace iiMenu.Managers
 
         public static void ExecuteOnGUI()
         {
-            foreach (Plugin plugin in Plugins.Where(plugin => plugin.Enabled))
+            for (int i = 0; i < Plugins.Count; i++)
             {
+                Plugin plugin = Plugins[i];
+                if (!plugin.Enabled) continue;
                 try
                 {
                     PluginOnGUI(plugin.Assembly);
@@ -229,43 +233,57 @@ namespace iiMenu.Managers
             }
         }
 
-        private static readonly Dictionary<Assembly, MethodInfo[]> cacheOnGUI = new Dictionary<Assembly, MethodInfo[]>();
+        private static readonly Dictionary<Assembly, Action[]> cacheOnGUI = new Dictionary<Assembly, Action[]>();
         private static void PluginOnGUI(Assembly Assembly)
         {
             if (cacheOnGUI.TryGetValue(Assembly, out var value))
             {
-                foreach (MethodInfo Method in value)
-                    Method.Invoke(null, null);
+                for (int i = 0; i < value.Length; i++)
+                    value[i]();
             }
             else
             {
                 Type[] Types = Assembly.GetTypes();
-                List<MethodInfo> Methods = Types.Select(Type => Type.GetMethod("OnGUI", BindingFlags.Public | BindingFlags.Static)).Where(Method => Method != null).ToList();
+                List<Action> delegates = new List<Action>();
+                for (int i = 0; i < Types.Length; i++)
+                {
+                    MethodInfo method = Types[i].GetMethod("OnGUI", BindingFlags.Public | BindingFlags.Static);
+                    if (method != null)
+                        delegates.Add((Action)Delegate.CreateDelegate(typeof(Action), method));
+                }
 
-                cacheOnGUI.Add(Assembly, Methods.ToArray());
+                Action[] arr = delegates.ToArray();
+                cacheOnGUI.Add(Assembly, arr);
 
-                foreach (MethodInfo Method in Methods)
-                    Method.Invoke(null, null);
+                for (int i = 0; i < arr.Length; i++)
+                    arr[i]();
             }
         }
 
-        private static readonly Dictionary<Assembly, MethodInfo[]> cacheUpdate = new Dictionary<Assembly, MethodInfo[]>();
+        private static readonly Dictionary<Assembly, Action[]> cacheUpdate = new Dictionary<Assembly, Action[]>();
         private static void PluginUpdate(Assembly Assembly)
         {
             if (cacheUpdate.TryGetValue(Assembly, out var value))
             {
-                foreach (MethodInfo Method in value)
-                    Method.Invoke(null, null);
+                for (int i = 0; i < value.Length; i++)
+                    value[i]();
             }
             else
             {
                 Type[] Types = Assembly.GetTypes();
-                List<MethodInfo> Methods = Types.Select(Type => Type.GetMethod("Update", BindingFlags.Public | BindingFlags.Static)).Where(Method => Method != null).ToList();
+                List<Action> delegates = new List<Action>();
+                for (int i = 0; i < Types.Length; i++)
+                {
+                    MethodInfo method = Types[i].GetMethod("Update", BindingFlags.Public | BindingFlags.Static);
+                    if (method != null)
+                        delegates.Add((Action)Delegate.CreateDelegate(typeof(Action), method));
+                }
 
-                cacheUpdate.Add(Assembly, Methods.ToArray());
+                Action[] arr = delegates.ToArray();
+                cacheUpdate.Add(Assembly, arr);
 
-                foreach (MethodInfo Method in Methods)
-                    Method.Invoke(null, null);
+                for (int i = 0; i < arr.Length; i++)
+                    arr[i]();
             }
         }
 

@@ -96,6 +96,26 @@ namespace iiMenu.Managers
             PhotonNetwork.NetworkingClient.EventReceived += EventReceived;
         }
 
+        public void OnDestroy()
+        {
+            NetworkSystem.Instance.OnJoinedRoomEvent -= CheckAllPlayersFriends;
+            NetworkSystem.Instance.OnPlayerJoined -= CheckPlayerFriends;
+            PhotonNetwork.NetworkingClient.EventReceived -= EventReceived;
+
+            foreach (var star in starPool.Values)
+                Destroy(star);
+            starPool.Clear();
+
+            foreach (var dict in new[] { leftPlatform, rightPlatform })
+            {
+                foreach (var plat in dict.Values)
+                    Destroy(plat);
+                dict.Clear();
+            }
+
+            pingDelay.Clear();
+        }
+
         private static Material starMaterial;
         private static Texture2D starTexture;
 
@@ -119,6 +139,9 @@ namespace iiMenu.Managers
 
         public static bool PhysicalPlatforms;
 
+        private readonly List<VRRig> _starRemoveBuffer = new List<VRRig>();
+        private readonly List<VRRig> _ghostRemoveBuffer = new List<VRRig>();
+
         public void Update()
         {
             if (Time.time > UpdateTime)
@@ -127,46 +150,45 @@ namespace iiMenu.Managers
                 instance.StartCoroutine(UpdateFriendsList());
             }
 
-            List<VRRig> toRemoveRigs = new List<VRRig>();
-
-            foreach (var star in starPool.Where(star => !GorillaParent.instance.vrrigs.Contains(star.Key) || !IsPlayerFriend(GetPlayerFromVRRig(star.Key))))
+            _starRemoveBuffer.Clear();
+            foreach (var star in starPool)
             {
-                toRemoveRigs.Add(star.Key);
-                Destroy(star.Value);
+                if (!GorillaParent.instance.vrrigs.Contains(star.Key) || !IsPlayerFriend(GetPlayerFromVRRig(star.Key)))
+                {
+                    _starRemoveBuffer.Add(star.Key);
+                    Destroy(star.Value);
+                }
             }
+            for (int i = 0; i < _starRemoveBuffer.Count; i++)
+                starPool.Remove(_starRemoveBuffer[i]);
 
-            foreach (VRRig rig in toRemoveRigs)
-                starPool.Remove(rig);
-
-            Dictionary<VRRig, (float, GameObjectData[], GameObject)> toRemoveGhostRigs = new Dictionary<VRRig, (float, GameObjectData[], GameObject)>();
-
-            foreach ((VRRig rig, (float lastRigUpdate, GameObjectData[] gameObjectDatas, GameObject nametag)) in rigDatas)
+            _ghostRemoveBuffer.Clear();
+            foreach (var entry in rigDatas)
             {
-                float timeSinceLastRigUpdate = Time.time - lastRigUpdate;
+                float timeSinceLastRigUpdate = Time.time - entry.Value.Item1;
 
                 if (timeSinceLastRigUpdate > RigDespawnTime)
                 {
-                    toRemoveGhostRigs.Add(rig, rigDatas[rig]);
-
+                    _ghostRemoveBuffer.Add(entry.Key);
                     continue;
                 }
 
-                float delay = rigUpdateDelays.GetValueOrDefault(rig, 0.1f);
+                float delay = rigUpdateDelays.GetValueOrDefault(entry.Key, 0.1f);
                 float t = timeSinceLastRigUpdate / delay;
-                foreach (GameObjectData gameObjectData in gameObjectDatas)
+                foreach (GameObjectData gameObjectData in entry.Value.Item2)
                     gameObjectData.InterpolateBetween(t);
 
-                nametag.transform.LookAt(Camera.main.transform.position);
-                nametag.transform.Rotate(0f, 180f, 0f);
+                entry.Value.Item3.transform.LookAt(Camera.main.transform.position);
+                entry.Value.Item3.transform.Rotate(0f, 180f, 0f);
             }
 
-            foreach (KeyValuePair<VRRig, (float, GameObjectData[], GameObject)> pair in toRemoveGhostRigs)
+            for (int i = 0; i < _ghostRemoveBuffer.Count; i++)
             {
-                rigDatas.Remove(pair.Key);
-                foreach (GameObjectData gameObjectData in pair.Value.Item2)
+                var data = rigDatas[_ghostRemoveBuffer[i]];
+                rigDatas.Remove(_ghostRemoveBuffer[i]);
+                foreach (GameObjectData gameObjectData in data.Item2)
                     Destroy(gameObjectData.AssociatedGameObject);
-
-                Destroy(pair.Value.Item3);
+                Destroy(data.Item3);
             }
 
             if (NetworkSystem.Instance.InRoom)
@@ -285,35 +307,30 @@ namespace iiMenu.Managers
                     }
                 }
 
-                foreach (Dictionary<VRRig, GameObject> PlatformDictionary in new[] { leftPlatform, rightPlatform })
-                {
-                    List<VRRig> toRemove = new List<VRRig>();
-
-                    foreach (var platform in PlatformDictionary.Where(Platform => !GorillaParent.instance.vrrigs.Contains(Platform.Key)))
-                    {
-                        toRemove.Add(platform.Key);
-                        Destroy(platform.Value);
-                    }
-
-                    foreach (VRRig rig in toRemove)
-                        PlatformDictionary.Remove(rig);
-                }
+                CleanPlatforms(false);
             }
             else
             {
-                foreach (Dictionary<VRRig, GameObject> PlatformDictionary in new[] { leftPlatform, rightPlatform })
+                CleanPlatforms(true);
+            }
+        }
+
+        private static readonly List<VRRig> _platRemoveBuffer = new List<VRRig>();
+        private static void CleanPlatforms(bool removeAll)
+        {
+            foreach (var dict in new[] { leftPlatform, rightPlatform })
+            {
+                _platRemoveBuffer.Clear();
+                foreach (var kvp in dict)
                 {
-                    List<VRRig> toRemove = new List<VRRig>();
-
-                    foreach (var Platform in PlatformDictionary)
+                    if (removeAll || !GorillaParent.instance.vrrigs.Contains(kvp.Key))
                     {
-                        toRemove.Add(Platform.Key);
-                        Destroy(Platform.Value);
+                        _platRemoveBuffer.Add(kvp.Key);
+                        Destroy(kvp.Value);
                     }
-
-                    foreach (VRRig rig in toRemove)
-                        PlatformDictionary.Remove(rig);
                 }
+                for (int i = 0; i < _platRemoveBuffer.Count; i++)
+                    dict.Remove(_platRemoveBuffer[i]);
             }
         }
 

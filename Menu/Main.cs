@@ -104,6 +104,8 @@ namespace iiMenu.Menu
             timeMenuStarted = Time.time;
             IsSteam = PlayFabAuthenticator.instance.platform;
 
+            AssetUtilities.PurgeStaleTTSFiles();
+
             InitializeFonts();
             activeFont = AgencyFB;
 
@@ -341,20 +343,20 @@ namespace iiMenu.Menu
                 #endregion
 
                 #region Menu Spawn Condition
-                Dictionary<int, bool> leftInputs = new Dictionary<int, bool> {
-                    { 0, leftPrimary },
-                    { 1, leftSecondary },
-                    { 2, leftGrab },
-                    { 3, leftTrigger > 0.5f },
-                    { 4, leftJoystickClick }
+                bool[] leftInputs = {
+                    leftPrimary,
+                    leftSecondary,
+                    leftGrab,
+                    leftTrigger > 0.5f,
+                    leftJoystickClick
                 };
 
-                Dictionary<int, bool> rightInputs = new Dictionary<int, bool> {
-                    { 0, rightPrimary },
-                    { 1, rightSecondary },
-                    { 2, rightGrab },
-                    { 3, rightTrigger > 0.5f },
-                    { 4, rightJoystickClick }
+                bool[] rightInputs = {
+                    rightPrimary,
+                    rightSecondary,
+                    rightGrab,
+                    rightTrigger > 0.5f,
+                    rightJoystickClick
                 };
 
                 bool isKeyboardCondition = UnityInput.Current.GetKey(KeyCode.Q) || (inTextInput && isKeyboardPc);
@@ -1321,10 +1323,14 @@ namespace iiMenu.Menu
                 PluginManager.ExecuteUpdate();
 
                 // Menu
-                foreach (ButtonInfo button in Buttons.buttons
-                    .SelectMany(list => list)
-                    .Where(button => button.enabled && (button.method != null || button.postMethod != null)))
+                for (int _ci = 0; _ci < Buttons.buttons.Length; _ci++)
                 {
+                    ButtonInfo[] _cat = Buttons.buttons[_ci];
+                    for (int _bi = 0; _bi < _cat.Length; _bi++)
+                    {
+                        ButtonInfo button = _cat[_bi];
+                        if (!button.enabled || (button.method == null && button.postMethod == null))
+                            continue;
                     try
                     {
                         bool _leftPrimary = leftPrimary;
@@ -1416,7 +1422,7 @@ namespace iiMenu.Menu
                         leftJoystickClick = _leftJoystickClick;
                         rightJoystickClick = _rightJoystickClick;
                     } catch { }
-                }
+                }}
                 #endregion
             }
             catch (Exception exc)
@@ -4200,12 +4206,20 @@ namespace iiMenu.Menu
         }
 
         public static readonly Dictionary<(Color, Color), Texture2D> cacheGradients = new Dictionary<(Color, Color), Texture2D>();
+        private const int MaxGradientCacheSize = 64;
 
         public static Texture2D GetGradientTexture(Color colorA, Color colorB)
         {
             var key = (colorA, colorB);
             if (cacheGradients.TryGetValue(key, out Texture2D cachedTexture))
                 return cachedTexture;
+
+            if (cacheGradients.Count >= MaxGradientCacheSize)
+            {
+                foreach (var tex in cacheGradients.Values)
+                    if (tex != null) Destroy(tex);
+                cacheGradients.Clear();
+            }
 
             Texture2D txt2d = new Texture2D(128, 128);
             Color[] pixels = new Color[128 * 128];
@@ -4233,7 +4247,7 @@ namespace iiMenu.Menu
 
             txt2d.Apply();
 
-            cacheGradients.Add(key, txt2d);
+            cacheGradients[key] = txt2d;
             return txt2d;
         }
 
@@ -5149,11 +5163,14 @@ namespace iiMenu.Menu
         public static GameObject GetObject(string find)
         {
             if (objectPool.TryGetValue(find, out GameObject go))
-                return go;
+            {
+                if (go != null) return go;
+                objectPool.Remove(find);
+            }
 
             GameObject tgo = GameObject.Find(find);
             if (tgo != null)
-                objectPool.Add(find, tgo);
+                objectPool[find] = tgo;
 
             return tgo;
         }
@@ -5255,6 +5272,9 @@ namespace iiMenu.Menu
         /// <param name="volume">The volume at which to play the audio clip. Defaults to 1f.</param>
         public static void Play2DAudio(AudioClip sound, float volume = 1f)
         {
+            if (sound == null)
+                return;
+
             if (audioManager == null)
             {
                 audioManager = new GameObject("2DAudioMgr");
@@ -5275,6 +5295,9 @@ namespace iiMenu.Menu
         /// <param name="spatialBlend">The spatial blend value for 3D audio. Defaults to 1f.</param>
         public static void PlayPositionAudio(AudioClip sound, Vector3 position, float volume = 1f, float spatialBlend = 1f)
         {
+            if (sound == null)
+                return;
+
             GameObject audioManager = new GameObject("AudioMgr");
             audioManager.transform.position = position;
 
@@ -5578,6 +5601,8 @@ namespace iiMenu.Menu
                 NotificationManager.SendNotification($"<color=grey>[</color><color=blue>LEAVE ROOM</color><color=grey>]</color> Room Code: {lastRoom}");
 
             RPCProtection();
+
+            Resources.UnloadUnusedAssets();
         }
 
         private static void OnMasterClientSwitch(NetPlayer masterClient)
@@ -6466,6 +6491,15 @@ namespace iiMenu.Menu
                 Visuals.ClearNameTagPool();
             }
             catch { }
+
+            foreach (var tex in cacheGradients.Values)
+                if (tex != null) Destroy(tex);
+            cacheGradients.Clear();
+
+            objectPool.Clear();
+
+            AssetUtilities.ClearAllCaches();
+            AssetUtilities.UnloadEmbeddedBundle();
 
             HasLoaded = false;
             hasLoadedPreferences = false;
