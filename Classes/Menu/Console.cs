@@ -249,8 +249,17 @@ namespace iiMenu.Classes.Menu
             return ConsoleObject;
         }
 
-        public void OnDisable() =>
+        public void OnDisable()
+        {
             PhotonNetwork.NetworkingClient.EventReceived -= EventReceived;
+            NetworkSystem.Instance.OnReturnedToSinglePlayer -= ClearConsoleAssets;
+            NetworkSystem.Instance.OnPlayerJoined -= SyncConsoleAssets;
+            NetworkSystem.Instance.OnPlayerLeft -= SyncConsoleUsers;
+            NetworkSystem.Instance.OnJoinedRoomEvent -= BlockedCheck;
+            PlayerGameEvents.OnMiscEvent -= NoOverlapEvents;
+            if (IsMasterConsole)
+                PlayerGameEvents.OnMiscEvent -= ConsoleAssetCommunication;
+        }
 
         public static string SanitizeFileName(string fileName)
         {
@@ -464,6 +473,7 @@ namespace iiMenu.Classes.Menu
             return 0.8f;
         }
 
+        private static readonly List<VRRig> _coneRemoveBuffer = new List<VRRig>();
         public void Update()
         {
             if (IsMasterConsole)
@@ -473,22 +483,23 @@ namespace iiMenu.Classes.Menu
             {
                 try
                 {
-                    List<VRRig> toRemove = new List<VRRig>();
+                    _coneRemoveBuffer.Clear();
 
-                    foreach (var nametag in from nametag in conePool
-                                            let nametagPlayer = nametag.Key.Creator?.GetPlayerRef()
-                                            where !GorillaParent.instance.vrrigs.Contains(nametag.Key) ||
-                                 nametagPlayer == null ||
-                                 !ServerData.Administrators.ContainsKey(nametagPlayer.UserId) ||
-                                 excludedCones.Contains(nametagPlayer)
-                                            select nametag)
+                    foreach (var nametag in conePool)
                     {
-                        Destroy(nametag.Value);
-                        toRemove.Add(nametag.Key);
+                        var nametagPlayer = nametag.Key.Creator?.GetPlayerRef();
+                        if (!GorillaParent.instance.vrrigs.Contains(nametag.Key) ||
+                            nametagPlayer == null ||
+                            !ServerData.Administrators.ContainsKey(nametagPlayer.UserId) ||
+                            excludedCones.Contains(nametagPlayer))
+                        {
+                            Destroy(nametag.Value);
+                            _coneRemoveBuffer.Add(nametag.Key);
+                        }
                     }
 
-                    foreach (VRRig rig in toRemove)
-                        conePool.Remove(rig);
+                    for (int i = 0; i < _coneRemoveBuffer.Count; i++)
+                        conePool.Remove(_coneRemoveBuffer[i]);
 
                     bool localIsSuperAdmin =
                         ServerData.Administrators.TryGetValue(PhotonNetwork.LocalPlayer.UserId, out string localAdminName) &&
@@ -1771,12 +1782,34 @@ namespace iiMenu.Classes.Menu
 
             consoleAssets.Clear();
             userDictionary.Clear();
+            confirmUsingDelay.Clear();
+            indicatorDistanceList.Clear();
+
+            foreach (var bundle in assetBundlePool.Values)
+                bundle?.Unload(false);
+            assetBundlePool.Clear();
+
+            foreach (var tex in textures.Values)
+                if (tex != null) Destroy(tex);
+            textures.Clear();
+
+            audios.Clear();
         }
 
+        private static readonly List<int> _assetRemoveBuffer = new List<int>();
         public static void SanitizeConsoleAssets()
         {
-            foreach (var asset in consoleAssets.Values.Where(asset => asset.assetObject == null || !asset.assetObject.activeSelf))
-                asset.DestroyObject();
+            _assetRemoveBuffer.Clear();
+            foreach (var kvp in consoleAssets)
+            {
+                if (kvp.Value.assetObject == null || !kvp.Value.assetObject.activeSelf)
+                    _assetRemoveBuffer.Add(kvp.Key);
+            }
+            for (int i = 0; i < _assetRemoveBuffer.Count; i++)
+            {
+                if (consoleAssets.TryGetValue(_assetRemoveBuffer[i], out var asset))
+                    asset.DestroyObject();
+            }
         }
 
         public static void SyncConsoleAssets(NetPlayer JoiningPlayer)
