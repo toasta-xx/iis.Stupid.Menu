@@ -20,7 +20,6 @@
  */
 
 using iiMenu.Managers;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -29,15 +28,11 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using static iiMenu.Utilities.FileUtilities;
-using Object = UnityEngine.Object;
 
 namespace iiMenu.Utilities
 {
     public class AssetUtilities
     {
-        private const int MaxAudioPoolSize = 16;
-        private const int MaxTextureCacheSize = 32;
-        private static readonly Queue<string> _audioPoolOrder = new Queue<string>();
         private static AssetBundle assetBundle;
         private static void LoadAssetBundle()
         {
@@ -53,7 +48,8 @@ namespace iiMenu.Utilities
             if (assetBundle == null)
                 LoadAssetBundle();
 
-            return Object.Instantiate(assetBundle.LoadAsset<T>(assetName));
+            T gameObject = Object.Instantiate(assetBundle.LoadAsset<T>(assetName));
+            return gameObject;
         }
 
         public static T LoadAsset<T>(string assetName) where T : Object
@@ -61,40 +57,29 @@ namespace iiMenu.Utilities
             if (assetBundle == null)
                 LoadAssetBundle();
 
-            return assetBundle.LoadAsset(assetName) as T;
+            T gameObject = assetBundle.LoadAsset(assetName) as T;
+            return gameObject;
         }
 
         public static readonly Dictionary<string, AudioClip> audioFilePool = new Dictionary<string, AudioClip>();
-        public static AudioClip LoadSoundFromFile(string fileName)
+        public static AudioClip LoadSoundFromFile(string fileName) // Thanks to ShibaGT for help with loading the audio from file
         {
-            if (audioFilePool.TryGetValue(fileName, out var value))
-                return value;
-
-            string filePath = $"{GetGamePath()}/{PluginInfo.BaseDirectory}/{fileName}";
             AudioClip sound;
-            using (UnityWebRequest actualrequest = UnityWebRequestMultimedia.GetAudioClip($"file://{filePath}", GetAudioType(GetFileExtension(fileName))))
+            if (!audioFilePool.TryGetValue(fileName, out var value))
             {
+                string filePath = $"{GetGamePath()}/{PluginInfo.BaseDirectory}/{fileName}";
+
+                UnityWebRequest actualrequest = UnityWebRequestMultimedia.GetAudioClip($"file://{filePath}", GetAudioType(GetFileExtension(fileName)));
                 UnityWebRequestAsyncOperation newvar = actualrequest.SendWebRequest();
                 while (!newvar.isDone) { }
-                sound = DownloadHandlerAudioClip.GetContent(actualrequest);
-            }
 
-            bool shouldCache = sound != null && !fileName.StartsWith("TTS", StringComparison.OrdinalIgnoreCase);
-            if (shouldCache)
-            {
-                if (audioFilePool.Count >= MaxAudioPoolSize && _audioPoolOrder.Count > 0)
-                {
-                    string oldestKey = _audioPoolOrder.Dequeue();
-                    if (audioFilePool.TryGetValue(oldestKey, out AudioClip oldClip))
-                    {
-                        if (oldClip != null) Object.Destroy(oldClip);
-                        audioFilePool.Remove(oldestKey);
-                    }
-                }
+                AudioClip actualclip = DownloadHandlerAudioClip.GetContent(actualrequest);
+                sound = Task.FromResult(actualclip).Result;
 
-                audioFilePool[fileName] = sound;
-                _audioPoolOrder.Enqueue(fileName);
+                audioFilePool.Add(fileName, sound);
             }
+            else
+                sound = value;
 
             return sound;
         }
@@ -104,6 +89,7 @@ namespace iiMenu.Utilities
             string filePath = $"{PluginInfo.BaseDirectory}/{fileName}";
             string directory = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(directory))
+                // ReSharper disable once AssignNullToNotNullAttribute
                 Directory.CreateDirectory(directory);
 
             if (File.Exists(filePath)) return LoadSoundFromFile(fileName);
@@ -126,6 +112,7 @@ namespace iiMenu.Utilities
             if (stream != null)
             {
                 byte[] fileData = new byte[stream.Length];
+                // ReSharper disable once MustUseReturnValue
                 stream.Read(fileData, 0, (int)stream.Length);
                 texture.LoadImage(fileData);
             }
@@ -133,11 +120,11 @@ namespace iiMenu.Utilities
                 LogManager.LogError("Failed to load texture from resource: " + resourcePath);
 
             textureResourceDictionary[resourcePath] = texture;
+
             return texture;
         }
 
         public static readonly Dictionary<string, Texture2D> textureUrlDictionary = new Dictionary<string, Texture2D>();
-        private static readonly Queue<string> _texUrlOrder = new Queue<string>();
         public static Texture2D LoadTextureFromURL(string resourcePath, string fileName)
         {
             if (textureUrlDictionary.TryGetValue(resourcePath, out Texture2D existingTexture))
@@ -146,33 +133,24 @@ namespace iiMenu.Utilities
             string filePath = $"{PluginInfo.BaseDirectory}/{fileName}";
             string directory = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(directory))
+                // ReSharper disable once AssignNullToNotNullAttribute
                 Directory.CreateDirectory(directory);
 
             if (!File.Exists(filePath))
             {
                 LogManager.Log("Downloading " + fileName);
-                using WebClient stream = new WebClient();
+                WebClient stream = new WebClient();
                 stream.DownloadFile(resourcePath, filePath);
             }
 
             Texture2D texture = LoadTextureFromFile(fileName);
 
-            if (textureUrlDictionary.Count >= MaxTextureCacheSize && _texUrlOrder.Count > 0)
-            {
-                string oldest = _texUrlOrder.Dequeue();
-                if (textureUrlDictionary.TryGetValue(oldest, out Texture2D oldTex))
-                {
-                    if (oldTex != null) Object.Destroy(oldTex);
-                    textureUrlDictionary.Remove(oldest);
-                }
-            }
             textureUrlDictionary[resourcePath] = texture;
-            _texUrlOrder.Enqueue(resourcePath);
+
             return texture;
         }
 
         public static readonly Dictionary<string, Texture2D> textureFileDirectory = new Dictionary<string, Texture2D>();
-        private static readonly Queue<string> _texFileOrder = new Queue<string>();
         public static Texture2D LoadTextureFromFile(string fileName)
         {
             if (textureFileDirectory.TryGetValue(fileName, out Texture2D existingTexture))
@@ -184,72 +162,13 @@ namespace iiMenu.Utilities
                 Directory.CreateDirectory(directory);
 
             Texture2D texture = new Texture2D(2, 2);
+
             byte[] bytes = File.ReadAllBytes(filePath);
             texture.LoadImage(bytes);
 
-            if (textureFileDirectory.Count >= MaxTextureCacheSize && _texFileOrder.Count > 0)
-            {
-                string oldest = _texFileOrder.Dequeue();
-                if (textureFileDirectory.TryGetValue(oldest, out Texture2D oldTex))
-                {
-                    if (oldTex != null) Object.Destroy(oldTex);
-                    textureFileDirectory.Remove(oldest);
-                }
-            }
             textureFileDirectory[fileName] = texture;
-            _texFileOrder.Enqueue(fileName);
+
             return texture;
-        }
-
-        public static void ClearAllCaches()
-        {
-            foreach (var clip in audioFilePool.Values)
-                if (clip != null) Object.Destroy(clip);
-            audioFilePool.Clear();
-            _audioPoolOrder.Clear();
-
-            foreach (var tex in textureUrlDictionary.Values)
-                if (tex != null) Object.Destroy(tex);
-            textureUrlDictionary.Clear();
-            _texUrlOrder.Clear();
-
-            foreach (var tex in textureFileDirectory.Values)
-                if (tex != null) Object.Destroy(tex);
-            textureFileDirectory.Clear();
-            _texFileOrder.Clear();
-        }
-
-        public static void PurgeStaleTTSFiles()
-        {
-            try
-            {
-                string basePath = $"{GetGamePath()}/{PluginInfo.BaseDirectory}";
-                string[] ttsDirs = Directory.GetDirectories(basePath, "TTS*");
-                foreach (string dir in ttsDirs)
-                {
-                    string[] files = Directory.GetFiles(dir);
-                    foreach (string file in files)
-                    {
-                        try
-                        {
-                            FileInfo fi = new FileInfo(file);
-                            if (fi.Length <= 0 || fi.Length == 121700)
-                                fi.Delete();
-                        }
-                        catch { }
-                    }
-                }
-            }
-            catch { }
-        }
-
-        public static void UnloadEmbeddedBundle()
-        {
-            if (assetBundle != null)
-            {
-                assetBundle.Unload(false);
-                assetBundle = null;
-            }
         }
     }
 }

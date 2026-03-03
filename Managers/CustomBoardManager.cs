@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ii's Stupid Menu  Managers/CustomBoardManager.cs
  * A mod menu for Gorilla Tag with over 1000+ mods
  *
@@ -38,11 +38,6 @@ namespace iiMenu.Managers
         {
             instance = this;
             SceneManager.sceneLoaded += SceneLoaded;
-        }
-
-        public void OnDestroy()
-        {
-            SceneManager.sceneLoaded -= SceneLoaded;
         }
 
         private static bool _customBoardsEnabled = true;

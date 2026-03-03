@@ -61,22 +61,6 @@ namespace iiMenu.Mods
         private const string TextShaderName = "GUI/Text Shader";
         private const int HiddenCameraLayer = 19;
 
-        private static readonly List<VRRig> _rigCleanupBuffer = new List<VRRig>();
-        private static void PruneDepartedRigs(Dictionary<VRRig, GameObject> dict)
-        {
-            _rigCleanupBuffer.Clear();
-            foreach (var kvp in dict)
-            {
-                if (!GorillaParent.instance.vrrigs.Contains(kvp.Key))
-                {
-                    Object.Destroy(kvp.Value);
-                    _rigCleanupBuffer.Add(kvp.Key);
-                }
-            }
-            for (int i = 0; i < _rigCleanupBuffer.Count; i++)
-                dict.Remove(_rigCleanupBuffer[i]);
-        }
-
         public static readonly Dictionary<(long, float), GameObject> auraPool = new Dictionary<(long, float), GameObject>();
         public static readonly Dictionary<(Vector3, Quaternion, Vector3), GameObject> cubePool = new Dictionary<(Vector3, Quaternion, Vector3), GameObject>();
 
@@ -662,12 +646,13 @@ namespace iiMenu.Mods
             bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
 
-            _rigCleanupBuffer.Clear();
+            List<VRRig> toRemove = new List<VRRig>();
+            List<object[]> handTapValues = handTaps.Values.ToList();
 
-            foreach (var kvp in handTaps)
+            for (int i = 0; i < handTaps.Count; i++)
             {
-                object[] handTapData = kvp.Value;
-                VRRig rig = kvp.Key;
+                object[] handTapData = handTapValues[i];
+                VRRig rig = (VRRig)handTapData[0];
                 Vector3 position = (Vector3)handTapData[1];
 
                 float timestamp = (float)handTapData[2];
@@ -675,7 +660,7 @@ namespace iiMenu.Mods
 
                 if (Time.time > timestamp + 1f)
                 {
-                    _rigCleanupBuffer.Add(rig);
+                    toRemove.Add(rig);
                     continue;
                 }
 
@@ -753,11 +738,10 @@ namespace iiMenu.Mods
                 gameObject.transform.localScale = new Vector3(0.05f, 0.05f, 0.01f);
             }
 
-            for (int _ri = 0; _ri < _rigCleanupBuffer.Count; _ri++)
+            foreach (VRRig removal in toRemove)
             {
-                VRRig removal = _rigCleanupBuffer[_ri];
-                if (handTaps.TryGetValue(removal, out var htData) && (GameObject)htData[3] != null)
-                    Object.Destroy((GameObject)htData[3]);
+                if ((GameObject)handTaps[removal][3] != null)
+                    Object.Destroy((GameObject)handTaps[removal][3]);
 
                 handTaps.Remove(removal);
             }
@@ -1701,7 +1685,12 @@ namespace iiMenu.Mods
 
         public static void NameTags()
         {
-            PruneDepartedRigs(nametags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = nametags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                nametags.Remove(nametag.Key);
+            }
 
             foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.isLocal || selfNameTag))
             {
@@ -1748,7 +1737,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> velnametags = new Dictionary<VRRig, GameObject>();
         public static void VelocityTags()
         {
-            PruneDepartedRigs(velnametags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = velnametags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                velnametags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -1800,7 +1794,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> fpsNametags = new Dictionary<VRRig, GameObject>();
         public static void FPSTags()
         {
-            PruneDepartedRigs(fpsNametags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = fpsNametags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                fpsNametags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -1852,7 +1851,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> idNameTags = new Dictionary<VRRig, GameObject>();
         public static void IDTags()
         {
-            PruneDepartedRigs(idNameTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = idNameTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                idNameTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -1904,7 +1908,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> platformTags = new Dictionary<VRRig, GameObject>();
         public static void PlatformTags()
         {
-            PruneDepartedRigs(platformTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = platformTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                platformTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -1957,17 +1966,23 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> kidNameTags = new Dictionary<VRRig, GameObject>();
         public static void KIDNameTags()
         {
-            _rigCleanupBuffer.Clear();
-            foreach (var nametag in kidNameTags)
+            List<KeyValuePair<VRRig, GameObject>> kidNameTagsCopy = kidNameTags.ToList();
+            foreach (KeyValuePair<VRRig, GameObject> nametag in kidNameTagsCopy)
             {
-                if (!GorillaParent.instance.vrrigs.Contains(nametag.Key) || !nametag.Key.IsKIDRestricted())
+                if (!GorillaParent.instance.vrrigs.Contains(nametag.Key))
                 {
                     Object.Destroy(nametag.Value);
-                    _rigCleanupBuffer.Add(nametag.Key);
+                    kidNameTags.Remove(nametag.Key);
+                }
+                else
+                {
+                    if (!nametag.Key.IsKIDRestricted())
+                    {
+                        Object.Destroy(nametag.Value);
+                        kidNameTags.Remove(nametag.Key);
+                    }
                 }
             }
-            for (int i = 0; i < _rigCleanupBuffer.Count; i++)
-                kidNameTags.Remove(_rigCleanupBuffer[i]);
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2022,17 +2037,23 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> subNameTags = new Dictionary<VRRig, GameObject>();
         public static void SubscriberNameTags()
         {
-            _rigCleanupBuffer.Clear();
-            foreach (var nametag in subNameTags)
+            List<KeyValuePair<VRRig, GameObject>> subNameTagsCopy = subNameTags.ToList();
+            foreach (KeyValuePair<VRRig, GameObject> nametag in subNameTagsCopy)
             {
-                if (!GorillaParent.instance.vrrigs.Contains(nametag.Key) || SubscriptionManager.GetSubscriptionDetails(nametag.Key).tier <= 0)
+                if (!GorillaParent.instance.vrrigs.Contains(nametag.Key))
                 {
                     Object.Destroy(nametag.Value);
-                    _rigCleanupBuffer.Add(nametag.Key);
+                    subNameTags.Remove(nametag.Key);
+                }
+                else
+                {
+                    if (SubscriptionManager.GetSubscriptionDetails(nametag.Key).tier <= 0)
+                    {
+                        Object.Destroy(nametag.Value);
+                        subNameTags.Remove(nametag.Key);
+                    }
                 }
             }
-            for (int i = 0; i < _rigCleanupBuffer.Count; i++)
-                subNameTags.Remove(_rigCleanupBuffer[i]);
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2088,7 +2109,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> creationDateTags = new Dictionary<VRRig, GameObject>();
         public static void CreationDateTags()
         {
-            PruneDepartedRigs(creationDateTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = creationDateTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                creationDateTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2141,7 +2167,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> pingNameTags = new Dictionary<VRRig, GameObject>();
         public static void PingTags()
         {
-            PruneDepartedRigs(pingNameTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = pingNameTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                pingNameTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2194,7 +2225,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> turnNameTags = new Dictionary<VRRig, GameObject>();
         public static void TurnTags()
         {
-            PruneDepartedRigs(turnNameTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = turnNameTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                turnNameTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2249,7 +2285,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> taggedNameTags = new Dictionary<VRRig, GameObject>();
         public static void TaggedTags()
         {
-            PruneDepartedRigs(taggedNameTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = taggedNameTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                taggedNameTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2402,7 +2443,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> modNameTags = new Dictionary<VRRig, GameObject>();
         public static void ModTags()
         {
-            PruneDepartedRigs(modNameTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = modNameTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                modNameTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2502,7 +2548,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> cosmeticNameTags = new Dictionary<VRRig, GameObject>();
         public static void CosmeticTags()
         {
-            PruneDepartedRigs(cosmeticNameTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = cosmeticNameTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                cosmeticNameTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2669,7 +2720,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> verifiedNameTags = new Dictionary<VRRig, GameObject>();
         public static void VerifiedTags()
         {
-            PruneDepartedRigs(verifiedNameTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = verifiedNameTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                verifiedNameTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2737,13 +2793,13 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, GameObject> crashedNameTags = new Dictionary<VRRig, GameObject>();
         public static void CrashedTags()
         {
-            _rigCleanupBuffer.Clear();
-            foreach (var nametag in crashedNameTags)
+            List<KeyValuePair<VRRig, GameObject>> crashedNameTagsCopy = crashedNameTags.ToList();
+            foreach (KeyValuePair<VRRig, GameObject> nametag in crashedNameTagsCopy)
             {
                 if (!GorillaParent.instance.vrrigs.Contains(nametag.Key))
                 {
                     Object.Destroy(nametag.Value);
-                    _rigCleanupBuffer.Add(nametag.Key);
+                    crashedNameTags.Remove(nametag.Key);
                 }
                 else
                 {
@@ -2751,12 +2807,10 @@ namespace iiMenu.Mods
                     if (!crashed)
                     {
                         Object.Destroy(nametag.Value);
-                        _rigCleanupBuffer.Add(nametag.Key);
+                        crashedNameTags.Remove(nametag.Key);
                     }
                 }
             }
-            for (int i = 0; i < _rigCleanupBuffer.Count; i++)
-                crashedNameTags.Remove(_rigCleanupBuffer[i]);
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -2862,21 +2916,13 @@ namespace iiMenu.Mods
         public static void CompactTags()
         {
             bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
-            _rigCleanupBuffer.Clear();
-            foreach (var nametag in compactNameTags)
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = compactNameTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
             {
-                if (!GorillaParent.instance.vrrigs.Contains(nametag.Key))
-                {
-                    Object.Destroy(nametag.Value);
-                    if (compactTagBackgrounds.TryGetValue(nametag.Key, out var bg))
-                        Object.Destroy(bg);
-                    _rigCleanupBuffer.Add(nametag.Key);
-                }
-            }
-            for (int i = 0; i < _rigCleanupBuffer.Count; i++)
-            {
-                compactNameTags.Remove(_rigCleanupBuffer[i]);
-                compactTagBackgrounds.Remove(_rigCleanupBuffer[i]);
+                Object.Destroy(nametag.Value);
+                Object.Destroy(compactTagBackgrounds[nametag.Key]);
+                compactNameTags.Remove(nametag.Key);
+                compactTagBackgrounds.Remove(nametag.Key);
             }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
@@ -3046,21 +3092,13 @@ namespace iiMenu.Mods
         {
             bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
 
-            _rigCleanupBuffer.Clear();
-            foreach (var tag in minecraftNameTags)
+            List<KeyValuePair<VRRig, GameObject>> tagCopy = minecraftNameTags.ToList();
+            foreach (var tag in tagCopy.Where(tag => !GorillaParent.instance.vrrigs.Contains(tag.Key)))
             {
-                if (!GorillaParent.instance.vrrigs.Contains(tag.Key))
-                {
-                    Object.Destroy(tag.Value);
-                    if (minecraftTagBackgrounds.TryGetValue(tag.Key, out var bg))
-                        Object.Destroy(bg);
-                    _rigCleanupBuffer.Add(tag.Key);
-                }
-            }
-            for (int i = 0; i < _rigCleanupBuffer.Count; i++)
-            {
-                minecraftNameTags.Remove(_rigCleanupBuffer[i]);
-                minecraftTagBackgrounds.Remove(_rigCleanupBuffer[i]);
+                Object.Destroy(tag.Value);
+                Object.Destroy(minecraftTagBackgrounds[tag.Key]);
+                minecraftNameTags.Remove(tag.Key);
+                minecraftTagBackgrounds.Remove(tag.Key);
             }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
@@ -3146,7 +3184,12 @@ namespace iiMenu.Mods
         {
             bool hoc = Buttons.GetIndex(HiddenOnCameraButton).enabled;
 
-            PruneDepartedRigs(castingNameTags);
+            List<KeyValuePair<VRRig, GameObject>> nametagsCopy = castingNameTags.ToList();
+            foreach (var nametag in nametagsCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                castingNameTags.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -3437,7 +3480,12 @@ namespace iiMenu.Mods
         private static Material cosmeticMat;
         public static void CosmeticESP()
         {
-            PruneDepartedRigs(cosmeticIndicators);
+            List<KeyValuePair<VRRig, GameObject>> indicatorCopy = cosmeticIndicators.ToList();
+            foreach (var nametag in indicatorCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                cosmeticIndicators.Remove(nametag.Key);
+            }
 
             List<(string codename, string name)> cosmetics = new List<(string codename, string name)>
             {
@@ -3515,7 +3563,12 @@ namespace iiMenu.Mods
 
         public static void PlatformIndicators()
         {
-            PruneDepartedRigs(platformIndicators);
+            List<KeyValuePair<VRRig, GameObject>> indicatorCopy = platformIndicators.ToList();
+            foreach (var nametag in indicatorCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                platformIndicators.Remove(nametag.Key);
+            }
 
             foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.isLocal || selfNameTag))
             {
@@ -3551,7 +3604,12 @@ namespace iiMenu.Mods
 
         public static void PlatformESP()
         {
-            PruneDepartedRigs(platformIndicators);
+            List<KeyValuePair<VRRig, GameObject>> indicatorCopy = platformIndicators.ToList();
+            foreach (var nametag in indicatorCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                platformIndicators.Remove(nametag.Key);
+            }
 
             foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.isLocal || selfNameTag))
             {
@@ -3591,20 +3649,14 @@ namespace iiMenu.Mods
         private static Texture2D voiceTxt;
 
         private static readonly Dictionary<VRRig, GameObject> voiceIndicators = new Dictionary<VRRig, GameObject>();
-        private static readonly List<VRRig> _voiceRemoveBuffer = new List<VRRig>();
         public static void VoiceIndicators()
         {
-            _voiceRemoveBuffer.Clear();
-            foreach (var nametag in voiceIndicators)
+            List<KeyValuePair<VRRig, GameObject>> indicatorCopy = voiceIndicators.ToList();
+            foreach (var nametag in indicatorCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
             {
-                if (!GorillaParent.instance.vrrigs.Contains(nametag.Key))
-                {
-                    Object.Destroy(nametag.Value);
-                    _voiceRemoveBuffer.Add(nametag.Key);
-                }
+                Object.Destroy(nametag.Value);
+                voiceIndicators.Remove(nametag.Key);
             }
-            for (int i = 0; i < _voiceRemoveBuffer.Count; i++)
-                voiceIndicators.Remove(_voiceRemoveBuffer[i]);
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -3661,7 +3713,12 @@ namespace iiMenu.Mods
 
         public static void VoiceESP()
         {
-            PruneDepartedRigs(voiceIndicators);
+            List<KeyValuePair<VRRig, GameObject>> indicatorCopy = voiceIndicators.ToList();
+            foreach (var nametag in indicatorCopy.Where(nametag => !GorillaParent.instance.vrrigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                voiceIndicators.Remove(nametag.Key);
+            }
 
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
@@ -4425,25 +4482,19 @@ namespace iiMenu.Mods
                 meshFilter.mesh = lineMesh;
             }
 
-            private Mesh _bakedMesh;
-            private readonly List<Vector3> _lineVertices = new List<Vector3>();
-            private readonly List<int> _lineIndices = new List<int>();
-
             void Update()
             {
                 if (Time.frameCount % 3 > 0)
                     return;
 
-                if (_bakedMesh == null)
-                    _bakedMesh = new Mesh();
+                Mesh bakedMesh = new Mesh();
+                skinnedMeshRenderer.BakeMesh(bakedMesh);
 
-                skinnedMeshRenderer.BakeMesh(_bakedMesh);
+                Vector3[] vertices = bakedMesh.vertices;
+                int[] triangles = bakedMesh.triangles;
 
-                Vector3[] vertices = _bakedMesh.vertices;
-                int[] triangles = _bakedMesh.triangles;
-
-                _lineVertices.Clear();
-                _lineIndices.Clear();
+                List<Vector3> lineVertices = new List<Vector3>();
+                List<int> lineIndices = new List<int>();
 
                 for (int i = 0; i < triangles.Length; i += 3)
                 {
@@ -4451,23 +4502,23 @@ namespace iiMenu.Mods
                     int i1 = triangles[i + 1];
                     int i2 = triangles[i + 2];
 
-                    _lineVertices.Add(vertices[i0]);
-                    _lineVertices.Add(vertices[i1]);
+                    lineVertices.Add(vertices[i0]);
+                    lineVertices.Add(vertices[i1]);
 
-                    _lineVertices.Add(vertices[i1]);
-                    _lineVertices.Add(vertices[i2]);
+                    lineVertices.Add(vertices[i1]);
+                    lineVertices.Add(vertices[i2]);
 
-                    _lineVertices.Add(vertices[i2]);
-                    _lineVertices.Add(vertices[i0]);
+                    lineVertices.Add(vertices[i2]);
+                    lineVertices.Add(vertices[i0]);
 
-                    int baseIndex = _lineVertices.Count - 6;
+                    int baseIndex = lineVertices.Count - 6;
                     for (int j = 0; j < 6; j++)
-                        _lineIndices.Add(baseIndex + j);
+                        lineIndices.Add(baseIndex + j);
                 }
 
                 lineMesh.Clear();
-                lineMesh.SetVertices(_lineVertices);
-                lineMesh.SetIndices(_lineIndices.ToArray(), MeshTopology.Lines, 0);
+                lineMesh.SetVertices(lineVertices);
+                lineMesh.SetIndices(lineIndices.ToArray(), MeshTopology.Lines, 0);
             }
 
             void OnDestroy()
@@ -6196,7 +6247,7 @@ namespace iiMenu.Mods
             return finalTextMeshPro;
         }
 
-        public static void ClearNameTagPool(bool destroy = false)
+        public static void ClearNameTagPool(bool destroy = false) //Set destroy when you disable a feature that needs a lot of nameTags
         {
             if (DoPerformanceCheck())
                 return;
@@ -6211,8 +6262,6 @@ namespace iiMenu.Mods
 
             if (destroy || isNameTagQueued)
                 nameTagPool.Clear();
-
-            ntDistanceList.Clear();
 
             isNameTagQueued = false;
         }
