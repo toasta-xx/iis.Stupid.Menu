@@ -94,6 +94,13 @@ namespace iiMenu.Classes.Menu
                 LastPollAnswered = File.ReadAllText($"{PluginInfo.BaseDirectory}/LastPollAnswered.txt");
         }
 
+        public void OnDestroy()
+        {
+            NetworkSystem.Instance.OnJoinedRoomEvent -= OnJoinRoom;
+            NetworkSystem.Instance.OnPlayerJoined -= UpdatePlayerCount;
+            NetworkSystem.Instance.OnPlayerLeft -= UpdatePlayerCount;
+        }
+
         public void Update()
         {
             if (DataLoadTime > 0f && Time.time > DataLoadTime && GorillaComputer.instance.isConnectedToMaster)
