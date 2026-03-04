@@ -29,7 +29,7 @@ namespace iiMenu
         public const string Name = "ii's Stupid Menu";
         public const string Description = "Created by @crimsoncauldron with love <3";
         public static readonly string BuildTimestamp = DateTime.UtcNow.ToString("o"); // im too lazy for manual updating
-        public const string Version = "8.3.2";
+        public const string Version = "8.3.3";
 
         public const string BaseDirectory = "iisStupidMenu";
         public const string ClientResourcePath = "iiMenu.Resources.Client";
