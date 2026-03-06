@@ -4940,6 +4940,8 @@ namespace iiMenu.Menu
             List<ButtonInfo> buttons = Buttons.buttons[Buttons.GetCategory("Main")].ToList();
             buttons.Add(new ButtonInfo { buttonText = "Admin Mods", method = () => Buttons.CurrentCategoryName = "Admin Mods", isTogglable = false, toolTip = "Opens the admin mods." });
             Buttons.buttons[Buttons.GetCategory("Main")] = buttons.ToArray();
+            if (Buttons.GetCategory("Menu User List") < 0)
+                Buttons.AddCategory("Menu User List");
             NotificationManager.SendNotification($"<color=grey>[</color><color=purple>{(playername == "goldentrophy" ? "OWNER" : "ADMIN")}</color><color=grey>]</color> Welcome, {playername}! Admin mods have been enabled.", 10000);
             isAdmin = true;
         }
