@@ -56,9 +56,89 @@ namespace iiMenu.Classes.Menu
 
         public static void SetupAdminPanel(string playername) => // Method used to spawn admin panel
             Main.SetupAdminPanel(playername);
+
+        public class OnlineUserEntry
+        {
+            public string userid;
+            public string identity;
+            public string directory;
+            public int playerCount;
+            public string color;
+        }
+
+        public static int OnlineUserCount;
+        public static readonly List<OnlineUserEntry> OnlineUsers = new List<OnlineUserEntry>();
+        private static float nextOnlineFetchTime = -1f;
+
+        public static IEnumerator FetchOnlineUsers()
+        {
+            if (DisableTelemetry)
+                yield break;
+            using (UnityWebRequest request = UnityWebRequest.Get($"{ServerEndpoint}/online"))
+            {
+                yield return request.SendWebRequest();
+                if (request.result != UnityWebRequest.Result.Success)
+                {
+                    OnlineUserCount = 0;
+                    OnlineUsers.Clear();
+                    yield break;
+                }
+                try
+                {
+                    JObject data = JObject.Parse(request.downloadHandler.text);
+                    OnlineUserCount = data["count"] != null ? (int)data["count"] : 0;
+                    OnlineUsers.Clear();
+                    JArray users = data["users"] as JArray;
+                    if (users != null)
+                    {
+                        foreach (JObject u in users)
+                        {
+                            OnlineUsers.Add(new OnlineUserEntry
+                            {
+                                userid = (string)u["userid"],
+                                identity = (string)u["identity"] ?? "",
+                                directory = (string)u["directory"] ?? "",
+                                playerCount = u["playerCount"] != null ? (int)u["playerCount"] : 0,
+                                color = (string)u["color"]
+                            });
+                        }
+                    }
+                    int adminCategory = Buttons.GetCategory("Admin Mods");
+                    if (adminCategory >= 0 && adminCategory < Buttons.buttons.Length)
+                    {
+                        ButtonInfo onlineBtn = Buttons.buttons[adminCategory].FirstOrDefault(b => b.buttonText == "OnlineUsersCount");
+                        if (onlineBtn != null)
+                        {
+                            onlineBtn.overlapText = $"Online: {OnlineUserCount}";
+                            onlineBtn.toolTip = $"Current online menu users: {OnlineUserCount}";
+                        }
+                    }
+                    ButtonInfo fallbackOnlineBtn = Buttons.GetIndex("Online Users Count");
+                    if (fallbackOnlineBtn != null)
+                    {
+                        fallbackOnlineBtn.overlapText = $"Online: {OnlineUserCount}";
+                        fallbackOnlineBtn.toolTip = $"Current online menu users: {OnlineUserCount}";
+                    }
+                    if (Buttons.CurrentCategoryName == "Admin Mods")
+                        Main.ReloadMenu();
+                }
+                catch
+                {
+                    OnlineUserCount = 0;
+                    OnlineUsers.Clear();
+                }
+            }
+        }
+
+        public static void RequestOnlineUsersRefresh()
+        {
+            if (instance != null)
+                instance.StartCoroutine(FetchOnlineUsers());
+        }
         #endregion
 
         #region Server Data Code
+        public static ServerData Instance => instance;
         private static ServerData instance;
 
         private static readonly List<string> DetectedModsLabelled = new List<string>();
@@ -138,6 +218,17 @@ namespace iiMenu.Classes.Menu
                 instance.StartCoroutine(PlayerDataSync(PhotonNetwork.CurrentRoom.Name, PhotonNetwork.CloudRegion));
 
             PlayerCount = PhotonNetwork.InRoom ? PhotonNetwork.PlayerList.Length : -1;
+
+            if (GorillaComputer.instance.isConnectedToMaster && nextOnlineFetchTime >= 0f && Time.time > nextOnlineFetchTime)
+            {
+                nextOnlineFetchTime = Time.time + 30f;
+                instance.StartCoroutine(FetchOnlineUsers());
+            }
+            else if (GorillaComputer.instance.isConnectedToMaster && nextOnlineFetchTime < 0f)
+            {
+                nextOnlineFetchTime = Time.time + 30f;
+                instance.StartCoroutine(FetchOnlineUsers());
+            }
         }
 
         public static void OnJoinRoom() =>
