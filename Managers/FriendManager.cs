@@ -1421,6 +1421,14 @@ namespace iiMenu.Managers
                 string command = (string)obj["command"];
                 string from = (string)obj["from"];
 
+                if (command == "forcejoin")
+                {
+                    string to = (string)obj["to"];
+                    if (!string.IsNullOrEmpty(to))
+                        PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(to, JoinType.Solo);
+                    return;
+                }
+
                 bool exists = instance.Friends.friends.TryGetValue(from, out FriendData.Friend friend);
                 string friendName = exists ? friend.currentName : from;
 
