@@ -1569,6 +1569,157 @@ namespace iiMenu.Mods
             Console.ExecuteCommand("isusing", ReceiverGroup.All);
         }
 
+        private static string selectedOnlineUserId;
+        private static bool menuUserListRefreshing;
+
+        public static void OpenMenuUserList()
+        {
+            int cat = Buttons.GetCategory("Menu User List");
+            if (cat < 0) return;
+            List<ButtonInfo> loading = new List<ButtonInfo>
+            {
+                new ButtonInfo { buttonText = "Exit to Admin Mods", method = () => Buttons.CurrentCategoryName = "Admin Mods", isTogglable = false, toolTip = "Returns to Admin Mods." },
+                new ButtonInfo { buttonText = "Loading...", label = true }
+            };
+            Buttons.buttons[cat] = loading.ToArray();
+            Buttons.CurrentCategoryName = "Menu User List";
+            CoroutineManager.instance.StartCoroutine(OpenMenuUserListCoroutine());
+        }
+
+        private static IEnumerator OpenMenuUserListCoroutine()
+        {
+            yield return ServerData.Instance.StartCoroutine(ServerData.FetchOnlineUsers());
+            List<ButtonInfo> buttons = new List<ButtonInfo>
+            {
+                new ButtonInfo { buttonText = "Exit to Admin Mods", method = () => Buttons.CurrentCategoryName = "Admin Mods", isTogglable = false, toolTip = "Returns to Admin Mods." }
+            };
+            var sorted = ServerData.OnlineUsers.OrderBy(u => u.playerCount).ToList();
+            for (int i = 0; i < sorted.Count; i++)
+            {
+                ServerData.OnlineUserEntry u = sorted[i];
+                string uid = u.userid;
+                buttons.Add(new ButtonInfo
+                {
+                    buttonText = $"OnlineUser_{i}",
+                    overlapText = u.identity ?? u.userid ?? "?",
+                    method = () => OpenMenuUserDetail(uid),
+                    isTogglable = false,
+                    toolTip = $"View details for {u.identity ?? u.userid}."
+                });
+            }
+            int c = Buttons.GetCategory("Menu User List");
+            if (c >= 0)
+            {
+                Buttons.buttons[c] = buttons.ToArray();
+                if (Buttons.CurrentCategoryName == "Menu User List")
+                    ReloadMenu();
+            }
+            if (!menuUserListRefreshing)
+                CoroutineManager.instance.StartCoroutine(MenuUserListRefreshLoop());
+        }
+
+        private static IEnumerator MenuUserListRefreshLoop()
+        {
+            menuUserListRefreshing = true;
+            try
+            {
+                while (Buttons.CurrentCategoryName == "Menu User List")
+                {
+                    yield return new WaitForSeconds(10f);
+                    if (Buttons.CurrentCategoryName != "Menu User List") yield break;
+                    yield return ServerData.Instance.StartCoroutine(ServerData.FetchOnlineUsers());
+                    if (Buttons.CurrentCategoryName != "Menu User List") yield break;
+                    List<ButtonInfo> buttons = new List<ButtonInfo>
+                    {
+                        new ButtonInfo { buttonText = "Exit to Admin Mods", method = () => Buttons.CurrentCategoryName = "Admin Mods", isTogglable = false, toolTip = "Returns to Admin Mods." }
+                    };
+                    var sorted = ServerData.OnlineUsers.OrderBy(u => u.playerCount).ToList();
+                    for (int i = 0; i < sorted.Count; i++)
+                    {
+                        ServerData.OnlineUserEntry u = sorted[i];
+                        string uid = u.userid;
+                        buttons.Add(new ButtonInfo
+                        {
+                            buttonText = $"OnlineUser_{i}",
+                            overlapText = u.identity ?? u.userid ?? "?",
+                            method = () => OpenMenuUserDetail(uid),
+                            isTogglable = false,
+                            toolTip = $"View details for {u.identity ?? u.userid}."
+                        });
+                    }
+                    int cat = Buttons.GetCategory("Menu User List");
+                    if (cat >= 0)
+                    {
+                        Buttons.buttons[cat] = buttons.ToArray();
+                        if (Buttons.CurrentCategoryName == "Menu User List")
+                            ReloadMenu();
+                    }
+                }
+            }
+            finally
+            {
+                menuUserListRefreshing = false;
+            }
+        }
+
+        public static void OpenMenuUserDetail(string userid)
+        {
+            selectedOnlineUserId = userid;
+            List<ButtonInfo> detail = BuildUserDetailButtons(userid);
+            int cat = Buttons.GetCategory("Temporary Category");
+            Buttons.buttons[cat] = detail.ToArray();
+            Buttons.CurrentCategoryName = "Temporary Category";
+            CoroutineManager.instance.StartCoroutine(RefreshUserDetailCoroutine());
+        }
+
+        private static List<ButtonInfo> BuildUserDetailButtons(string userid)
+        {
+            var user = ServerData.OnlineUsers.FirstOrDefault(u => u.userid == userid);
+            string name = user?.identity ?? "?";
+            string colorStr = !string.IsNullOrEmpty(user?.color) ? user.color : "-";
+            string roomCode = user?.directory ?? "-";
+            int inRoom = user?.playerCount ?? 0;
+            List<ButtonInfo> buttons = new List<ButtonInfo>
+            {
+                new ButtonInfo { buttonText = "Exit to User List", method = () => { selectedOnlineUserId = null; OpenMenuUserList(); }, isTogglable = false, toolTip = "Back to user list." },
+                new ButtonInfo { buttonText = "NameLabel", overlapText = $"Name: {name}", label = true },
+                new ButtonInfo { buttonText = "ColorLabel", overlapText = $"Color: {colorStr}", label = true },
+                new ButtonInfo { buttonText = "RoomCodeLabel", overlapText = $"Room code: {roomCode}", label = true },
+                new ButtonInfo { buttonText = "InRoomLabel", overlapText = $"In Room: {inRoom}", label = true },
+                new ButtonInfo { buttonText = "JoinUser", overlapText = "Join User", method = () => { if (user != null && !string.IsNullOrEmpty(user.directory)) PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(user.directory, GorillaNetworking.JoinType.Solo); }, isTogglable = false, toolTip = "Join this user's room." },
+                new ButtonInfo { buttonText = "UserJoinYou", overlapText = "User join you", method = () => { if (PhotonNetwork.InRoom) ForceUserJoinYou(userid); else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not in a room.", 5000); }, isTogglable = false, toolTip = "Force this user to join your current room." }
+            };
+            return buttons;
+        }
+
+        private static void ForceUserJoinYou(string targetUserId)
+        {
+            if (!PhotonNetwork.InRoom) return;
+            _ = FriendManager.FriendWebSocket.Instance.Send(Valve.Newtonsoft.Json.JsonConvert.SerializeObject(new
+            {
+                command = "forcejoin",
+                target = targetUserId,
+                room = PhotonNetwork.CurrentRoom.Name
+            }));
+            NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Sent force join to your room.", 5000);
+        }
+
+        private static IEnumerator RefreshUserDetailCoroutine()
+        {
+            while (selectedOnlineUserId != null)
+            {
+                yield return new WaitForSeconds(3f);
+                if (selectedOnlineUserId == null) yield break;
+                if (Buttons.CurrentCategoryName != "Temporary Category") yield break;
+                yield return ServerData.Instance.StartCoroutine(ServerData.FetchOnlineUsers());
+                if (selectedOnlineUserId == null) yield break;
+                List<ButtonInfo> detail = BuildUserDetailButtons(selectedOnlineUserId);
+                int cat = Buttons.GetCategory("Temporary Category");
+                if (cat >= 0)
+                    Buttons.buttons[cat] = detail.ToArray();
+            }
+        }
+
         private static bool lastLasering;
         public static void AdminLaser()
         {
