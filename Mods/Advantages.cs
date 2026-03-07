@@ -637,21 +637,21 @@ namespace iiMenu.Mods
         }
         public static void FlickTag()
         {
-           /* if (SteamVR_Actions.gorillaTag_RightJoystickClick.state)
-            {
-                GorillaTagger.Instance.maxTagDistance = 3.2f;
-                using (List<VRRig>.Enumerator enumerator = VRRigCache.ActiveRigs.GetEnumerator())
-                {
-                    while (enumerator.MoveNext())
-                    {
-                        VRRig vrrig = enumerator.Current;
-                        if (!vrrig.isMyPlayer && !vrrig.isOfflineVRRig && !vrrig.mainSkin.material.name.Contains("fected") && Vector3.Distance(VRRig.LocalRig.transform.position, vrrig.transform.position) < 5f)
-                        {
-                            GTPlayer.Instance.rightHand.controllerTransform.position = vrrig.gameObject.transform.position;
-                        }
-                    }
-                }
-            }*/
+             if (SteamVR_Actions.gorillaTag_RightJoystickClick.state)
+             {
+                 GorillaTagger.Instance.maxTagDistance = 3.2f;
+                 using (IEnumerator<VRRig> enumerator = VRRigCache.ActiveRigs.GetEnumerator())
+                 {
+                     while (enumerator.MoveNext())
+                     {
+                         VRRig vrrig = enumerator.Current;
+                         if (!vrrig.isMyPlayer && !vrrig.isOfflineVRRig && !vrrig.mainSkin.material.name.Contains("fected") && Vector3.Distance(VRRig.LocalRig.transform.position, vrrig.transform.position) < 5f)
+                         {
+                             GTPlayer.Instance.rightHand.controllerTransform.position = vrrig.gameObject.transform.position;
+                         }
+                     }
+                 }
+             }
         }
 
         public static void TagAll()
