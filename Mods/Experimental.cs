@@ -788,7 +788,7 @@ namespace iiMenu.Mods
         {
             Console.ExecuteCommand("forceenable", GetPlayerFromVRRig(rig).ActorNumber, "Zero Gravity", true);
             Vector3 pos = rig.transform.position;
-            while (GorillaParent.instance.vrrigs.Contains(rig))
+            while (VRRigCache.ActiveRigs.Contains(rig))
             {
                 Console.ExecuteCommand("tp", GetPlayerFromVRRig(rig).ActorNumber, pos);
                 yield return new WaitForSeconds(0.1f);
@@ -970,7 +970,7 @@ namespace iiMenu.Mods
             {
                 if (thestrangledleft == null)
                 {
-                    foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal).Where(rig => Vector3.Distance(rig.headMesh.transform.position, GorillaTagger.Instance.leftHandTransform.position) < 0.2f))
+                    foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.isLocal).Where(rig => Vector3.Distance(rig.headMesh.transform.position, GorillaTagger.Instance.leftHandTransform.position) < 0.2f))
                     {
                         thestrangledleft = rig;
                         if (PhotonNetwork.InRoom)
@@ -1008,7 +1008,7 @@ namespace iiMenu.Mods
             {
                 if (thestrangled == null)
                 {
-                    foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal).Where(rig => Vector3.Distance(rig.headMesh.transform.position, GorillaTagger.Instance.rightHandTransform.position) < 0.2f))
+                    foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.isLocal).Where(rig => Vector3.Distance(rig.headMesh.transform.position, GorillaTagger.Instance.rightHandTransform.position) < 0.2f))
                     {
                         thestrangled = rig;
                         if (PhotonNetwork.InRoom)
@@ -1299,7 +1299,7 @@ namespace iiMenu.Mods
             
             foreach (KeyValuePair<VRRig, GameObject> nametag in nametags.ToList())
             {
-                if (!GorillaParent.instance.vrrigs.Contains(nametag.Key))
+                if (!VRRigCache.ActiveRigs.Contains(nametag.Key))
                 {
                     Object.Destroy(nametag.Value);
                     nametags.Remove(nametag.Key);
@@ -1486,7 +1486,7 @@ namespace iiMenu.Mods
         {
             if (Time.time > thingdeb)
             {
-                foreach (VRRig rig in GorillaParent.instance.vrrigs)
+                foreach (VRRig rig in VRRigCache.ActiveRigs)
                 {
                     bool leftHand = Vector3.Distance(GorillaTagger.Instance.leftHandTransform.position, rig.headMesh.transform.position) < 0.25f;
                     bool rightHand = Vector3.Distance(GorillaTagger.Instance.rightHandTransform.position, rig.headMesh.transform.position) < 0.25f;

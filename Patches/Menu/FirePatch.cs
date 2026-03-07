@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static iiMenu.Utilities.GameModeUtilities;
+using static iiMenu.Utilities.RigUtilities;
 
 namespace iiMenu.Patches.Menu
 {
@@ -38,7 +39,7 @@ namespace iiMenu.Patches.Menu
             if (enabled && __instance.blaster.LocalEquippedOrActivated)
             {
                 List<NetPlayer> infected = InfectedList();
-                List<VRRig> rigs = GorillaParent.instance.vrrigs
+                List<VRRig> rigs = VRRigCache.ActiveRigs
                     .Where(rig => !rig.isLocal)
                     .Where(rig => !infected.Contains(rig.GetPlayer()))
                     .ToList();

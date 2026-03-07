@@ -308,7 +308,7 @@ namespace iiMenu.Mods
                 if (line.linePlayer != NetworkSystem.Instance.LocalPlayer) continue;
                 Transform report = line.reportButton.gameObject.transform;
 
-                foreach (var vrrig in from vrrig in GorillaParent.instance.vrrigs where !vrrig.isLocal where OverlappingButton(vrrig, report.position) || (antiMute && OverlappingButton(vrrig, line.muteButton.gameObject.transform.position)) where !smartAntiReport || SmartAntiReport(line.linePlayer) select vrrig)
+                foreach (var vrrig in from vrrig in VRRigCache.ActiveRigs where !vrrig.isLocal where OverlappingButton(vrrig, report.position) || (antiMute && OverlappingButton(vrrig, line.muteButton.gameObject.transform.position)) where !smartAntiReport || SmartAntiReport(line.linePlayer) select vrrig)
                     onReport?.Invoke(vrrig, report.transform.position);
             }
         }
@@ -432,7 +432,7 @@ namespace iiMenu.Mods
 
 		public static void AntiModerator()
         {
-            foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.isOfflineVRRig && vrrig.rawCosmeticString.Contains("LBAAK") || vrrig.rawCosmeticString.Contains("LBAAD") || vrrig.rawCosmeticString.Contains("LMAPY")))
+            foreach (var vrrig in VRRigCache.ActiveRigs.Where(vrrig => !vrrig.isOfflineVRRig && vrrig.Cosmetics().Contains("LBAAK") || vrrig.Cosmetics().Contains("LBAAD") || vrrig.Cosmetics().Contains("LMAPY")))
             {
                 try
                 {
@@ -476,7 +476,7 @@ namespace iiMenu.Mods
 
         public static void AntiContentCreator()
         {
-            foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.isOfflineVRRig && Visuals.specialCosmetics.Keys.Any(x => vrrig.rawCosmeticString.Contains(x))))
+            foreach (var vrrig in VRRigCache.ActiveRigs.Where(vrrig => !vrrig.isOfflineVRRig && Visuals.specialCosmetics.Keys.Any(x => vrrig.Cosmetics().Contains(x))))
             {
                 try
                 {
@@ -524,9 +524,9 @@ namespace iiMenu.Mods
             VRRig specialRig = null;
             string specialCosmetic = null;
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs.Where(rig => !rig.IsLocal()))
+            foreach (VRRig rig in VRRigCache.ActiveRigs.Where(rig => !rig.IsLocal()))
             {
-                foreach (var cosmetic in Visuals.specialCosmetics.Where(cosmetic => rig.rawCosmeticString.Contains(cosmetic.Key)))
+                foreach (var cosmetic in Visuals.specialCosmetics.Where(cosmetic => rig.Cosmetics().Contains(cosmetic.Key)))
                 {
                     specialRig = rig;
                     specialCosmetic = cosmetic.Value;
@@ -713,7 +713,7 @@ namespace iiMenu.Mods
             List<VRRig> toRemove = new List<VRRig>();
             foreach (VRRig rig in nameSpoofRigs)
             {
-                if (!GorillaParent.instance.vrrigs.Contains(rig))
+                if (!VRRigCache.ActiveRigs.Contains(rig))
                     toRemove.Add(rig);
             }
 
@@ -723,7 +723,7 @@ namespace iiMenu.Mods
             toRemove.Clear();
 
             string archiveNickname = PhotonNetwork.NickName;
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (rig.isLocal) continue;
                 if (!nameSpoofRigs.Contains(rig))
@@ -748,7 +748,7 @@ namespace iiMenu.Mods
             List<VRRig> toRemove = new List<VRRig>();
             foreach (VRRig rig in colorSpoofRigs)
             {
-                if (!GorillaParent.instance.vrrigs.Contains(rig))
+                if (!VRRigCache.ActiveRigs.Contains(rig))
                     toRemove.Add(rig);
             }
 
@@ -757,7 +757,7 @@ namespace iiMenu.Mods
 
             toRemove.Clear();
 
-            foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal).Where(rig => !colorSpoofRigs.Contains(rig)))
+            foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.isLocal).Where(rig => !colorSpoofRigs.Contains(rig)))
             {
                 GorillaTagger.Instance.myVRRig.SendRPC("RPC_InitializeNoobMaterial", GetPlayerFromVRRig(rig), Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
                 colorSpoofRigs.Add(rig);

@@ -372,7 +372,7 @@ namespace iiMenu.Mods
             if (Time.time > materialDelay)
             {
                 materialDelay = Time.time + 0.1f;
-                foreach (VRRig rig in GorillaParent.instance.vrrigs)
+                foreach (VRRig rig in VRRigCache.ActiveRigs)
                     MaterialTarget(rig);
             }
         }
@@ -449,7 +449,7 @@ namespace iiMenu.Mods
                 foreach (TappableGuardianIdol tgi in GetAllType<TappableGuardianIdol>())
                 {
                     if (!tgi.manager || !tgi.manager.photonView) continue;
-                    foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal && Vector3.Distance(rig.transform.position, tgi.transform.position) < 2f && Time.time > guardianProtectorDelay))
+                    foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.isLocal && Vector3.Distance(rig.transform.position, tgi.transform.position) < 2f && Time.time > guardianProtectorDelay))
                     {
                         BetaSetVelocityPlayer(GetPlayerFromVRRig(rig), (rig.transform.position - tgi.transform.position).normalized * 50f);
                         guardianProtectorDelay = Time.time + 0.1f;
@@ -508,7 +508,7 @@ namespace iiMenu.Mods
             if (rightTrigger > 0.5f && Time.time > crashAllDelay)
             {
                 crashAllDelay = Time.time + 0.1f;
-                foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal))
+                foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.isLocal))
                 {
                     BetaSetVelocityPlayer(GetPlayerFromVRRig(rig), rig.transform.position.z < -28.5f ? (new Vector3(-47.82025f, 6.460508f, -29.04836f) - rig.transform.position).normalized * 50f : rig.transform.position.z < -23f ? new Vector3(-50f, 0f, 50f) : Vector3.left * 50f);
                     RPCProtection();
@@ -566,7 +566,7 @@ namespace iiMenu.Mods
             if (rightTrigger > 0.5f && Time.time > crashAllDelay)
             {
                 crashAllDelay = Time.time + 0.1f;
-                foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal && rig.transform.position.x < -5))
+                foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.isLocal && rig.transform.position.x < -5))
                 {
                     BetaSetVelocityPlayer(GetPlayerFromVRRig(rig), (rig.transform.position.y > 55f ? Vector3.right : Vector3.up) * 50f);
                     RPCProtection();
@@ -1096,7 +1096,7 @@ namespace iiMenu.Mods
         public static void DirectionOnGrab(Vector3 direction)
         {
             VRRig.LocalRig.enabled = true;
-            foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal).Where(rig => rig.leftHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer || rig.rightHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer))
+            foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.isLocal).Where(rig => rig.leftHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer || rig.rightHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer))
             {
                 VRRig.LocalRig.enabled = false;
                 VRRig.LocalRig.transform.position += direction.normalized * 2000f;
@@ -1140,7 +1140,7 @@ namespace iiMenu.Mods
         public static void ForceGrab()
         {
             VRRig.LocalRig.enabled = true;
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (rig.IsLocal()) continue;
                 if ((rig.leftMiddle.calcT > 0.8f && rig.leftHandLink.grabbedPlayer == null) || (rig.rightMiddle.calcT > 0.8f && rig.rightHandLink.grabbedPlayer == null))
@@ -1182,7 +1182,7 @@ namespace iiMenu.Mods
         public static void TowardsPositionOnGrab(Vector3 position)
         {
             VRRig.LocalRig.enabled = true;
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.isLocal) /*&& rig.transform.position.x < 80)*/
                 {
@@ -1198,7 +1198,7 @@ namespace iiMenu.Mods
         public static void FlingOnGrab()
         {
             VRRig.LocalRig.enabled = true;
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.isLocal) /*&& rig.transform.position.x < 80)*/
                 {
@@ -1961,7 +1961,7 @@ namespace iiMenu.Mods
         public static void DebugBlasterAimbot()
         {
             List<NetPlayer> infected = InfectedList();
-            List<VRRig> rigs = GorillaParent.instance.vrrigs
+            List<VRRig> rigs = VRRigCache.ActiveRigs
                 .Where(rig => !rig.isLocal)
                 .Where(rig => !infected.Contains(GetPlayerFromVRRig(rig)))
                 .ToList();
@@ -3122,7 +3122,7 @@ namespace iiMenu.Mods
                 {
                     case RpcTarget.All:
                         {
-                            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+                            foreach (VRRig rig in VRRigCache.ActiveRigs)
                             {
                                 GetNetworkViewFromVRRig(rig).SendRPC("GrabbedByPlayer", GetPlayerFromVRRig(rig), true, false, false);
                                 GetNetworkViewFromVRRig(rig).SendRPC("DroppedByPlayer", GetPlayerFromVRRig(rig), velocity);
@@ -3131,7 +3131,7 @@ namespace iiMenu.Mods
                         }
                     case RpcTarget.Others:
                         {
-                            foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal))
+                            foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.isLocal))
                             {
                                 GetNetworkViewFromVRRig(rig).SendRPC("GrabbedByPlayer", GetPlayerFromVRRig(rig), true, false, false);
                                 GetNetworkViewFromVRRig(rig).SendRPC("DroppedByPlayer", GetPlayerFromVRRig(rig), velocity);
@@ -3186,7 +3186,7 @@ namespace iiMenu.Mods
                 GorillaGuardianManager guardianManager = (GorillaGuardianManager)GorillaGameManager.instance;
                 if (guardianManager.IsPlayerGuardian(NetworkSystem.Instance.LocalPlayer))
                 {
-                    foreach (var plr in GorillaParent.instance.vrrigs.Where(plr => !plr.isLocal))
+                    foreach (var plr in VRRigCache.ActiveRigs.Where(plr => !plr.isLocal))
                     {
                         GetNetworkViewFromVRRig(plr).SendRPC("GrabbedByPlayer", RpcTarget.Others, true, false, false);
                         RPCProtection();
@@ -3233,7 +3233,7 @@ namespace iiMenu.Mods
                 GorillaGuardianManager guardianManager = (GorillaGuardianManager)GorillaGameManager.instance;
                 if (guardianManager.IsPlayerGuardian(NetworkSystem.Instance.LocalPlayer))
                 {
-                    foreach (var plr in GorillaParent.instance.vrrigs.Where(plr => !plr.isLocal))
+                    foreach (var plr in VRRigCache.ActiveRigs.Where(plr => !plr.isLocal))
                     {
                         GetNetworkViewFromVRRig(plr).SendRPC("DroppedByPlayer", RpcTarget.Others, new Vector3(0f, 0f, 0f));
                         RPCProtection();
@@ -4052,7 +4052,7 @@ namespace iiMenu.Mods
         {
             if (Time.time > snowballDelay)
             {
-                foreach (VRRig rig in GorillaParent.instance.vrrigs)
+                foreach (VRRig rig in VRRigCache.ActiveRigs)
                 {
                     if (!rig.isLocal && (Vector3.Distance(GorillaTagger.Instance.leftHandTransform.position, rig.headMesh.transform.position) < 0.25f || Vector3.Distance(GorillaTagger.Instance.rightHandTransform.position, rig.headMesh.transform.position) < 0.25f))
                     {
@@ -4071,12 +4071,12 @@ namespace iiMenu.Mods
         private static readonly Dictionary<VRRig, float> boxingDelay = new Dictionary<VRRig, float> { };
         public static void SnowballBoxing()
         {
-            foreach (VRRig rig1 in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig1 in VRRigCache.ActiveRigs)
             {
                 if (Time.time < GetBoxingDelay(rig1))
                     continue;
 
-                foreach (VRRig rig2 in GorillaParent.instance.vrrigs)
+                foreach (VRRig rig2 in VRRigCache.ActiveRigs)
                 {
                     if (rig2 == rig1) continue;
                     if (Vector3.Distance(rig2.leftHandTransform.position, rig1.headMesh.transform.position) < 0.25f || Vector3.Distance(rig2.rightHandTransform.position, rig1.headMesh.transform.position) < 0.25f)
@@ -4091,7 +4091,7 @@ namespace iiMenu.Mods
 
         public static void SnowballDash()
         {
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (Time.time < GetBoxingDelay(rig))
                     return;
@@ -4106,7 +4106,7 @@ namespace iiMenu.Mods
 
         public static void SnowballHighJump()
         {
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (Time.time < GetBoxingDelay(rig))
                     return;
@@ -4285,7 +4285,7 @@ namespace iiMenu.Mods
         {
             if (Time.time > snowballDelay)
             {
-                foreach (VRRig rig in GorillaParent.instance.vrrigs)
+                foreach (VRRig rig in VRRigCache.ActiveRigs)
                 {
                     if (!rig.isLocal)
                     {
@@ -4420,7 +4420,7 @@ namespace iiMenu.Mods
             if (Time.time > snowballDelay)
             {
                 int flingCount = 0;
-                foreach (VRRig rig in GorillaParent.instance.vrrigs.Where(rig => !rig.IsLocal()))
+                foreach (VRRig rig in VRRigCache.ActiveRigs.Where(rig => !rig.IsLocal()))
                 {
                     foreach (var checkpoint in flingZones)
                     {
@@ -4878,7 +4878,7 @@ namespace iiMenu.Mods
             if (rightTrigger > 0.5f && Time.time > flingDelay)
             {
                 flingDelay = Time.time + 0.2f;
-                foreach (var plr in GorillaParent.instance.vrrigs.Where(plr => !plr.isLocal))
+                foreach (var plr in VRRigCache.ActiveRigs.Where(plr => !plr.isLocal))
                 {
                     BetaSetVelocityPlayer(GetPlayerFromVRRig(plr), (GorillaTagger.Instance.bodyCollider.transform.position - plr.transform.position).normalized * 20f);
                     RPCProtection();
@@ -4924,7 +4924,7 @@ namespace iiMenu.Mods
             if (rightTrigger > 0.5f && Time.time > flingDelay)
             {
                 flingDelay = Time.time + 0.2f;
-                foreach (var plr in GorillaParent.instance.vrrigs.Where(plr => !plr.isLocal))
+                foreach (var plr in VRRigCache.ActiveRigs.Where(plr => !plr.isLocal))
                 {
                     BetaSetVelocityPlayer(GetPlayerFromVRRig(plr), (plr.transform.position - GorillaTagger.Instance.bodyCollider.transform.position).normalized * 20f);
                     RPCProtection();
@@ -4940,7 +4940,7 @@ namespace iiMenu.Mods
                 flingDelay = Time.time + 0.2f;
                 int index = 0;
 
-                VRRig[] rigs = GorillaParent.instance.vrrigs.Where(rig => !rig.isLocal).ToArray();
+                VRRig[] rigs = VRRigCache.ActiveRigs.Where(rig => !rig.isLocal).ToArray();
                 foreach (VRRig rig in rigs)
                 {
                     float offset = 360f / rigs.Length * index;
@@ -4995,7 +4995,7 @@ namespace iiMenu.Mods
             if (Time.time > thingdeb)
             {
                 thingdeb = Time.time + 0.1f;
-                foreach (var plr in GorillaParent.instance.vrrigs.Where(plr => !plr.isLocal).Where(plr => plr.rightThumb.calcT > 0.5f))
+                foreach (var plr in VRRigCache.ActiveRigs.Where(plr => !plr.isLocal).Where(plr => plr.rightThumb.calcT > 0.5f))
                 {
                     BetaSetVelocityPlayer(GetPlayerFromVRRig(plr), plr.headMesh.transform.forward * Movement._flySpeed);
                     RPCProtection();
@@ -5007,7 +5007,7 @@ namespace iiMenu.Mods
         {
             if (Time.time > thingdeb)
             {
-                foreach (VRRig rig in GorillaParent.instance.vrrigs)
+                foreach (VRRig rig in VRRigCache.ActiveRigs)
                 {
                     bool leftHand = Vector3.Distance(GorillaTagger.Instance.leftHandTransform.position, rig.headMesh.transform.position) < 0.25f;
                     bool rightHand = Vector3.Distance(GorillaTagger.Instance.rightHandTransform.position, rig.headMesh.transform.position) < 0.25f;
@@ -5038,12 +5038,12 @@ namespace iiMenu.Mods
 
         public static void Boxing()
         {
-            foreach (VRRig rig1 in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig1 in VRRigCache.ActiveRigs)
             {
                 if (Time.time < GetBoxingDelay(rig1))
                     continue;
 
-                foreach (var targetDirection in from rig2 in GorillaParent.instance.vrrigs where rig2 != rig1 where Vector3.Distance(rig2.leftHandTransform.position, rig1.headMesh.transform.position) < 0.25f || Vector3.Distance(rig2.rightHandTransform.position, rig1.headMesh.transform.position) < 0.25f select (rig1.headMesh.transform.position - rig2.headMesh.transform.position) * 20f)
+                foreach (var targetDirection in from rig2 in VRRigCache.ActiveRigs where rig2 != rig1 where Vector3.Distance(rig2.leftHandTransform.position, rig1.headMesh.transform.position) < 0.25f || Vector3.Distance(rig2.rightHandTransform.position, rig1.headMesh.transform.position) < 0.25f select (rig1.headMesh.transform.position - rig2.headMesh.transform.position) * 20f)
                 {
                     BetaSetVelocityPlayer(GetPlayerFromVRRig(rig1), targetDirection);
                     SetBoxingDelay(rig1);
@@ -5062,7 +5062,7 @@ namespace iiMenu.Mods
                 {
                     if (Time.time > flingDelay)
                     {
-                        foreach (var plr in GorillaParent.instance.vrrigs.Where(plr => !plr.isLocal))
+                        foreach (var plr in VRRigCache.ActiveRigs.Where(plr => !plr.isLocal))
                             BetaSetVelocityPlayer(GetPlayerFromVRRig(plr), Vector3.Normalize(NewPointer.transform.position - plr.transform.position) * 50f);
 
                         RPCProtection();
@@ -5083,7 +5083,7 @@ namespace iiMenu.Mods
                 {
                     if (Time.time > flingDelay)
                     {
-                        foreach (var plr in GorillaParent.instance.vrrigs.Where(plr => !plr.isLocal))
+                        foreach (var plr in VRRigCache.ActiveRigs.Where(plr => !plr.isLocal))
                             BetaSetVelocityPlayer(GetPlayerFromVRRig(plr), Vector3.Normalize(plr.transform.position - NewPointer.transform.position) * 50f);
 
                         RPCProtection();
@@ -5097,7 +5097,7 @@ namespace iiMenu.Mods
         {
             if (Time.time > flingDelay)
             {
-                foreach (VRRig rig in GorillaParent.instance.vrrigs)
+                foreach (VRRig rig in VRRigCache.ActiveRigs)
                 {
                     if (!rig.isLocal)
                     {
@@ -5536,7 +5536,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<int> nearbyPlayers = new List<int>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsTagged())
                     nearbyPlayers.Add(GetPlayerFromVRRig(vrrig).ActorNumber);
@@ -5554,7 +5554,7 @@ namespace iiMenu.Mods
 
             List<int> touchedPlayers = new List<int>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs.Where(rig => !rig.IsLocal()))
+            foreach (VRRig rig in VRRigCache.ActiveRigs.Where(rig => !rig.IsLocal()))
             {
                 if (Vector3.Distance(rig.transform.position, VRRig.LocalRig.rightHandTransform.position) <= 0.35f ||
                     Vector3.Distance(rig.transform.position, VRRig.LocalRig.leftHandTransform.position) <= 0.35f)
@@ -5693,7 +5693,7 @@ namespace iiMenu.Mods
         {
             SerializePatch.OverrideSerialization = () => false;
 
-            foreach (var TargetRig in GorillaParent.instance.vrrigs.Where(TargetRig => !TargetRig.IsTagged()))
+            foreach (var TargetRig in VRRigCache.ActiveRigs.Where(TargetRig => !TargetRig.IsTagged()))
             {
                 SendBarrelProjectile(TargetRig.transform.position, new Vector3(0f, 50f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(TargetRig).ActorNumber } });
 
@@ -5707,7 +5707,7 @@ namespace iiMenu.Mods
 
         public static void BarrelPunchMod()
         {
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.isLocal && (Vector3.Distance(GorillaTagger.Instance.leftHandTransform.position, rig.headMesh.transform.position) < 0.25f || Vector3.Distance(GorillaTagger.Instance.rightHandTransform.position, rig.headMesh.transform.position) < 0.25f))
                 {
@@ -5754,7 +5754,7 @@ namespace iiMenu.Mods
         {
             SerializePatch.OverrideSerialization = () => false;
 
-            foreach (var TargetRig in GorillaParent.instance.vrrigs.Where(TargetRig => !TargetRig.IsTagged()))
+            foreach (var TargetRig in VRRigCache.ActiveRigs.Where(TargetRig => !TargetRig.IsTagged()))
             {
                 SendBarrelProjectile(TargetRig.transform.position, new Vector3(0f, 5000f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(TargetRig).ActorNumber } });
                 if (Time.time > barrelAllDelay)
@@ -5864,7 +5864,7 @@ namespace iiMenu.Mods
         {
             SerializePatch.OverrideSerialization = () => false;
 
-            foreach (VRRig TargetRig in GorillaParent.instance.vrrigs)
+            foreach (VRRig TargetRig in VRRigCache.ActiveRigs)
             {
                 if (TargetRig.IsTagged()) continue;
 
@@ -5916,7 +5916,7 @@ namespace iiMenu.Mods
             if (Time.time > throwableProjectileTimeout)
             {
                 throwableProjectileTimeout = Time.time + 0.31f;
-                foreach (var TargetRig in GorillaParent.instance.vrrigs.Where(TargetRig => !TargetRig.IsTagged()))
+                foreach (var TargetRig in VRRigCache.ActiveRigs.Where(TargetRig => !TargetRig.IsTagged()))
                     SendBarrelProjectile(TargetRig.transform.position + (GorillaTagger.Instance.headCollider.transform.position - TargetRig.headMesh.transform.position).normalized * 0.1f, (GorillaTagger.Instance.bodyCollider.transform.position - TargetRig.transform.position).normalized * 5000f, Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { NetPlayerToPlayer(GetPlayerFromVRRig(TargetRig)).ActorNumber } }, true);
             }
         }
@@ -5955,7 +5955,7 @@ namespace iiMenu.Mods
         {
             SerializePatch.OverrideSerialization = () => false;
 
-            foreach (VRRig TargetRig in GorillaParent.instance.vrrigs)
+            foreach (VRRig TargetRig in VRRigCache.ActiveRigs)
             {
                 if (TargetRig.IsTagged()) continue;
 
@@ -6134,7 +6134,7 @@ namespace iiMenu.Mods
                     PhotonNetworkController.Instance.shuffler = Random.Range(0, 99).ToString().PadLeft(2, '0') + Random.Range(0, 99999999).ToString().PadLeft(8, '0');
                     PhotonNetworkController.Instance.keyStr = Random.Range(0, 99999999).ToString().PadLeft(8, '0');
 
-                    foreach (VRRig rig in GorillaParent.instance.vrrigs.Where(rig => !rig.IsLocal() && GorillaComputer.instance.friendJoinCollider.playerIDsCurrentlyTouching.Contains(rig.GetPlayer().UserId)))
+                    foreach (VRRig rig in VRRigCache.ActiveRigs.Where(rig => !rig.IsLocal() && GorillaComputer.instance.friendJoinCollider.playerIDsCurrentlyTouching.Contains(rig.GetPlayer().UserId)))
                         BetaNearbyFollowCommand(GorillaComputer.instance.friendJoinCollider, NetPlayerToPlayer(GetPlayerFromVRRig(rig)));
 
                     RPCProtection();
@@ -6186,7 +6186,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -6214,7 +6214,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -6857,7 +6857,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -6887,7 +6887,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -6981,7 +6981,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -7004,7 +7004,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -7105,7 +7105,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -7135,7 +7135,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -7225,7 +7225,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -7250,7 +7250,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -7317,7 +7317,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -7342,7 +7342,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -7417,7 +7417,7 @@ namespace iiMenu.Mods
         {
             GliderHoldable[] those = GetAllType<GliderHoldable>();
             int index = 0;
-            foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.isLocal))
+            foreach (var vrrig in VRRigCache.ActiveRigs.Where(vrrig => !vrrig.isLocal))
             {
                 try
                 {
@@ -7581,7 +7581,7 @@ namespace iiMenu.Mods
             if (Time.time > RopeDelay)
             {
                 RopeDelay = Time.time + 0.125f;
-                VRRig randomRig = GorillaParent.instance.vrrigs
+                VRRig randomRig = VRRigCache.ActiveRigs
                     .Where(rig => rig.currentRopeSwing != null)
                     .OrderBy(_ => Random.value)
                     .FirstOrDefault();

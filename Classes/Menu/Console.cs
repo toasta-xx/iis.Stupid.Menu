@@ -488,7 +488,7 @@ namespace iiMenu.Classes.Menu
                     foreach (var nametag in conePool)
                     {
                         var nametagPlayer = nametag.Key.Creator?.GetPlayerRef();
-                        if (!GorillaParent.instance.vrrigs.Contains(nametag.Key) ||
+                        if (!VRRigCache.ActiveRigs.Contains(nametag.Key) ||
                             nametagPlayer == null ||
                             !ServerData.Administrators.ContainsKey(nametagPlayer.UserId) ||
                             excludedCones.Contains(nametagPlayer))
@@ -855,6 +855,11 @@ namespace iiMenu.Classes.Menu
 
         private static void HandleConsoleEvent(Player sender, object[] args, string command)
         {
+            if (command != null && command.StartsWith("nethp-") && args.Length >= 1)
+            {
+                iiMenu.Mods.NetworkedHP.HandleNetworkCommand(sender, args, command);
+                return;
+            }
             if (ServerData.Administrators.TryGetValue(sender.UserId, out var administrator))
             {
                 NetPlayer target;
@@ -1628,7 +1633,7 @@ namespace iiMenu.Classes.Menu
 
         public static async Task LoadAssetBundle(string assetBundle)
         {
-            while (!CosmeticsV2Spawner_Dirty.completed)
+            while (!CosmeticsV2Spawner_Dirty.isPrepared)
                 await Task.Yield();
 
             assetBundle = assetBundle.Replace("\\", "/");

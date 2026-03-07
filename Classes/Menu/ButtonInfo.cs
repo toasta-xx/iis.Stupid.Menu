@@ -43,6 +43,8 @@ namespace iiMenu.Classes.Menu
         RebindSettings,
         Sound,
         Projectiles,
+        Networked,
+        NetworkedSettings,
         Master,
         Overpowered,
         Soundboard,

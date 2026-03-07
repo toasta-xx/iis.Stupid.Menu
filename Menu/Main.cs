@@ -4637,7 +4637,7 @@ namespace iiMenu.Menu
         {
             get
             {
-                if (!GorillaParent.instance.vrrigs.Contains(_giveGunTarget))
+                if (!VRRigCache.ActiveRigs.Contains(_giveGunTarget))
                     _giveGunTarget = null;
 
                 return _giveGunTarget;
@@ -5057,7 +5057,7 @@ namespace iiMenu.Menu
         {
             if (snowballDict == null)
             {
-                if (!CosmeticsV2Spawner_Dirty.completed)
+                if (!CosmeticsV2Spawner_Dirty.isPrepared)
                     return null;
 
                 if (!GorillaComputer.instance.isConnectedToMaster)
@@ -5876,7 +5876,7 @@ namespace iiMenu.Menu
             {
                 if (!GorillaComputer.instance.friendJoinCollider.playerIDsCurrentlyTouching.Contains(PhotonNetwork
                         .LocalPlayer.UserId) &&
-                    !CosmeticWardrobeProximityDetector.IsUserNearWardrobe(PhotonNetwork.LocalPlayer.UserId)) return;
+                    !CosmeticWardrobeProximityDetector.IsUserNearWardrobe(PhotonNetwork.LocalPlayer.actorNumber)) return;
                 GorillaTagger.Instance.myVRRig.SendRPC("RPC_InitializeNoobMaterial", RpcTarget.All, VRRig.LocalRig.playerColor.r, VRRig.LocalRig.playerColor.g, VRRig.LocalRig.playerColor.b);
                 RPCProtection();
             }

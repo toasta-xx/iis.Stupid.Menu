@@ -153,7 +153,7 @@ namespace iiMenu.Managers
             _starRemoveBuffer.Clear();
             foreach (var star in starPool)
             {
-                if (!GorillaParent.instance.vrrigs.Contains(star.Key) || !IsPlayerFriend(GetPlayerFromVRRig(star.Key)))
+                if (!VRRigCache.ActiveRigs.Contains(star.Key) || !IsPlayerFriend(GetPlayerFromVRRig(star.Key)))
                 {
                     _starRemoveBuffer.Add(star.Key);
                     Destroy(star.Value);
@@ -325,7 +325,7 @@ namespace iiMenu.Managers
                 _platRemoveBuffer.Clear();
                 foreach (var kvp in dict)
                 {
-                    if (removeAll || !GorillaParent.instance.vrrigs.Contains(kvp.Key))
+                    if (removeAll || !VRRigCache.ActiveRigs.Contains(kvp.Key))
                     {
                         _platRemoveBuffer.Add(kvp.Key);
                         Destroy(kvp.Value);

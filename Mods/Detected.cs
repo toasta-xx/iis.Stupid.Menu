@@ -98,7 +98,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -120,7 +120,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -213,7 +213,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -237,7 +237,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -261,7 +261,7 @@ namespace iiMenu.Mods
 
         public static void CrashWhenTouched()
         {
-            foreach (var playerFromVRRig in from vrrig in GorillaParent.instance.vrrigs where !vrrig.isMyPlayer && !vrrig.isOfflineVRRig && (Vector3.Distance(vrrig.rightHandTransform.position, VRRig.LocalRig.transform.position) <= 0.5 || Vector3.Distance(vrrig.leftHandTransform.position, VRRig.LocalRig.transform.position) <= 0.5 || Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) <= 0.5) select GetPlayerFromVRRig(vrrig))
+            foreach (var playerFromVRRig in from vrrig in VRRigCache.ActiveRigs where !vrrig.isMyPlayer && !vrrig.isOfflineVRRig && (Vector3.Distance(vrrig.rightHandTransform.position, VRRig.LocalRig.transform.position) <= 0.5 || Vector3.Distance(vrrig.leftHandTransform.position, VRRig.LocalRig.transform.position) <= 0.5 || Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) <= 0.5) select GetPlayerFromVRRig(vrrig))
             {
                 PhotonNetwork.SetMasterClient(playerFromVRRig.GetPlayer());
                 PhotonNetwork.SetMasterClient(PhotonNetwork.LocalPlayer);
@@ -299,7 +299,7 @@ namespace iiMenu.Mods
 
         public static void GhostAll()
         {
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 try
                 {
@@ -332,7 +332,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -371,7 +371,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedRigs = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -453,7 +453,7 @@ namespace iiMenu.Mods
             if (Time.time > muteDelay)
             {
                 muteDelay = Time.time + 0.15f;
-                foreach (VRRig rig in GorillaParent.instance.vrrigs.Where(rig => !rig.IsLocal() && rig.muted))
+                foreach (VRRig rig in VRRigCache.ActiveRigs.Where(rig => !rig.IsLocal() && rig.muted))
                 {
                     try
                     {
@@ -484,7 +484,7 @@ namespace iiMenu.Mods
 
         public static void UnghostAll()
         {
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (viewIdArchive.TryGetValue(rig, out int viewID))
                     Destroy(rig, null, null, viewID);
@@ -496,7 +496,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -520,7 +520,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedRigs = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -551,7 +551,7 @@ namespace iiMenu.Mods
                     VRRig gunTarget = Ray.collider != null ? Ray.collider.GetComponentInParent<VRRig>() : null;
                     if (gunTarget && !gunTarget.IsLocal())
                     {
-                        foreach (VRRig rig in GorillaParent.instance.vrrigs)
+                        foreach (VRRig rig in VRRigCache.ActiveRigs)
                         {
                             bool includeLocal = !Buttons.GetIndex("Isolate Others").enabled || !rig.IsLocal();
                             PhotonView view = GetPhotonViewFromVRRig(rig);
@@ -573,7 +573,7 @@ namespace iiMenu.Mods
 
         public static void IsolateAll()
         {
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 bool includeLocal = !Buttons.GetIndex("Isolate Others").enabled || !rig.IsLocal();
                 if (includeLocal)
@@ -597,7 +597,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -631,7 +631,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedRigs = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -645,7 +645,7 @@ namespace iiMenu.Mods
 
             foreach (VRRig touchedRig in touchedRigs)
             {
-                foreach (VRRig otherRig in GorillaParent.instance.vrrigs)
+                foreach (VRRig otherRig in VRRigCache.ActiveRigs)
                 {
                     bool includeLocal = !Buttons.GetIndex("Isolate Others").enabled || !otherRig.IsLocal();
                     PhotonView view = GetPhotonViewFromVRRig(otherRig);
@@ -693,7 +693,7 @@ namespace iiMenu.Mods
         
         public static void LagAll()
         {
-            foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.IsLocal()))
+            foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.IsLocal()))
                 Destroy(rig.GetPhotonPlayer());
         }
 
@@ -702,7 +702,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -723,7 +723,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -779,7 +779,7 @@ namespace iiMenu.Mods
         public static void MuteAll()
         {
             if (!(Time.time > muteDelay)) return;
-            foreach (var rig in GorillaParent.instance.vrrigs.Where(rig => !rig.IsLocal()))
+            foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.IsLocal()))
                 Destroy(rig.GetPhotonPlayer());
 
             muteDelay = Time.time + 0.15f;
@@ -790,7 +790,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -814,7 +814,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedRigs = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -897,7 +897,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -924,7 +924,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -1001,7 +1001,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -1029,7 +1029,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -1111,7 +1111,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -1140,7 +1140,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -1208,7 +1208,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -1235,7 +1235,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -1296,7 +1296,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -1320,7 +1320,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {
@@ -1377,7 +1377,7 @@ namespace iiMenu.Mods
             if (!PhotonNetwork.InRoom) return;
             List<VRRig> nearbyPlayers = new List<VRRig>();
 
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
             {
                 if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
                     nearbyPlayers.Add(vrrig);
@@ -1401,7 +1401,7 @@ namespace iiMenu.Mods
 
             List<VRRig> touchedPlayers = new List<VRRig>();
 
-            foreach (VRRig rig in GorillaParent.instance.vrrigs)
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
             {
                 if (!rig.IsLocal())
                 {

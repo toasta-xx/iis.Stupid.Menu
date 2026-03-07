@@ -33,6 +33,7 @@ namespace iiMenu.Patches
     {
         public static bool IsPatched { get; internal set; }
         public static int PatchErrors { get; internal set; }
+        public static bool StrictSecurityPatchFailures = false;
 
         public static bool CriticalPatchFailed { get; internal set; }
 
@@ -57,9 +58,8 @@ namespace iiMenu.Patches
                 catch (Exception ex)
                 {
                     PatchErrors++;
-                    if (type.GetCustomAttribute<SecurityPatch>() != null)
+                    if (StrictSecurityPatchFailures && type.GetCustomAttribute<SecurityPatch>() != null)
                         CriticalPatchFailed = true;
-                    CriticalPatchFailed = true;
                     LogManager.LogError($"Failed to patch {type.FullName}: {ex}");
                 }
             }

@@ -83,7 +83,7 @@ namespace iiMenu.Mods
                 }
                 else
                 {
-                    VRRig rig = GorillaParent.instance.vrrigs
+                    VRRig rig = VRRigCache.ActiveRigs
                         .Where(r => !r.IsLocal() && r.IsTagged())
                         .OrderBy(r => Vector3.Distance(
                                         r.transform.position,
@@ -399,7 +399,7 @@ namespace iiMenu.Mods
 
         public static void TagAura()
         {
-            foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => VRRig.LocalRig.IsTagged() && !vrrig.IsTagged() && !GTPlayer.Instance.disableMovement && Vector3.Distance(vrrig.headMesh.transform.position, GorillaTagger.Instance.bodyCollider.transform.position) < tagAuraDistance))
+            foreach (var vrrig in VRRigCache.ActiveRigs.Where(vrrig => VRRig.LocalRig.IsTagged() && !vrrig.IsTagged() && !GTPlayer.Instance.disableMovement && Vector3.Distance(vrrig.headMesh.transform.position, GorillaTagger.Instance.bodyCollider.transform.position) < tagAuraDistance))
                 ReportTag(vrrig);
         }
 
@@ -411,7 +411,7 @@ namespace iiMenu.Mods
 
         public static void TagAuraPlayer(VRRig giving)
         {
-            foreach (var vrrig in from vrrig in GorillaParent.instance.vrrigs let distance = Vector3.Distance(vrrig.headMesh.transform.position, giving.transform.position) where giving.IsTagged() && !vrrig.IsTagged() && !GTPlayer.Instance.disableMovement && distance < tagAuraDistance && !VRRig.LocalRig.IsLocal() && VRRig.LocalRig.IsTagged() select vrrig)
+            foreach (var vrrig in from vrrig in VRRigCache.ActiveRigs let distance = Vector3.Distance(vrrig.headMesh.transform.position, giving.transform.position) where giving.IsTagged() && !vrrig.IsTagged() && !GTPlayer.Instance.disableMovement && distance < tagAuraDistance && !VRRig.LocalRig.IsLocal() && VRRig.LocalRig.IsTagged() select vrrig)
                 TagPlayer(GetPlayerFromVRRig(vrrig));
         }
 
@@ -444,7 +444,7 @@ namespace iiMenu.Mods
 
         public static void TagAuraAll()
         {
-            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
                 TagAuraPlayer(vrrig);
         }
 
@@ -637,10 +637,10 @@ namespace iiMenu.Mods
         }
         public static void FlickTag()
         {
-            if (SteamVR_Actions.gorillaTag_RightJoystickClick.state)
+           /* if (SteamVR_Actions.gorillaTag_RightJoystickClick.state)
             {
                 GorillaTagger.Instance.maxTagDistance = 3.2f;
-                using (List<VRRig>.Enumerator enumerator = GorillaParent.instance.vrrigs.GetEnumerator())
+                using (List<VRRig>.Enumerator enumerator = VRRigCache.ActiveRigs.GetEnumerator())
                 {
                     while (enumerator.MoveNext())
                     {
@@ -651,7 +651,7 @@ namespace iiMenu.Mods
                         }
                     }
                 }
-            }
+            }*/
         }
 
         public static void TagAll()
@@ -687,10 +687,10 @@ namespace iiMenu.Mods
                 }
                 else
                 {
-                    bool isInfectedPlayers = GorillaParent.instance.vrrigs.Any(vrrig => !vrrig.IsTagged());
+                    bool isInfectedPlayers = VRRigCache.ActiveRigs.Any(vrrig => !vrrig.IsTagged());
                     if (isInfectedPlayers)
                     {
-                        foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.IsTagged()))
+                        foreach (var vrrig in VRRigCache.ActiveRigs.Where(vrrig => !vrrig.IsTagged()))
                         {
                             VRRig.LocalRig.enabled = false;
 
@@ -773,7 +773,7 @@ namespace iiMenu.Mods
 
             Vector3 archiveRigPosition = VRRig.LocalRig.transform.position;
 
-            foreach (var vrrig in GorillaParent.instance.vrrigs.Where(vrrig => !vrrig.IsTagged()))
+            foreach (var vrrig in VRRigCache.ActiveRigs.Where(vrrig => !vrrig.IsTagged()))
             {
                 VRRig.LocalRig.transform.position = vrrig.transform.position;
                 SendSerialize(GorillaTagger.Instance.myVRRig.GetView, new RaiseEventOptions { TargetActors = new[] { PhotonNetwork.MasterClient.ActorNumber } });

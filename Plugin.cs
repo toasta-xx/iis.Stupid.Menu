@@ -115,6 +115,7 @@ namespace iiMenu
             Loader.AddComponent<CustomBoardManager>();
 
             Loader.AddComponent<UI>();
+            Loader.AddComponent<iiMenu.Networked.NetworkedHPUpdater>();
 
             DontDestroyOnLoad(Loader);
         }

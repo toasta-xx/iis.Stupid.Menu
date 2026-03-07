@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ii's Stupid Menu  Extensions/VRRigExtensions.cs
  * A mod menu for Gorilla Tag with over 1000+ mods
  *
@@ -26,9 +26,11 @@ using Photon.Pun;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using static iiMenu.Menu.Main;
 using static iiMenu.Utilities.GameModeUtilities;
+using static iiMenu.Utilities.RigUtilities;
 
 namespace iiMenu.Extensions
 {
@@ -52,12 +54,15 @@ namespace iiMenu.Extensions
         public static bool IsKIDRestricted(this VRRig rig) =>
             !rig.IsMicEnabled && rig.GetName().ToLower().StartsWith("gorilla");
 
+        public static string Cosmetics(this VRRig rig) =>
+             string.Concat(rig._playerOwnedCosmetics);
+
         public static string GetPlatform(this VRRig rig)
         {
             int suspiciouslySteam = 0;
             int suspiciouslyPC = 0;
             int suspiciouslyQuest = 0;
-            string concatStringOfCosmeticsAllowed = rig.rawCosmeticString;
+            string concatStringOfCosmeticsAllowed = rig.Cosmetics();
 
             if (concatStringOfCosmeticsAllowed.Contains("S. FIRST LOGIN"))
                 suspiciouslySteam++;
@@ -107,7 +112,7 @@ namespace iiMenu.Extensions
         }
 
         public static bool Active(this VRRig rig) =>
-            rig != null && GorillaParent.instance.vrrigs.Contains(rig);
+            rig != null && VRRigCache.ActiveRigs.Contains(rig);
 
         public static float Distance(this VRRig rig, Vector3 position) =>
             Vector3.Distance(rig.transform.position, position);
@@ -119,7 +124,7 @@ namespace iiMenu.Extensions
             rig.Distance(GorillaTagger.Instance.bodyCollider.transform.position);
 
         public static VRRig GetClosest(this VRRig rig) =>
-            GorillaParent.instance.vrrigs.Where(targetRig => targetRig != null && targetRig != rig)
+            VRRigCache.ActiveRigs.Where(targetRig => targetRig != null && targetRig != rig)
                                          .OrderBy(rig.Distance)
                                          .FirstOrDefault();
 

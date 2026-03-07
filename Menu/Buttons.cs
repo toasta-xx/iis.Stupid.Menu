@@ -68,6 +68,7 @@ namespace iiMenu.Menu
                 new ButtonInfo { category = Category.Main, buttonText = "Fun Mods", method =() => CurrentCategoryName = "Fun Mods", isTogglable = false, toolTip = "Opens the fun mods."},
                 new ButtonInfo { category = Category.Main, buttonText = "Sound Mods", method =() => CurrentCategoryName = "Sound Mods", isTogglable = false, toolTip = "Opens the sound mods."},
                 new ButtonInfo { category = Category.Main, buttonText = "Projectile Mods", method =() => CurrentCategoryName = "Projectile Mods", isTogglable = false, toolTip = "Opens the projectile mods."},
+                new ButtonInfo { category = Category.Main, buttonText = "Networked Mods", method =() => CurrentCategoryName = "Networked Mods", isTogglable = false, toolTip = "Opens the networked mods (HP, attacks, PvP)."},
                 new ButtonInfo { category = Category.Main, buttonText = "Master Mods", method =() => CurrentCategoryName = "Master Mods", isTogglable = false, toolTip = "Opens the master mods."},
                 new ButtonInfo { category = Category.Main, buttonText = "Overpowered Mods", method =() => CurrentCategoryName = "Overpowered Mods", isTogglable = false, toolTip = "Opens the overpowered mods."},
                 new ButtonInfo { category = Category.Main, buttonText = "Experimental Mods", method =() => CurrentCategoryName = "Experimental Mods", isTogglable = false, toolTip = "Opens the experimental mods."},
@@ -427,7 +428,7 @@ namespace iiMenu.Menu
                 new ButtonInfo { category = Category.Important, buttonText = "Media Integration", aliases = new[] { "Spotify" }, enableMethod = Important.EnsureIntegrationProgram, method = Important.MediaIntegration, disableMethod = Important.DisableMediaIntegration, toolTip = "Shows you what media you are watching/listening to in the top left. To switch media, open the menu and use your left joystick."},
                 new ButtonInfo { category = Category.Important, buttonText = "Anti Hand Tap", enableMethod =() => HandTapPatch.enabled = true, disableMethod =() => HandTapPatch.enabled = false, toolTip = "Stops all hand tap sounds from being played."},
                 new ButtonInfo { category = Category.Important, buttonText = "First Person Camera", enableMethod = Important.EnableFPC, postMethod = Important.MoveFPC, disableMethod = Important.DisableFPC, toolTip = "Makes your camera output what you see in VR."},
-                new ButtonInfo { category = Category.Important, buttonText = "Force Enable Hands", enableMethod =() => ControllerPatch.enabled = true, method = Important.ForceEnableHands, disableMethod =() => ControllerPatch.enabled = true, toolTip = "Prevents your hands from disconnecting."},
+                new ButtonInfo { category = Category.Important, buttonText = "Force Enable Hands", enableMethod =() => Important.ForceEnableHands(), disableMethod =() => Important.ForceEnableHands(false), toolTip = "Prevents your hands from disconnecting."},
                 new ButtonInfo { category = Category.Important, buttonText = "Oculus Report Menu <color=grey>[</color><color=green>X</color><color=grey>]</color>", method = Important.OculusReportMenu, toolTip = "Opens the Oculus report menu when holding <color=green>X</color>."},
                 new ButtonInfo { category = Category.Important, buttonText = "Accept TOS", enableMethod =() => TOSPatches.enabled = true, method = Important.AcceptTOS, disableMethod =() => TOSPatches.enabled = false, toolTip = "Accepts the Terms of Service for you."},
                 new ButtonInfo { category = Category.Important, buttonText = "Bypass K-ID Restrictions", overlapText = "Bypass k-ID Restrictions", method =() => PermissionPatch.enabled = true, disableMethod =() => PermissionPatch.enabled = false, toolTip = "Bypasses the permission restrictions held by k-ID for underage users."},
@@ -1295,6 +1296,24 @@ namespace iiMenu.Menu
                 new ButtonInfo { category = Category.Projectiles, buttonText = "Anti Report <color=grey>[</color><color=green>Snowball Fling</color><color=grey>]</color>", method = Overpowered.AntiReportSnowballFling, toolTip = "Flings whoever tries to report you with the snowballs."}
             },
             #endregion
+            #region Networked Mods
+            new[] {
+                new ButtonInfo { category = Category.Networked, buttonText = "Exit Networked Mods", method =() => CurrentCategoryName = "Main", isTogglable = false, toolTip = "Returns you back to the main page."},
+                new ButtonInfo { category = Category.Networked, buttonText = "Networked Settings", method =() => CurrentCategoryName = "Networked Settings", isTogglable = false, toolTip = "HP damage types and behavior."},
+                new ButtonInfo { category = Category.Networked, buttonText = "Networked HP System", enableMethod = NetworkedHP.Enable, disableMethod = NetworkedHP.Disable, toolTip = "Enables networked HP; all players see the same HP. Local UI and nametags above heads."},
+                new ButtonInfo { category = Category.Networked, buttonText = "Boxing Mode", enableMethod = NetworkedHP.EnableBoxing, disableMethod = NetworkedHP.DisableBoxing, toolTip = "Punch attacks deal HP damage to other players. Networked."},
+                new ButtonInfo { category = Category.Networked, buttonText = "Bone Attack", method = NetworkedHP.FireBoneAttack, isTogglable = false, toolTip = "Shoot bones that deal 1 HP damage and bypass i-frames."},
+                new ButtonInfo { category = Category.Networked, buttonText = "Gaster Blaster <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = NetworkedHP.GasterBlasterUpdate, enableMethod = NetworkedHP.EnableGasterBlaster, disableMethod = NetworkedHP.DisableGasterBlaster, toolTip = "Horizontal beam from palm, ~2s, 1 dmg/frame. Hold trigger. 5–10s cooldown."},
+                new ButtonInfo { category = Category.Networked, buttonText = "Soul Throw", method = NetworkedHP.SoulThrowUpdate, enableMethod = NetworkedHP.EnableSoulThrow, disableMethod = NetworkedHP.DisableSoulThrow, toolTip = "Telekinesis others; 1 dmg on collision when velocity > 2."}
+            },
+            #endregion
+            #region Networked Settings
+            new[] {
+                new ButtonInfo { category = Category.NetworkedSettings, buttonText = "Exit Networked Settings", method =() => CurrentCategoryName = "Networked Mods", isTogglable = false, toolTip = "Returns to Networked Mods."},
+                new ButtonInfo { category = Category.NetworkedSettings, buttonText = "HP Damage Type", overlapText = "HP Damage Type <color=grey>[</color><color=green>Regular</color><color=grey>]</color>", method = NetworkedHP.CycleDamageType, enableMethod = () => NetworkedHP.CycleDamageType(), disableMethod = () => NetworkedHP.CycleDamageType(false), incremental = true, isTogglable = false, toolTip = "Regular: instant damage + i-frames. KR: poison DoT, bypasses i-frames."},
+                new ButtonInfo { category = Category.NetworkedSettings, buttonText = "I-Frame Length", overlapText = "I-Frame Length <color=grey>[</color><color=green>7</color><color=grey>]</color>", method = NetworkedHP.CycleIFrameLength, enableMethod = () => NetworkedHP.CycleIFrameLength(), disableMethod = () => NetworkedHP.CycleIFrameLength(false), incremental = true, isTogglable = false, toolTip = "Frames of invincibility after taking regular damage (5–10)."}
+            },
+            #endregion
             #region Master Mods
             new[] {
                 new ButtonInfo { category = Category.Master, buttonText = "Exit Master Mods", method =() => CurrentCategoryName = "Main", isTogglable = false, toolTip = "Returns you back to the main page."},
@@ -2075,6 +2094,8 @@ namespace iiMenu.Menu
             "Rebind Settings",
             "Sound Mods",
             "Projectile Mods",
+            "Networked Mods",
+            "Networked Settings",
             "Master Mods",
             "Overpowered Mods",
             "Soundboard",
